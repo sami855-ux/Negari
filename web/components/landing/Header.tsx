@@ -20,14 +20,21 @@ const Header = () => {
               href="/#"
               className="font-geist text-[15px] text-gray-700 hover:text-green-700 transition-colors duration-200 relative group"
             >
-              News
+              Features
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-green-600 transition-all duration-300 group-hover:w-full"></span>
             </Link>
             <Link
               href="/#"
               className="font-geist text-[15px] text-gray-700 hover:text-green-700 transition-colors duration-200 relative group"
             >
-              What we do
+              Services
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-green-600 transition-all duration-300 group-hover:w-full"></span>
+            </Link>
+            <Link
+              href="/#"
+              className="font-geist text-[15px] text-gray-700 hover:text-green-700 transition-colors duration-200 relative group"
+            >
+              Partners
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-green-600 transition-all duration-300 group-hover:w-full"></span>
             </Link>
             <Link
@@ -35,13 +42,6 @@ const Header = () => {
               className="font-geist text-[15px] text-gray-700 hover:text-green-700 transition-colors duration-200 relative group"
             >
               Contact
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-green-600 transition-all duration-300 group-hover:w-full"></span>
-            </Link>
-            <Link
-              href="/#"
-              className="font-geist text-[15px] text-gray-700 hover:text-green-700 transition-colors duration-200 relative group"
-            >
-              About us
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-green-600 transition-all duration-300 group-hover:w-full"></span>
             </Link>
           </nav>
@@ -67,9 +67,11 @@ const Header = () => {
 
         {/* Auth buttons - hidden on mobile, shown on desktop */}
         <div className="hidden md:flex h-full items-center space-x-3">
-          <Button className="font-geist bg-gradient-to-r from-green-700 px-7 to-green-600 text-white hover:from-green-600 hover:to-green-500 h-10 transition-all duration-200 shadow-md hover:shadow-green-200/50">
-            Log In
-          </Button>
+          <Link href={"/login"}>
+            <Button className="font-geist bg-gradient-to-r from-green-700 px-7 to-green-600 text-white hover:from-green-600 hover:to-green-500 h-10 transition-all duration-200 shadow-md hover:shadow-green-200/50">
+              Log In
+            </Button>
+          </Link>
         </div>
       </div>
     </header>
