@@ -30,7 +30,7 @@ const Hero = () => {
       icon: <BarChart2Icon className="text-blue-800" size={20} />,
       title: "Powerful Analytics",
       description: "Data-driven insights",
-      position: "bottom-2/4 left-5 md:left-10",
+      position: "bottom-1/4 left-5 md:left-10",
     },
     {
       id: 3,
@@ -83,8 +83,8 @@ const Hero = () => {
         </div>
 
         {/* Main headline */}
-        <h2 className="text-center text-5xl sm:text-6xl md:text-7xl font-extrabold text-primary font-grotesk py-2 animate-slideUp">
-          One tool to manage all <br /> community reports
+        <h2 className="text-center text-5xl sm:text-6xl md:text-7xl leading-loose font-extrabold text-primary font-grotesk py-2 animate-slideUp">
+          Empowering Communities Through Smart Connectivity
         </h2>
 
         {/* Subheading */}
@@ -96,7 +96,7 @@ const Hero = () => {
 
         {/* CTA buttons */}
         <div className="flex items-center justify-center space-x-5 pt-6 animate-fadeIn delay-200">
-          <Button className="bg-gradient-to-r from-green-700 to-green-600 text-white h-12 text-[15px] rounded-xl font-geist px-9 hover:from-green-600 hover:to-green-500 transition-all duration-300 shadow-md hover:shadow-lg">
+          <Button className="bg-gradient-to-r from-green-700 to-green-600 text-white h-10 text-[15px] rounded-lg font-geist px-7 hover:from-green-600 hover:to-green-500 transition-all duration-300 shadow-md hover:shadow-lg">
             Start For Free
           </Button>
           <Button className="bg-transparent h-12 text-[15px] rounded-xl text-green-900 font-geist px-9 hover:bg-gray-100 border border-gray-200 transition-colors duration-300">
