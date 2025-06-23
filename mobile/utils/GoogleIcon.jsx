@@ -1,8 +1,8 @@
-import { Path } from "react-native-svg"
+import Svg, { Path } from "react-native-svg";
 
 export default function GoogleIcon() {
   return (
-    <svg viewBox="0 0 48 48" className="w-5 h-5">
+    <Svg width={20} height={20} viewBox="0 0 48 48">
       <Path
         fill="#fbc02d"
         d="M43.6 20.5h-1.6V20H24v8h11.3c-1.6 4.6-6 8-11.3 8a12 12 0 1 1 0-24c3 0 5.7 1.1 7.8 2.9l5.7-5.7A19.9 19.9 0 0 0 24 4a20 20 0 1 0 19.6 16.5z"
@@ -19,6 +19,6 @@ export default function GoogleIcon() {
         fill="#1565c0"
         d="M43.6 20.5h-1.6V20H24v8h11.3c-0.9 2.5-2.5 4.6-4.6 6l6.5 5.5c3.8-3.5 6.4-8.7 6.4-15z"
       />
-    </svg>
-  )
+    </Svg>
+  );
 }
