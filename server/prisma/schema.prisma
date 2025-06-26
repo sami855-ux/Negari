@@ -16,9 +16,11 @@ datasource db {
 model User {
   id             String   @id @default(uuid())
   username       String
-  email          String   @unique
+  email          String?  @unique
   password       String
   profilePicture String?
+  googleId       String?  @unique
+  telegramId     String?  @unique
   role           Role     @default(USER)
   createdAt      DateTime @default(now())
 }
@@ -27,10 +29,4 @@ enum Role {
   USER
   OFFICER
   ADMIN
-}
-
-enum ReportStatus {
-  PENDING
-  IN_PROGRESS
-  RESOLVED
 }
