@@ -4,6 +4,6 @@
   "scripts": {
     "web": "npm --prefix ./web run dev",
     "mobile": "npm --prefix ./mobile start",
-    "server": "npm --prefix ./server run dev"
+    "server": "npm --prefix ./server start"
   }
 }
