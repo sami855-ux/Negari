@@ -1,11 +1,15 @@
 import cookieParser from "cookie-parser"
+import passport from "passport"
 import express from "express"
 import dotenv from "dotenv"
 import helmet from "helmet"
 import cors from "cors"
 
 import authRoutes from "./routes/auth.route.js"
+import googleAuthRoutes from "./routes/google.route.js"
+import telegramAuthRoutes from "./routes/telegram.route.js"
 
+import "./utils/passport.js"
 dotenv.config()
 
 const app = express()
@@ -22,10 +26,13 @@ app.use(
   })
 )
 app.use(helmet())
+app.use(passport.initialize())
 
 // API Routes
 
 app.use("/api/auth", authRoutes)
+app.use("/api/", googleAuthRoutes)
+app.use("/api/", telegramAuthRoutes)
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({ message: "ZenaNet backend is running ✅" })
