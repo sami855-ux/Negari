@@ -1,3 +1,6 @@
+"use client"
+
+import TelegramLoginWidget from "@/components/TelegramLogi"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -9,47 +12,50 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import {
-  Apple,
-  Mail,
-  Lock,
-  Sparkles,
-  PlaneTakeoffIcon,
-  Send,
-} from "lucide-react"
+import { Mail, Lock, Send } from "lucide-react"
 import Link from "next/link"
 
 export default function LoginPage() {
+  const handleClickGoogle = () => {
+    // Handle Google sign-in logic here
+    console.log("Google sign-in clicked")
+
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/google`
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+    <div className="relative flex items-center justify-center min-h-screen overflow-hidden">
       {/* Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"></div>
 
-      <div className="relative z-10 w-full max-w-lg px-4 py-12 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
+      <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-lg px-4 py-12 sm:px-6 lg:px-8">
         {/* Header */}
 
         {/* Main Card */}
         <Card className="backdrop-blur-sm w-[40vw] bg-white/80 border-1 border-gray-200 rounded-3xl overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5"></div>
-          <CardHeader className="relative space-y-1 pb-6 pt-8">
-            <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+          <CardHeader className="relative pt-8 pb-6 space-y-1">
+            <CardTitle className="text-2xl font-bold text-center text-transparent bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text">
               Sign in to your account
             </CardTitle>
-            <CardDescription className="text-center text-gray-600 text-base">
+            <CardDescription className="text-base text-center text-gray-600">
               Choose your preferred sign-in method
             </CardDescription>
           </CardHeader>
-          <CardContent className="relative space-y-6 px-8 pb-8">
+          <CardContent className="relative px-8 pb-8 space-y-6">
             {/* Social Login Buttons */}
             <div className="space-y-3">
               <Button
                 variant="outline"
-                className="w-full h-12 bg-white/90 border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 text-gray-700 font-medium transition-all duration-200 hover:shadow-md group"
+                className="w-full h-12 font-medium text-gray-700 transition-all duration-200 border-2 border-gray-200 bg-white/90 hover:border-blue-300 hover:bg-blue-50/50 hover:shadow-md group"
                 type="button"
               >
-                <div className="flex items-center justify-center">
+                <div
+                  className="flex items-center justify-center"
+                  onClick={handleClickGoogle}
+                >
                   <svg
-                    className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform"
+                    className="w-5 h-5 mr-3 transition-transform group-hover:scale-110"
                     viewBox="0 0 24 24"
                   >
                     <path
@@ -73,14 +79,7 @@ export default function LoginPage() {
                 </div>
               </Button>
 
-              <Button
-                variant="outline"
-                className="w-full h-12 bg-[#0088cc] hover:bg-[#007ebd] text-white border-2 border-[#0088cc] font-medium transition-all duration-200 hover:shadow-md group"
-                type="button"
-              >
-                <Send className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
-                Continue with Telegram
-              </Button>
+              <TelegramLoginWidget />
             </div>
 
             <div className="relative">
@@ -88,7 +87,7 @@ export default function LoginPage() {
                 <Separator className="w-full bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
               </div>
               <div className="relative flex justify-center text-sm uppercase">
-                <span className="bg-white px-4 text-gray-500 font-medium">
+                <span className="px-4 font-medium text-gray-500 bg-white">
                   Or continue with email
                 </span>
               </div>
@@ -99,7 +98,7 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <Label
                   htmlFor="email"
-                  className="text-sm font-semibold text-gray-700 flex items-center"
+                  className="flex items-center text-sm font-semibold text-gray-700"
                 >
                   <Mail className="w-4 h-4 mr-2 text-blue-600" />
                   Email address
@@ -110,7 +109,7 @@ export default function LoginPage() {
                   type="email"
                   autoComplete="email"
                   required
-                  className="h-12 border-2 border-gray-200 outline-none focus:border-blue-500  rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-200"
+                  className="h-12 transition-all duration-200 border-2 border-gray-200 outline-none focus:border-blue-500 rounded-xl bg-white/50 backdrop-blur-sm"
                   placeholder="Enter your email address"
                 />
               </div>
@@ -119,14 +118,14 @@ export default function LoginPage() {
                 <div className="flex items-center justify-between">
                   <Label
                     htmlFor="password"
-                    className="text-sm font-semibold text-gray-700 flex items-center"
+                    className="flex items-center text-sm font-semibold text-gray-700"
                   >
                     <Lock className="w-4 h-4 mr-2 text-blue-600" />
                     Password
                   </Label>
                   <Link
                     href="/forgot-password"
-                    className="text-sm text-blue-600 hover:text-blue-500 font-medium transition-colors"
+                    className="text-sm font-medium text-blue-600 transition-colors hover:text-blue-500"
                   >
                     Forgot password?
                   </Link>
@@ -137,7 +136,7 @@ export default function LoginPage() {
                   type="password"
                   autoComplete="current-password"
                   required
-                  className="h-12 border-2 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-200"
+                  className="h-12 transition-all duration-200 border-2 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl bg-white/50 backdrop-blur-sm"
                   placeholder="Enter your password"
                 />
               </div>
@@ -154,7 +153,7 @@ export default function LoginPage() {
               Don't have an account?{" "}
               <Link
                 href="/signup"
-                className="font-semibold text-blue-600 hover:text-blue-500 transition-colors"
+                className="font-semibold text-blue-600 transition-colors hover:text-blue-500"
               >
                 Sign up for free
               </Link>
@@ -163,19 +162,19 @@ export default function LoginPage() {
         </Card>
 
         {/* Footer */}
-        <div className="text-center mt-2">
-          <p className="text-sm text-gray-500 leading-relaxed">
+        <div className="mt-2 text-center">
+          <p className="text-sm leading-relaxed text-gray-500">
             By signing in, you agree to our{" "}
             <Link
               href="/terms"
-              className="text-blue-600 hover:text-blue-500 font-medium transition-colors"
+              className="font-medium text-blue-600 transition-colors hover:text-blue-500"
             >
               Terms of Service
             </Link>{" "}
             and{" "}
             <Link
               href="/privacy"
-              className="text-blue-600 hover:text-blue-500 font-medium transition-colors"
+              className="font-medium text-blue-600 transition-colors hover:text-blue-500"
             >
               Privacy Policy
             </Link>

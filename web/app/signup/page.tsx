@@ -33,7 +33,7 @@ export default function Component() {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
       </div>
 
-      <Card className="w-full max-w-md relative z-10 shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
+      <Card className="w-full max-w-xl relative z-10  border border-gray-200 bg-white/80 backdrop-blur-sm">
         <CardHeader className="space-y-1 pb-8">
           <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-green-500 rounded-2xl flex items-center justify-center">
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
@@ -49,6 +49,18 @@ export default function Component() {
         </CardHeader>
         <CardContent className="pb-8">
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-gray-700 font-medium">
+                Username
+              </Label>
+              <Input
+                id="username"
+                type="username"
+                placeholder="samux"
+                required
+                className="h-12 border-gray-200 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200"
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email" className="text-gray-700 font-medium">
                 Email
@@ -93,7 +105,7 @@ export default function Component() {
             </div>
             <Button
               type="submit"
-              className="w-full h-12 bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02]"
+              className="w-full h-12 bg-gradient-to-r from-blue-500 to-green-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform "
             >
               Create Account
             </Button>
