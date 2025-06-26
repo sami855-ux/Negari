@@ -2,7 +2,7 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import prisma from "../prisma/client.js"
 
-const generateToken = (user) => {
+export const generateToken = (user) => {
   return jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "7d" })
 }
 
