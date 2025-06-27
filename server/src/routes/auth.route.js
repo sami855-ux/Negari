@@ -8,7 +8,7 @@ import {
   logoutUserWeb,
   registerUserWeb,
 } from "../controllers/authWeb.controller.js"
-import loginLimiter from "../utils/LoginLimter.js"
+import loginLimiter from "../middleware/LoginLimter.js"
 
 const router = express.Router()
 
