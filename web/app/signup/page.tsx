@@ -13,16 +13,49 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, Loader2 } from "lucide-react"
 import Link from "next/link"
+import { useForm } from "react-hook-form"
+import { signUpUser } from "@/services/auth"
+import toast from "react-hot-toast"
 
 export default function Component() {
   const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm()
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Handle form submission here
-    console.log("Form submitted")
+  const onSubmit = async (data: {
+    username: string
+    email: string
+    password: string
+  }) => {
+    // Handle form submission logic here
+    console.log(data)
+
+    try {
+      setIsLoading(true)
+      const res = await signUpUser(data)
+      if (res.success) {
+        console.log("User signed up successfully:", res.data)
+        // Redirect to login or home page
+      } else {
+        console.error("Sign up failed:", res.message)
+      }
+
+      toast.success("Account created successfully!")
+
+      reset() // Reset form fields after successful submission
+    } catch (error) {
+      console.log("Error signing up:", error)
+      toast.error(error.message || "Failed to create account")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -48,12 +81,25 @@ export default function Component() {
           </CardDescription>
         </CardHeader>
         <CardContent className="pb-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form
+            onSubmit={handleSubmit((data) => onSubmit(data))}
+            className="space-y-6"
+          >
             <div className="space-y-2">
               <Label htmlFor="email" className="text-gray-700 font-medium">
                 Username
               </Label>
               <Input
+                {...register("username", {
+                  required: {
+                    value: true,
+                    message: "Username is required",
+                  },
+                  minLength: {
+                    value: 3,
+                    message: "Username must be at least 3 characters",
+                  },
+                })}
                 id="username"
                 type="username"
                 placeholder="samux"
@@ -61,11 +107,24 @@ export default function Component() {
                 className="h-12 border-gray-200 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200"
               />
             </div>
+            {errors.username && (
+              <p className="text-red-500 text-sm">{errors.username.message}</p>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-gray-700 font-medium">
                 Email
               </Label>
               <Input
+                {...register("email", {
+                  required: {
+                    value: true,
+                    message: "Email is required",
+                  },
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Invalid email address",
+                  },
+                })}
                 id="email"
                 type="email"
                 placeholder="you@example.com"
@@ -73,12 +132,25 @@ export default function Component() {
                 className="h-12 border-gray-200 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200"
               />
             </div>
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email.message}</p>
+            )}
             <div className="space-y-2">
               <Label htmlFor="password" className="text-gray-700 font-medium">
                 Password
               </Label>
               <div className="relative">
                 <Input
+                  {...register("password", {
+                    required: {
+                      value: true,
+                      message: "Password is required",
+                    },
+                    minLength: {
+                      value: 6,
+                      message: "Password must be at least 6 characters",
+                    },
+                  })}
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Create a strong password"
@@ -102,12 +174,24 @@ export default function Component() {
                   </span>
                 </Button>
               </div>
+              {errors.password && (
+                <p className="text-red-500 text-sm">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
             <Button
               type="submit"
               className="w-full h-12 bg-gradient-to-r from-blue-500 to-green-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform "
             >
-              Create Account
+              {isLoading ? (
+                <span className="flex items-center gap-3">
+                  <Loader2 className="animate-spin" />
+                  <span className="text-gray-200">Creating account</span>
+                </span>
+              ) : (
+                "Create Account"
+              )}
             </Button>
           </form>
           <div className="mt-6 text-center">

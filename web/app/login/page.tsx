@@ -12,15 +12,49 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { Mail, Lock, Send } from "lucide-react"
+import { signInUser } from "@/services/auth"
+import { Mail, Lock, Loader2 } from "lucide-react"
 import Link from "next/link"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { toast } from "react-hot-toast"
 
 export default function LoginPage() {
+  const [isLoading, setIsLoading] = useState(false)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm()
+
   const handleClickGoogle = () => {
     // Handle Google sign-in logic here
-    console.log("Google sign-in clicked")
-
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/google`
+  }
+
+  const handleSignIn = async (data: { email: string; password: string }) => {
+    // Handle sign-in logic here
+    console.log(data)
+
+    try {
+      setIsLoading(true)
+      const res = await signInUser(data)
+      if (res.success) {
+        toast.success("Logged in successfully!")
+      } else {
+        console.error("Sign in failed:", res.message)
+        toast.error(res.message || "Failed to log in")
+        return
+      }
+
+      reset() // Reset form fields after successful submission
+    } catch (error) {
+      console.log("Error signing in:", error)
+      toast.error(error.message || "Failed to log in")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -32,7 +66,7 @@ export default function LoginPage() {
         {/* Header */}
 
         {/* Main Card */}
-        <Card className="backdrop-blur-sm w-[40vw] bg-white/80 border-1 border-gray-200 rounded-3xl overflow-hidden">
+        <Card className="backdrop-blur-sm w-[80vw] md:w-[50vw] bg-white/80 border-1 border-gray-200 rounded-3xl overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5"></div>
           <CardHeader className="relative pt-8 pb-6 space-y-1">
             <CardTitle className="text-2xl font-bold text-center text-transparent bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text">
@@ -47,7 +81,7 @@ export default function LoginPage() {
             <div className="space-y-3">
               <Button
                 variant="outline"
-                className="w-full h-12 font-medium text-gray-700 transition-all duration-200 border-2 border-gray-200 bg-white/90 hover:border-blue-300 hover:bg-blue-50/50 hover:shadow-md group"
+                className="w-full h-12 font-medium text-gray-700 transition-all duration-200 border-2 border-gray-200 bg-white/90   group"
                 type="button"
               >
                 <div
@@ -94,7 +128,12 @@ export default function LoginPage() {
             </div>
 
             {/* Email/Password Form */}
-            <form className="space-y-5">
+            <form
+              className="space-y-5"
+              onSubmit={handleSubmit((data) => {
+                handleSignIn(data)
+              })}
+            >
               <div className="space-y-2">
                 <Label
                   htmlFor="email"
@@ -104,6 +143,13 @@ export default function LoginPage() {
                   Email address
                 </Label>
                 <Input
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "Invalid email address",
+                    },
+                  })}
                   id="email"
                   name="email"
                   type="email"
@@ -113,6 +159,9 @@ export default function LoginPage() {
                   placeholder="Enter your email address"
                 />
               </div>
+              {errors.email && (
+                <p className="text-red-500 text-sm">{errors.email.message}</p>
+              )}
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -131,6 +180,13 @@ export default function LoginPage() {
                   </Link>
                 </div>
                 <Input
+                  {...register("password", {
+                    required: "Password is required",
+                    minLength: {
+                      value: 6,
+                      message: "Password must be at least 6 characters",
+                    },
+                  })}
                   id="password"
                   name="password"
                   type="password"
@@ -141,11 +197,26 @@ export default function LoginPage() {
                 />
               </div>
 
+              {errors.password && (
+                <p className="text-red-500 text-sm">
+                  {errors.password.message}
+                </p>
+              )}
+
               <Button
                 type="submit"
-                className="w-full font-geist h-12 text-[15px]  text-white bg-[#0a581b] hover:bg-[#023d0f]/90 border border-gray-200 font-semibold  hover:shadow-xl  duration-200 transform"
+                className={`${
+                  isLoading ? "bg-[#509d61] cursor-not-allowed" : "bg-[#1c4625]"
+                } w-full font-geist h-12 text-[15px]  text-white  hover:bg-[#1c4625] border border-gray-200 font-semibold  hover:shadow-xl  duration-200 transform`}
               >
-                Sign in
+                {isLoading ? (
+                  <span className="flex items-center gap-3">
+                    <Loader2 className="animate-spin" />
+                    <span className="text-gray-200">Signing in...</span>
+                  </span>
+                ) : (
+                  "Sign In"
+                )}
               </Button>
             </form>
 
