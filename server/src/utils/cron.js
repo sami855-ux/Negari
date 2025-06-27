@@ -1,11 +1,11 @@
 import cron from "cron"
-import http from "http"
+import https from "https"
 import dotenv from "dotenv"
 
 dotenv.config()
 
 const job = new cron.CronJob("*/14 * * * *", () => {
-  http
+  https
     .get(process.env.API_URL, (res) => {
       if (res.statusCode === 200) {
         console.log("Cron job executed successfully")
