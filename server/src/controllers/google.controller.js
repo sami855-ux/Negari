@@ -15,5 +15,5 @@ export const googleCallback = (req, res) => {
   })
 
   // Redirect to frontend dashboard or homepage
-  res.redirect(`${process.env.FRONTEND_URL}/login`)
+  res.redirect(`${process.env.FRONTEND_URL}/`)
 }
