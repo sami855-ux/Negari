@@ -60,12 +60,14 @@ export const loginUserWeb = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({ where: { email } })
     if (!user) {
-      return res.status(404).json({ message: "User not found" })
+      return res.status(404).json({ message: "User not found", success: false })
     }
 
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" })
+      return res
+        .status(401)
+        .json({ message: "Invalid credentials", success: false })
     }
 
     const token = generateToken(user)
@@ -80,6 +82,7 @@ export const loginUserWeb = async (req, res) => {
 
     res.status(200).json({
       message: "Login successful",
+      success: true,
       user: {
         id: user.id,
         username: user.username,
