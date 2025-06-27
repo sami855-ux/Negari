@@ -8,9 +8,12 @@ import cors from "cors"
 import authRoutes from "./routes/auth.route.js"
 import googleAuthRoutes from "./routes/google.route.js"
 import telegramAuthRoutes from "./routes/telegram.route.js"
+import job from "./utils/cron.js"
 
 import "./utils/passport.js"
 dotenv.config()
+
+job.start() // Start the cron job
 
 const app = express()
 const PORT = process.env.PORT || 5000
