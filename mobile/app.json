@@ -1,0 +1,60 @@
+{
+  "expo": {
+    "name": "mobile",
+    "slug": "mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon2.png",
+    "scheme": "mobile",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "splash": {
+      "image": "./assets/images/spl.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.samiux855.mobile"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "serverUrl": "http://localhost:5000",
+      "EXPO_CLIENT_ID": "102375282357-sf549fi9n6bfi9frt24mc0pa060qagt6.apps.googleusercontent.com",
+      "ANDROID_CLIENT_ID": "102375282357-o190u4joc7sa603j9nrcf4rdatu3rgd0.apps.googleusercontent.com",
+      "WEB_CLIENT_ID": "102375282357-a61iuof7sum68rf7ia86tq070q2pmtsv.apps.googleusercontent.com",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "c60832e9-c312-48dc-9edb-7024d82009f1"
+      }
+    }
+  }
+}

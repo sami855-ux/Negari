@@ -1,0 +1,200 @@
+"use client"
+
+import { ReportsTable } from "@/components/admin/reportTable"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card"
+import { RefreshCw, Check, CircleCheck, BarChart2, Archive } from "lucide-react"
+import { useState } from "react"
+import toast from "react-hot-toast"
+import useGetReports from "@/hooks/useGetReports"
+import { motion } from "framer-motion"
+import { Progress } from "@/components/ui/progress"
+
+export default function ResolvedPage() {
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const { isLoading, refetch, reports } = useGetReports("RESOLVED")
+  const [completionRate, setCompletionRate] = useState(82) // Example completion rate
+
+  const refreshResolvedData = async () => {
+    setIsRefreshing(true)
+    try {
+      await refetch?.()
+      // Simulate slight completion rate fluctuation
+      setCompletionRate((prev) =>
+        Math.min(100, prev + (Math.random() > 0.5 ? 2 : -1))
+      )
+      toast.success("Resolved reports refreshed!")
+    } catch {
+      toast.error("Error refreshing data")
+    } finally {
+      setTimeout(() => {
+        setIsRefreshing(false)
+      }, 500)
+    }
+  }
+
+  return (
+    <div className="container px-4 py-6 mx-auto">
+      {/* Main Header Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Card className="mb-6 border-0 shadow-sm bg-gradient-to-br from-indigo-200/80 to-purple-200/80 dark:from-indigo-900/20 dark:to-purple-900/20">
+          <CardHeader className="pb-4">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <motion.div
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <CircleCheck className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                  </motion.div>
+                  <CardTitle className="text-2xl font-bold text-indigo-900 dark:text-indigo-100">
+                    Resolved Reports
+                  </CardTitle>
+                  <Badge
+                    variant="outline"
+                    className="text-indigo-800 bg-indigo-100 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-200 dark:border-indigo-800"
+                  >
+                    <Check className="h-3.5 w-3.5 mr-1.5" />
+                    Completed
+                  </Badge>
+                </div>
+
+                <CardDescription className="text-indigo-800/80 dark:text-indigo-200/80">
+                  Review successfully resolved cases and closure metrics
+                </CardDescription>
+
+                <div className="pt-2 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+                      Resolution Quality
+                    </span>
+                    <span className="px-2 py-1 text-xs rounded bg-indigo-200/50 dark:bg-indigo-800/30">
+                      {completionRate}% satisfaction
+                    </span>
+                  </div>
+                  <Progress
+                    value={completionRate}
+                    className="h-2 bg-indigo-200/50 dark:bg-indigo-900/30"
+                    indicatorClassName="bg-[length:200%_100%] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-gradient-x"
+                  />
+                </div>
+              </div>
+
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <Button
+                  onClick={refreshResolvedData}
+                  variant="outline"
+                  size="sm"
+                  disabled={isRefreshing}
+                  className="flex items-center gap-2 text-indigo-700 border-indigo-300 bg-white/80 hover:bg-indigo-50 hover:text-indigo-800 dark:border-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300 dark:hover:bg-indigo-900/30"
+                >
+                  <RefreshCw
+                    className={`h-4 w-4 transition-transform duration-500 ${
+                      isRefreshing ? "animate-spin" : ""
+                    }`}
+                  />
+                  {isRefreshing ? "Refreshing..." : "Refresh Data"}
+                </Button>
+              </motion.div>
+            </div>
+          </CardHeader>
+        </Card>
+      </motion.div>
+
+      {/* Resolved Reports Table */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1, duration: 0.4 }}
+      >
+        <div className="overflow-hidden border rounded-lg border-indigo-200/60 dark:border-indigo-800/30 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+          <div className="p-3 border-b bg-indigo-50/50 dark:bg-indigo-900/10 border-indigo-200/30 dark:border-indigo-800/20">
+            <div className="flex items-center gap-2">
+              <Archive className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <span className="text-sm font-medium text-indigo-800 dark:text-indigo-200">
+                Closed Reports ({reports?.length || 0})
+              </span>
+            </div>
+          </div>
+          <ReportsTable reports={reports} isLoading={isLoading} />
+        </div>
+      </motion.div>
+
+      {/* Resolution Metrics */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.4 }}
+        className="grid grid-cols-1 gap-4 mt-6 md:grid-cols-3"
+      >
+        <Card className="bg-indigo-50/30 dark:bg-indigo-900/10 border-indigo-200/50 dark:border-indigo-800/30">
+          <CardHeader className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-full bg-indigo-100/70 dark:bg-indigo-900/20">
+                <Check className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <CardTitle className="text-lg font-medium text-indigo-900 dark:text-indigo-100">
+                  Resolved Today
+                </CardTitle>
+                <CardDescription className="text-indigo-800/80 dark:text-indigo-200/80">
+                  24 cases closed
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+
+        <Card className="bg-purple-50/30 dark:bg-purple-900/10 border-purple-200/50 dark:border-purple-800/30">
+          <CardHeader className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-full bg-purple-100/70 dark:bg-purple-900/20">
+                <BarChart2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div>
+                <CardTitle className="text-lg font-medium text-purple-900 dark:text-purple-100">
+                  Weekly Trend
+                </CardTitle>
+                <CardDescription className="text-purple-800/80 dark:text-purple-200/80">
+                  +8% from last week
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+
+        <Card className="bg-indigo-50/30 dark:bg-indigo-900/10 border-indigo-200/50 dark:border-indigo-800/30">
+          <CardHeader className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-full bg-indigo-100/70 dark:bg-indigo-900/20">
+                <CircleCheck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <CardTitle className="text-lg font-medium text-indigo-900 dark:text-indigo-100">
+                  Avg. Resolution
+                </CardTitle>
+                <CardDescription className="text-indigo-800/80 dark:text-indigo-200/80">
+                  1.8 days per case
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+      </motion.div>
+    </div>
+  )
+}

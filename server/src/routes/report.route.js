@@ -1,0 +1,64 @@
+import express from "express"
+
+import {
+  changeReportStatus,
+  createReport,
+  deleteReport,
+  getAllReports,
+  getCriticalReports,
+  getOfficerReports,
+  getReportById,
+  getReportsByStatus,
+  getReportsByUser,
+  getReportsOfficial,
+  submitFeedback,
+  updateReportDynamic,
+} from "../controllers/report.controller.js"
+import upload from "../middleware/multer.js"
+
+const router = express.Router()
+
+// Submit a report to the database => passed
+router.post(
+  "/",
+  upload.fields([
+    { name: "images", maxCount: 4 },
+    { name: "video", maxCount: 1 },
+  ]),
+  createReport
+)
+
+//get all reports for the admin
+router.get("/admin", getAllReports)
+
+//! Get all the reports that is assigned to the officer for the table formate => don't touch
+router.get("/assign/officer/:id", getReportsOfficial)
+
+//Get all the reports based on status
+router.get("/status/:status", getReportsByStatus)
+
+//Get a single report by Id  => passed
+router.get("/:id", getReportById)
+
+//Get reports for a specific user for the reporter => passed
+router.get("/user/:id", getReportsByUser)
+
+//Get all reports that is assigned to the officer
+router.get("/officer/:officerId", getOfficerReports)
+
+//Submit a feedback to the report => passed
+router.post("/feedback/:id", submitFeedback)
+
+//Get all critical reports
+router.get("/critical/:officialId", getCriticalReports)
+
+//Update a report by Id => only for the admin and officials => passed
+router.patch("/:id", updateReportDynamic)
+
+//Update the status of the report resolve, inProgress or rejected => passed
+router.put("/status/:id", changeReportStatus)
+
+//Delete a report by Id => passed
+router.delete("/:id", deleteReport)
+
+export default router

@@ -1,0 +1,326 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(uuid())
+  username       String
+  email          String?  @unique
+  password       String?
+  profilePicture String?
+  googleId       String?  @unique
+  telegramId     String?  @unique
+  role           Role     @default(CITIZEN)
+  isVerified     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  //Reset
+  resetPasswordToken  String?
+  resetPasswordExpire DateTime?
+
+  // Relationships
+  notificationsReceived Notification[] @relation("NotificationRecipient")
+  notificationsSent     Notification[] @relation("NotificationSender")
+
+  // Region assignment (officials only)
+  regionId String?
+  region   Region? @relation(fields: [regionId], references: [id])
+
+  reportsSubmitted        Report[] @relation("Report_reporterId") // reports created by user
+  reportsAssignedToMe     Report[] @relation("AssignedReports_officer") // reports assigned to official
+  reportsAssignedToWorker Report[] @relation("AssignedReports_worker")
+
+  Message         Message[]
+  ParticipantA    Conversation[] @relation("ParticipantA")
+  ParticipantB    Conversation[] @relation("ParticipantB")
+  ratingsGiven    Rating[]       @relation("RatingsGiven")
+  ratingsReceived Rating[]       @relation("RatingsReceived")
+  ActivityLog     ActivityLog[]
+  Report          Report[]
+}
+
+model OTPVerification {
+  id        String   @id @default(uuid())
+  email     String
+  otp       String
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  recipient   User             @relation("NotificationRecipient", fields: [recipientId], references: [id])
+  recipientId String
+  type        NotificationType
+  message     String
+  metadata    Json?
+  isRead      Boolean          @default(false)
+  createdBy   User?            @relation("NotificationSender", fields: [createdById], references: [id])
+  createdById String?
+  createdAt   DateTime         @default(now())
+
+  @@index([recipientId])
+  @@index([isRead])
+}
+
+model Report {
+  id                 String        @id @default(uuid())
+  title              String
+  description        String
+  imageUrls          String[]
+  videoUrl           String?
+  status             ReportStatus  @default(PENDING)
+  severity           SeverityLevel @default(MEDIUM)
+  spamScore          Float?        @default(0.0)
+  confidenceScore    Float?        @default(0.0)
+  isPublic           Boolean?      @default(true)
+  toxicityScore      Float?        @default(0.0)
+  resolutionNote     String?
+  resolvedAt         DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  isAnonymous        Boolean       @default(false)
+  tags               String[]
+  locationId         String        @unique
+  reporterId         String
+  regionId           String?
+  userId             String?
+  assignedToId       String?
+  assignedToWorkerId String?
+  rejectionReason    String?
+  rejectedAt         DateTime?
+
+  // New category relation
+  categoryId String
+  category   ReportCategory @relation(fields: [categoryId], references: [id])
+
+  location               Location  @relation(fields: [locationId], references: [id])
+  reporter               User      @relation("Report_reporterId", fields: [reporterId], references: [id])
+  assignedTo             User?     @relation("AssignedReports_officer", fields: [assignedToId], references: [id])
+  AssignedReports_worker User?     @relation("AssignedReports_worker", fields: [assignedToWorkerId], references: [id])
+  feedback               Feedback?
+  Region                 Region?   @relation(fields: [regionId], references: [id])
+  User                   User?     @relation(fields: [userId], references: [id])
+}
+
+model ReportCategory {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  icon        String?
+  color       String?
+  createdAt   DateTime @default(now())
+
+  reports Report[]
+}
+
+model Location {
+  id        String  @id @default(uuid())
+  latitude  Float
+  longitude Float
+  address   String?
+  city      String?
+  region    String?
+
+  report Report?
+}
+
+model Feedback {
+  id String @id @default(uuid())
+
+  rating   Int
+  comment  String?
+  report   Report  @relation(fields: [reportId], references: [id])
+  reportId String  @unique
+
+  createdAt DateTime @default(now())
+}
+
+model Conversation {
+  id String @id @default(uuid())
+
+  // A conversation always has exactly 2 participants
+  participantAId String
+  participantBId String
+  participantA   User   @relation("ParticipantA", fields: [participantAId], references: [id])
+  participantB   User   @relation("ParticipantB", fields: [participantBId], references: [id])
+
+  messages  Message[] @relation("ConversationMessages")
+  updatedAt DateTime  @updatedAt
+  createdAt DateTime  @default(now())
+  userId    String?
+
+  @@unique([participantAId, participantBId]) // prevents duplicates
+  @@index([participantAId, participantBId])
+  @@index([updatedAt])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation("ConversationMessages", fields: [conversationId], references: [id])
+
+  senderId String
+  sender   User   @relation(fields: [senderId], references: [id])
+
+  type          MessageType @default(TEXT)
+  content       String?
+  attachmentUrl String?
+
+  // Delivery & read tracking
+  isDelivered Boolean   @default(false)
+  deliveredAt DateTime?
+  isRead      Boolean   @default(false)
+  readAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([conversationId, createdAt])
+}
+
+model SystemPolicy {
+  id          String  @id @default(uuid())
+  role        Role    @unique
+  permissions Json    @default("{}")
+  description String?
+  isActive    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Rating {
+  id        String   @id @default(uuid())
+  score     Int
+  comment   String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  ratedById String
+  ratedBy   User   @relation("RatingsGiven", fields: [ratedById], references: [id])
+
+  officialId String
+  official   User   @relation("RatingsReceived", fields: [officialId], references: [id])
+}
+
+model ActivityLog {
+  id String @id @default(uuid())
+
+  // Who did the action
+  actorId   String?
+  actorName String?
+  actorRole ActivityRole
+
+  // What action was performed
+  action ActivityAction
+
+  // What was affected
+  targetType  TargetType
+  targetId    String?
+  targetLabel String?
+
+  // Summary + metadata
+  description String
+  meta        Json?
+
+  createdAt DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id])
+}
+
+model Region {
+  id      String   @id @default(uuid())
+  name    String
+  polygon Json // GeoJSON Polygon of the region
+  users   User[] // Users assigned to this region (usually officials)
+  reports Report[] // Reports located in this region
+}
+
+enum ActivityRole {
+  USER
+  ADMIN
+  OFFICIAL
+  SYSTEM
+}
+
+enum ActivityAction {
+  LOGIN
+  LOGOUT
+  REPORT_SUBMITTED
+  REPORT_UPDATED
+  STATUS_CHANGED
+  REPORT_ASSIGNED
+  REPORT_VERIFIED
+  AI_TRANSCRIBED
+  AI_PRIORITY_SET
+  AI_SPAM_DETECTED
+  BACKUP_CREATED
+  SYSTEM_RESTORED
+  USER_UPDATED
+  USER_BANNED
+  SETTING_CHANGED
+  COMMENT_ADDED
+  COMMENT_REMOVED
+  REPORT_RESOLVED
+  REPORT_REOPENED
+  EXPORT_LOGS
+  DELETE_REPORT
+}
+
+enum TargetType {
+  REPORT
+  USER
+  COMMENT
+  SYSTEM
+  VOICE
+  BACKUP
+  SETTING
+}
+
+enum NotificationType {
+  NEW_REPORT
+  STATUS_UPDATED
+  ASSIGNED_TO_YOU
+  COMMENT_ON_REPORT
+  SYSTEM_ALERT
+  WORK_TO_COMPLETE
+}
+
+enum Role {
+  CITIZEN
+  WORKER
+  OFFICER
+  ADMIN
+}
+
+enum ReportStatus {
+  PENDING
+  NEEDS_MORE_INFO
+  VERIFIED
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
+}
+
+enum SeverityLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  VIDEO
+  FILE
+}
