@@ -25,12 +25,14 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useRouter } from "next/navigation"
 import { SignedOut } from "@/services/auth"
-import { useDispatch } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { signOutUser } from "@/store/slices/userSlice"
+import { RootState } from "@/store"
 
 export function Header() {
   const router = useRouter()
   const dispatch = useDispatch()
+  const { user } = useSelector((state: RootState) => state.user)
 
   const handleSignOut = async () => {
     try {
@@ -45,7 +47,7 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-40 flex h-[74px] items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6">
+    <header className="sticky top-0 z-[9999] flex h-[74px] items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6">
       <div className="flex items-center gap-4">
         <SidebarTrigger className="w-8 h-8 hover:bg-accent hover:text-accent-foreground rounded-md p-1.5 transition-colors">
           <Menu className="w-5 h-5" />
@@ -53,7 +55,9 @@ export function Header() {
         <div className="items-center hidden gap-2 md:flex">
           <h1 className="text-lg font-semibold tracking-tight">
             Welcome,{" "}
-            <span className="font-medium text-green-600 ">Officer Dawit</span>
+            <span className="font-medium text-green-600 ">
+              Officer {user?.user?.username}
+            </span>
           </h1>
         </div>
       </div>
@@ -103,10 +107,10 @@ export function Header() {
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">
-                  Officer Dawit
+                  Officer {user?.user?.username}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  d.mekonnen@city.gov
+                  {user?.user?.email}
                 </p>
               </div>
             </DropdownMenuLabel>

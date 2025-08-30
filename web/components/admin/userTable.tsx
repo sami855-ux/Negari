@@ -303,18 +303,15 @@ export function UserTable({
         const isCitizen = user.role === Role.CITIZEN
         return (
           <div className="flex justify-end gap-2">
-            {isCitizen && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push(`/admin/users/${row.original.id}`)}
-                className="bg-transparent text-text-primary hover:bg-muted border-border-line"
-                aria-label={`View reports by ${user.username}`}
-              >
-                <Eye className="w-4 h-4 mr-1" />
-                <span className="hidden md:inline">Reports</span>
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push(`/admin/users/${row.original.id}`)}
+              className="bg-transparent text-text-primary hover:bg-muted border-border-line"
+              aria-label={`View reports by ${user.username}`}
+            >
+              <Eye className="w-4 h-4 mr-1" />
+            </Button>
             <Button
               variant="default"
               size="sm"

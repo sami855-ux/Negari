@@ -1,541 +1,805 @@
 "use client"
+
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import dynamic from "next/dynamic"
 import { format } from "date-fns"
 import {
   User,
   MapPin,
   Trash2,
-  CheckCircle2,
+  Edit3,
+  Shield,
+  Mail,
+  Calendar,
   AlertCircle,
+  CheckCircle2,
   Clock,
-  MessageSquare,
   Star,
-  Info,
-  Hourglass,
   ArrowLeft,
   Loader2,
-  ShieldAlert,
-  AlertTriangle,
-  MailWarning,
-  Gauge,
+  Map,
+  Building2,
+  UserCog,
+  Send,
+  Eye,
+  EyeOff,
   ChevronDown,
-  Compass,
+  MoreVertical,
+  BadgeCheck,
+  MailWarning,
   Landmark,
+  Phone,
+  Globe,
+  MapPinned,
 } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardContent,
-  CardFooter,
 } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Progress } from "@/components/ui/progress"
+import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Progress } from "@/components/ui/progress"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
-import { StaticLocationMap } from "@/components/StaticLocationMap"
-import useGetAllReports from "@/hooks/useGetAllReports"
-import { DeleteConfirmationModal } from "@/components/DeleteModal"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import RegionAssignmentDialog from "@/components/official/RegionMap"
+import { axiosInstance } from "@/services/auth"
+import LoadingSpinner from "@/components/LoadingSpinner"
+import { getSingleUser } from "@/services/getUsers"
+import { useSelector } from "react-redux"
+import { RootState } from "@/store"
+import toast from "react-hot-toast"
+import { useQuery } from "@tanstack/react-query"
+import { getAllRegion } from "@/services/region"
 
-const statusColors = {
-  PENDING: "bg-yellow-100 text-yellow-800",
-  IN_PROGRESS: "bg-blue-100 text-blue-800",
-  RESOLVED: "bg-green-100 text-green-800",
-  REJECTED: "bg-red-100 text-red-800",
+// Define TypeScript interfaces
+interface Region {
+  id: string
+  name: string
+  code: string
+  center: [number, number]
+  reports: number
 }
 
-const severityColors = {
-  LOW: "bg-green-100 text-green-800",
-  MEDIUM: "bg-yellow-100 text-yellow-800",
-  HIGH: "bg-orange-100 text-orange-800",
-  CRITICAL: "bg-red-100 text-red-800",
+interface UserData {
+  id: string
+  username: string
+  email: string
+  profilePicture: string | null
+  role: string
+  isVerified: boolean
+  createdAt: string
+  regionId: string | null
+  region: Region | null
+  reportsSubmitted: any[]
+  reportsAssignedToMe: any[]
+  reportsAssignedToWorker: any[]
 }
 
-const statusIcons = {
-  PENDING: <Clock className="w-4 h-4" />,
-  IN_PROGRESS: <AlertCircle className="w-4 h-4" />,
-  RESOLVED: <CheckCircle2 className="w-4 h-4" />,
-  REJECTED: <AlertCircle className="w-4 h-4" />,
+// Mock reports data
+const mockReports = [
+  {
+    id: 1,
+    title: "Pothole on Main Street",
+    description: "Large pothole causing traffic issues",
+    status: "urgent",
+    category: "Infrastructure",
+    location: [9.012, 38.799],
+    assignedTo: "John Smith",
+    createdAt: "2024-01-15",
+    priority: "high",
+  },
+  {
+    id: 2,
+    title: "Broken Street Light",
+    description: "Street light not working on Oak Avenue",
+    status: "pending",
+    category: "Utilities",
+    location: [9.015, 38.756],
+    assignedTo: "Sarah Johnson",
+    createdAt: "2024-01-14",
+    priority: "medium",
+  },
+]
+
+function featureToPolygon(feature: any) {
+  if (
+    feature.type === "Feature" &&
+    feature.geometry &&
+    feature.geometry.type === "Polygon"
+  ) {
+    return {
+      type: feature.geometry.type,
+      coordinates: feature.geometry.coordinates,
+    }
+  } else {
+    throw new Error("Invalid feature: must be a Polygon Feature")
+  }
 }
 
-const getScoreColor = (score) => {
-  if (!score) return "bg-gray-200"
-  if (score >= 0.8) return "bg-red-500"
-  if (score >= 0.5) return "bg-orange-500"
-  if (score >= 0.3) return "bg-yellow-500"
-  return "bg-green-500"
-}
-
-const getScoreIcon = (score, type) => {
-  if (score >= 0.8) return <ShieldAlert className="w-5 h-5 text-red-600" />
-  if (score >= 0.5) return <AlertTriangle className="w-5 h-5 text-orange-500" />
-  if (type === "spam")
-    return <MailWarning className="w-5 h-5 text-yellow-500" />
-  return <Gauge className="w-5 h-5 text-green-500" />
-}
-
-export default function UserReportsPage({ params }) {
+export default function UserProfilePage({ params }) {
   const router = useRouter()
-  const { isLoading, reports } = useGetAllReports()
-  const [userReports, setUserReports] = useState([])
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [reportToDelete, setReportToDelete] = useState(null)
-  const [expandedReport, setExpandedReport] = useState(null)
+  const { user } = useSelector((store: RootState) => store.user)
+
+  
+
+
+  const [userData, setUserData] = useState<UserData | null>(null)
+
+  const [isAssignRegionDialogOpen, setIsAssignRegionDialogOpen] =
+    useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editedUser, setEditedUser] = useState<Partial<UserData>>({})
+  const [activeTab, setActiveTab] = useState("overview")
+  const [isLoading, setIsLoading] = useState(false)
+  const [isUserLoading, setIsUserLoading] = useState(true)
 
   useEffect(() => {
-    if (reports?.length) {
-      const matchedReports = reports.filter(
-        (r) => r.reporterId === params.userId
-      )
-      setUserReports(matchedReports)
+    const fetchUser = async () => {
+      try {
+        setIsUserLoading(true)
+        const res = await getSingleUser(params.userId)
+
+        if (res && res.user) {
+          setUserData(res.user)
+          setEditedUser(res.user)
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error)
+      } finally {
+        setIsUserLoading(false)
+      }
     }
-  }, [reports, params.userId])
 
-  const toggleReportExpansion = (reportId) => {
-    setExpandedReport(expandedReport === reportId ? null : reportId)
+    fetchUser()
+  }, [params.userId])
+
+  const handleSaveEdit = () => {
+    // setUserData((prev) => ({ ...prev, ...editedUser }))
+    // setIsEditing(false)
   }
 
-  const handleDeleteClick = (report) => {
-    setReportToDelete(report)
-    setIsModalOpen(true)
+  const handleDeleteUser = () => {
+    console.log("Deleting user:")
+    setIsDeleteDialogOpen(false)
+    router.push("/admin/users")
   }
 
-  const handleDeleteConfirm = () => {
-    console.log("Deleting report:", reportToDelete.id)
-    // Implement delete logic here
-    setIsModalOpen(false)
-    setReportToDelete(null)
+  const getRoleBadgeVariant = (role: string) => {
+    switch (role) {
+      case "ADMIN":
+        return "destructive"
+      case "OFFICER":
+        return "default"
+      case "WORKER":
+        return "secondary"
+      default:
+        return "outline"
+    }
   }
 
-  if (isLoading) {
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "resolved":
+        return <CheckCircle2 className="w-4 h-4" />
+      case "urgent":
+        return <AlertCircle className="w-4 h-4" />
+      case "pending":
+        return <Clock className="w-4 h-4" />
+      default:
+        return <Clock className="w-4 h-4" />
+    }
+  }
+
+  // Handle region assignment
+  const handleRegionAssign = async (customGeojson: any) => {
+    setIsLoading(true)
+    try {
+      const payload = {
+        polygon: featureToPolygon(customGeojson),
+        name: "New Region",
+        officialId: user?.id || "e25166d2-20bd-465e-b4b4-4afddbcfe0d7",
+      }
+
+      const response = await axiosInstance.post(
+        "/user/assign-official",
+        payload
+      )
+
+      if (response.data.success) {
+        toast.success(response.data.message || "Region assigned successfully")
+      }
+    } catch (error: any) {
+      console.error(
+        "Error assigning region:",
+        error.response?.data || error.message
+      )
+      // Show error notification
+      toast.error(error.response?.data.message || "Error assigning region")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isUserLoading) {
     return (
-      <div className="flex items-center justify-center h-[50vh]">
-        <Loader2 className="mr-2 animate-spin" size={33} />
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner size={8} color="text-blue-600" />
       </div>
     )
   }
 
-  if (!userReports.length) {
+  if (!userData) {
     return (
-      <div className="flex items-center justify-center h-[50vh]">
-        <div className="text-center">
-          <p className="text-lg font-medium">No reports found for this user</p>
-          <Button
-            variant="outline"
-            className="mt-4"
-            onClick={() => router.back()}
-          >
-            Go Back
-          </Button>
-        </div>
+      <div className="flex items-center justify-center h-full">
+        <p className="text-gray-500">User not found</p>
       </div>
     )
   }
 
   return (
-    <>
-      <div className="container px-4 pt-4 pb-8 mx-auto rounded-md bg-card-background">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger
-              asChild
-              className="p-1 rounded-md hover:bg-gray-200"
-              onClick={() => router.back()}
-            >
-              <ArrowLeft size={30} className="cursor-pointer" />
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Go back</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+    <div className="container py-6 mx-auto space-y-6">
+      {/* Header with back button */}
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-7 w-7" />
+        </Button>
+        <h1 className="text-2xl font-bold tracking-tight text-gray-800">
+          User Profile
+        </h1>
+      </div>
 
-        <div className="my-6">
-          <section className="flex gap-3">
-            <User size={30} />
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">User Reports</h1>
-              <p className="text-gray-600 py-2 font-jakarta text-[15px]">
-                Showing all reports submitted by{" "}
-                {userReports[0]?.reporter?.username || "this user"}
-              </p>
-            </div>
-          </section>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Left sidebar - User info */}
+        <div className="space-y-6 lg:col-span-1">
+          <Card>
+            <CardHeader className="items-center text-center">
+              <Avatar className="w-24 h-24 mb-4">
+                <AvatarImage src={userData.profilePicture || ""} />
+                <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
+                  {userData.username.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <CardTitle className="flex items-center justify-center gap-2">
+                {userData.username}
+                {userData.isVerified && (
+                  <BadgeCheck className="w-5 h-5 text-blue-500" />
+                )}
+              </CardTitle>
+              <CardDescription className="font-jakarta">
+                {userData.email}
+              </CardDescription>
+              <div className="flex justify-center">
+                <Badge
+                  variant={getRoleBadgeVariant(userData.role)}
+                  className="font-jakarta"
+                >
+                  {userData.role}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Joined</span>
+                <span className="text-sm text-muted-foreground">
+                  {format(new Date(userData.createdAt), "MMM dd, yyyy")}
+                </span>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">Admin Privileges</span>
+                  <Switch
+                    checked={userData.role === "ADMIN"}
+                    disabled
+                    className="ml-auto data-[state=checked]:bg-blue-900"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <MailWarning className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">Email Verified</span>
+                  <Switch
+                    checked={userData.isVerified}
+                    disabled
+                    className="ml-auto"
+                  />
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-2">
+              <Button
+                variant="destructive"
+                className="w-full"
+                onClick={() => setIsDeleteDialogOpen(true)}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete User
+              </Button>
+            </CardFooter>
+          </Card>
+
+          {/* Region Assignment Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPinned className="w-5 h-5" />
+                Region Assignment
+              </CardTitle>
+              <CardDescription>
+                {userData.region
+                  ? `Assigned to ${userData.region.name}`
+                  : "No region assigned"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {userData.region ? (
+                <div className="p-3 space-y-2 rounded-lg bg-muted">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-4 h-4" />
+                    <span className="font-medium">{userData.region.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">Reports in region:</span>
+                    <Badge variant="outline">{userData.region.name}</Badge>
+                  </div>
+                </div>
+              ) : (
+                <div className="py-4 text-center text-muted-foreground">
+                  <Map className="w-8 h-8 mx-auto mb-2" />
+                  {userData.role === "ADMIN" ||
+                  userData.role === "CITIZEN" ||
+                  userData.role === "WORKER" ? (
+                    <p>
+                      {`${userData.role}`.charAt(0).toUpperCase() +
+                        `${userData.role}`.slice(1).toLowerCase()}{" "}
+                      are not assigned to a region.
+                    </p>
+                  ) : (
+                    <p>This user has no region assigned.</p>
+                  )}
+                </div>
+              )}
+            </CardContent>
+            <CardFooter>
+              <Button
+                className="w-full"
+                onClick={() => setIsAssignRegionDialogOpen(true)}
+                disabled={
+                  userData.role === "ADMIN" ||
+                  userData.role === "CITIZEN" ||
+                  userData.role === "WORKER"
+                }
+              >
+                <MapPin className="w-4 h-4 mr-2" />
+                {userData.region ? "Change Region" : "Assign Region"}
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
 
-        <div className="space-y-6">
-          {userReports.map((report) => (
-            <Card
-              key={report.id}
-              className="relative overflow-hidden border-gray-200 shadow-sm"
-            >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-lg">{report.title}</CardTitle>
-                    <div className="flex items-center mt-1 text-sm text-gray-500">
-                      <span>
-                        {format(
-                          new Date(report.createdAt),
-                          "MMM dd, yyyy h:mm a"
-                        )}
-                      </span>
-                      <span className="mx-2">•</span>
-                      <span>
-                        {report.isAnonymous
-                          ? "Anonymous"
-                          : report.reporter?.username}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Badge className={statusColors[report.status]}>
-                      {statusIcons[report.status]}
-                      <span className="ml-1">
-                        {report.status.replace("_", " ")}
-                      </span>
-                    </Badge>
-                    <Badge className={severityColors[report.severity]}>
-                      {report.severity}
-                    </Badge>
-                  </div>
-                </div>
-              </CardHeader>
+        {/* Main content */}
+        <div className="space-y-6 lg:col-span-2">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid grid-cols-3 mb-4 bg-white">
+              <TabsTrigger
+                value="overview"
+                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-colors"
+              >
+                Overview
+              </TabsTrigger>
+              <TabsTrigger
+                value="reports"
+                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-colors"
+              >
+                Reports
+              </TabsTrigger>
+              <TabsTrigger
+                value="activity"
+                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-colors"
+              >
+                Activity
+              </TabsTrigger>
+            </TabsList>
 
-              <CardContent className="pt-0">
-                <div className="flex items-center justify-between">
-                  <p className="text-gray-700 line-clamp-2">
-                    {report.description}
-                  </p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleReportExpansion(report.id)}
-                    className="text-primary hover:bg-transparent"
-                  >
-                    {expandedReport === report.id ? "Show less" : "Show more"}
-                    <ChevronDown
-                      className={`ml-1 h-4 w-4 transition-transform ${
-                        expandedReport === report.id ? "rotate-180" : ""
-                      }`}
-                    />
-                  </Button>
-                </div>
-
-                {expandedReport === report.id && (
-                  <div className="mt-4 space-y-6">
-                    <Separator />
-
-                    {/* AI Analysis Section */}
-                    {report.status === "PENDING" && (
-                      <div className="grid grid-cols-1 gap-4 p-4 rounded-lg bg-blue-50 md:grid-cols-2">
-                        <div className="p-3 bg-white rounded-lg">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              {getScoreIcon(report.spamScore, "spam")}
-                              <h3 className="font-medium">Spam Score</h3>
-                            </div>
-                            <span
-                              className={`px-2 py-1 text-xs rounded-full ${getScoreColor(
-                                report.spamScore
-                              )} text-white`}
-                            >
-                              {(report.spamScore * 100).toFixed(0)}%
-                            </span>
-                          </div>
-                          <Progress
-                            value={report.spamScore * 100}
-                            className={`h-2 ${getScoreColor(report.spamScore)}`}
-                          />
-                        </div>
-
-                        <div className="p-3 bg-white rounded-lg">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              {getScoreIcon(report.confidenceScore)}
-                              <h3 className="font-medium">Confidence Score</h3>
-                            </div>
-                            <span
-                              className={`px-2 py-1 text-xs rounded-full ${getScoreColor(
-                                report.confidenceScore
-                              )} text-white`}
-                            >
-                              {(report.confidenceScore * 100).toFixed(0)}%
-                            </span>
-                          </div>
-                          <Progress
-                            value={report.confidenceScore * 100}
-                            className={`h-2 ${getScoreColor(
-                              report.confidenceScore
-                            )}`}
-                          />
-                        </div>
-
-                        <div className="p-3 bg-white rounded-lg">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              {getScoreIcon(report.toxicityScore)}
-                              <h3 className="font-medium">Toxicity Score</h3>
-                            </div>
-                            <span
-                              className={`px-2 py-1 text-xs rounded-full ${getScoreColor(
-                                report.toxicityScore
-                              )} text-white`}
-                            >
-                              {(report.toxicityScore * 100).toFixed(0)}%
-                            </span>
-                          </div>
-                          <Progress
-                            value={report.toxicityScore * 100}
-                            className={`h-2 ${getScoreColor(
-                              report.toxicityScore
-                            )}`}
-                          />
-                        </div>
-
-                        <div className="p-3 bg-white rounded-lg">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <Badge
-                                variant={
-                                  report.isPublic ? "default" : "secondary"
-                                }
-                              >
-                                {report.isPublic ? "Public" : "Private"}
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Media Section */}
-                    {report.imageUrls.length > 0 && (
-                      <div>
-                        <h3 className="mb-2 font-medium">Media</h3>
-                        <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-                          {report.imageUrls.map((url, index) => (
-                            <div
-                              key={index}
-                              className="relative overflow-hidden rounded-lg aspect-square"
-                            >
-                              <img
-                                src={url}
-                                alt={`Report image ${index + 1}`}
-                                className="object-cover w-full h-full"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {report.videoUrl && (
-                      <div className="mt-4">
-                        <video controls className="w-full rounded-lg">
-                          <source src={report.videoUrl} type="video/mp4" />
-                          Your browser does not support the video tag.
-                        </video>
-                      </div>
-                    )}
-
-                    {/* Tags Section */}
-                    {report.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {report.tags.map((tag) => (
-                          <Badge key={tag} variant="outline">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Location Section */}
-                    <div className="space-y-4">
-                      <h3 className="font-medium">Location</h3>
-                      <StaticLocationMap
-                        latitude={report.location.latitude}
-                        longitude={report.location.longitude}
-                        address={report.location.address}
-                      />
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div className="flex items-start gap-2">
-                          <Compass className="w-5 h-5 mt-0.5 text-blue-600" />
-                          <div>
-                            <p className="text-sm font-medium">Coordinates</p>
-                            <p className="text-sm text-gray-600">
-                              {report.location.latitude.toFixed(6)},{" "}
-                              {report.location.longitude.toFixed(6)}
-                            </p>
-                          </div>
-                        </div>
-
-                        {report.location.address && (
-                          <div className="flex items-start gap-2">
-                            <Landmark className="w-5 h-5 mt-0.5 text-blue-600" />
-                            <div>
-                              <p className="text-sm font-medium">Address</p>
-                              <p className="text-sm text-gray-600">
-                                {report.location.address}
-                              </p>
-                              {(report.location.city ||
-                                report.location.region) && (
-                                <p className="text-sm text-gray-600">
-                                  {report.location.city}
-                                  {report.location.region
-                                    ? `, ${report.location.region}`
-                                    : ""}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Status Details Section */}
-                    <div className="p-4 space-y-4 rounded-lg bg-blue-50">
-                      <h3 className="font-medium">Status Details</h3>
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div>
-                          <p className="text-sm text-gray-500">
-                            Current Status
-                          </p>
-                          <Badge
-                            className={`mt-1 ${statusColors[report.status]}`}
-                          >
-                            {statusIcons[report.status]}
-                            <span className="ml-1">
-                              {report.status.replace("_", " ")}
-                            </span>
-                          </Badge>
-                        </div>
-
-                        {report.assignedTo && (
-                          <div>
-                            <p className="text-sm text-gray-500">Assigned To</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Avatar className="w-6 h-6">
-                                <AvatarImage
-                                  src={report.assignedTo.profilePicture}
-                                />
-                                <AvatarFallback>
-                                  {report.assignedTo.username.charAt(0)}
-                                </AvatarFallback>
-                              </Avatar>
-                              <p className="font-medium">
-                                {report.assignedTo.username}
-                              </p>
-                            </div>
-                          </div>
-                        )}
-
-                        {report.resolvedAt && (
-                          <div>
-                            <p className="text-sm text-gray-500">Resolved At</p>
-                            <p>
-                              {format(
-                                new Date(report.resolvedAt),
-                                "MMM dd, yyyy h:mm a"
-                              )}
-                            </p>
-                          </div>
-                        )}
-
-                        {report.rejectedAt && (
-                          <div>
-                            <p className="text-sm text-gray-500">Rejected At</p>
-                            <p>
-                              {format(
-                                new Date(report.rejectedAt),
-                                "MMM dd, yyyy h:mm a"
-                              )}
-                            </p>
-                          </div>
-                        )}
-
-                        {report.resolutionNote && (
-                          <div className="md:col-span-2">
-                            <p className="text-sm text-gray-500">
-                              Resolution Notes
-                            </p>
-                            <p className="p-3 mt-1 bg-white rounded-lg">
-                              {report.resolutionNote}
-                            </p>
-                          </div>
-                        )}
-
-                        {report.rejectionReason && (
-                          <div className="md:col-span-2">
-                            <p className="text-sm text-gray-500">
-                              Rejection Reason
-                            </p>
-                            <p className="p-3 mt-1 bg-white rounded-lg">
-                              {report.rejectionReason}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Feedback Section */}
-                    {report.feedback && (
-                      <div className="p-4 space-y-4 border-green-200 rounded-lg bg-green-50">
-                        <h3 className="font-medium text-green-800">Feedback</h3>
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-5 w-5 ${
-                                i < report.feedback.rating
-                                  ? "text-yellow-500 fill-yellow-500"
-                                  : "text-gray-300"
-                              }`}
-                            />
-                          ))}
-                          <span className="ml-2 text-sm text-gray-500">
-                            {format(
-                              new Date(report.feedback.createdAt),
-                              "MMM dd, yyyy"
-                            )}
-                          </span>
-                        </div>
-                        {report.feedback.comment && (
-                          <div className="p-3 bg-white rounded-lg">
-                            <p className="text-green-800">
-                              {report.feedback.comment}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Actions Section */}
-                    <div className="flex justify-end gap-2 pt-2">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        // onClick={() => handleDeleteClick(report)}
+            <TabsContent value="overview" className="space-y-4">
+              <Card className="border-blue-100">
+                <CardHeader className="bg-blue-100 border-b border-blue-200">
+                  <CardTitle className="text-gray-800">
+                    User Information
+                  </CardTitle>
+                  <CardDescription className="text-gray-600">
+                    Detailed information about the user account
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label
+                        htmlFor="username"
+                        className="font-medium text-gray-700"
                       >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Delete
-                      </Button>
+                        Username
+                      </Label>
+                      <Input
+                        id="username"
+                        value={editedUser.username || ""}
+                        onChange={(e) =>
+                          setEditedUser({
+                            ...editedUser,
+                            username: e.target.value,
+                          })
+                        }
+                        disabled={true}
+                        className="text-gray-900 border-gray-200 bg-gray-50"
+                      />
+                    </div>
+                    <div>
+                      <Label
+                        htmlFor="email"
+                        className="font-medium text-gray-700"
+                      >
+                        Email
+                      </Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={editedUser.email || ""}
+                        onChange={(e) =>
+                          setEditedUser({
+                            ...editedUser,
+                            email: e.target.value,
+                          })
+                        }
+                        disabled={true}
+                        className="text-gray-900 border-gray-200 bg-gray-50"
+                      />
                     </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label
+                        htmlFor="role"
+                        className="font-medium text-gray-700"
+                      >
+                        Role
+                      </Label>
+                      <Select
+                        value={editedUser.role || ""}
+                        onValueChange={(value) =>
+                          setEditedUser({ ...editedUser, role: value })
+                        }
+                        disabled={true}
+                      >
+                        <SelectTrigger className="text-gray-900 border-gray-200 bg-gray-50">
+                          <SelectValue placeholder="Select role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ADMIN">Admin</SelectItem>
+                          <SelectItem value="OFFICER">Officer</SelectItem>
+                          <SelectItem value="WORKER">Worker</SelectItem>
+                          <SelectItem value="CITIZEN">Citizen</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label
+                        htmlFor="region"
+                        className="font-medium text-gray-700"
+                      >
+                        Region
+                      </Label>
+                      <Input
+                        id="region"
+                        value={
+                          userData.region
+                            ? userData.region.name
+                            : "Not assigned"
+                        }
+                        disabled
+                        className="text-gray-900 border-gray-200 bg-gray-50"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label
+                      htmlFor="joined"
+                      className="font-medium text-gray-700"
+                    >
+                      Joined Date
+                    </Label>
+                    <Input
+                      id="joined"
+                      value={format(new Date(userData.createdAt), "PPpp")}
+                      disabled
+                      className="text-gray-900 border-gray-200 bg-gray-50"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-blue-100">
+                <CardHeader className="bg-blue-100 border-b border-blue-200">
+                  <CardTitle className="text-gray-800">Statistics</CardTitle>
+                  <CardDescription className="text-gray-600">
+                    User activity and report statistics
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    {userData.role === "CITIZEN" && (
+                      <div className="p-4 space-y-2 border border-blue-200 rounded-lg bg-blue-25">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-blue-800">
+                            Reports Submitted
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className="text-blue-800 bg-blue-100 border-blue-300"
+                          >
+                            {userData.reportsSubmitted.length}
+                          </Badge>
+                        </div>
+                        <Progress
+                          value={userData.reportsSubmitted.length * 10}
+                          className="h-2 bg-blue-100"
+                          indicatorClassName="bg-blue-500"
+                        />
+                      </div>
+                    )}
+
+                    {userData.role === "OFFICER" && (
+                      <div className="p-4 space-y-2 border border-blue-200 rounded-lg bg-blue-25">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-blue-800">
+                            Assigned Reports
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className="text-blue-800 bg-blue-100 border-blue-300"
+                          >
+                            {userData.reportsAssignedToMe.length}
+                          </Badge>
+                        </div>
+                        <Progress
+                          value={userData.reportsAssignedToMe.length * 10}
+                          className="h-2 bg-blue-100"
+                          indicatorClassName="bg-blue-500"
+                        />
+                      </div>
+                    )}
+
+                    {userData.role === "WORKER" && (
+                      <div className="col-span-2 p-4 space-y-2 border border-blue-200 rounded-lg bg-blue-25">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-blue-800">
+                            Worker Assignments
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className="text-blue-800 bg-blue-100 border-blue-300"
+                          >
+                            {userData.reportsAssignedToWorker.length}
+                          </Badge>
+                        </div>
+                        <Progress
+                          value={userData.reportsAssignedToWorker.length * 10}
+                          className="h-2 bg-blue-100"
+                          indicatorClassName="bg-blue-500"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="reports">
+              <Card>
+                <CardHeader>
+                  <CardTitle>User Reports</CardTitle>
+                  <CardDescription>
+                    Reports submitted by or assigned to this user
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {mockReports.length > 0 ? (
+                    <div className="space-y-4">
+                      {mockReports.map((report) => (
+                        <div
+                          key={report.id}
+                          className="flex items-center justify-between p-3 border rounded-lg"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`p-2 rounded-full ${
+                                report.status === "resolved"
+                                  ? "bg-green-100"
+                                  : report.status === "urgent"
+                                  ? "bg-red-100"
+                                  : "bg-yellow-100"
+                              }`}
+                            >
+                              {getStatusIcon(report.status)}
+                            </div>
+                            <div>
+                              <p className="font-medium">{report.title}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {report.category}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant={
+                                report.status === "resolved"
+                                  ? "default"
+                                  : report.status === "urgent"
+                                  ? "destructive"
+                                  : "secondary"
+                              }
+                            >
+                              {report.status}
+                            </Badge>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <MoreVertical className="w-4 h-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent>
+                                <DropdownMenuItem>
+                                  <Eye className="w-4 h-4 mr-2" />
+                                  View Details
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <Edit3 className="w-4 h-4 mr-2" />
+                                  Edit
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-8 text-center text-muted-foreground">
+                      <p>No reports found</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="activity">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                  <CardDescription>
+                    User's recent actions and events
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-blue-100 rounded-full">
+                        <UserCog className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">Account created</p>
+                        <p className="text-sm text-muted-foreground">
+                          {format(new Date(userData.createdAt), "PPpp")}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-green-100 rounded-full">
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">Email verified</p>
+                        <p className="text-sm text-muted-foreground">
+                          {userData.isVerified ? "Verified" : "Not verified"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {userData.region && (
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 bg-purple-100 rounded-full">
+                          <MapPin className="w-4 h-4 text-purple-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium">Region assigned</p>
+                          <p className="text-sm text-muted-foreground">
+                            Assigned to {userData.region.name} region
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
-    </>
+
+      {/* Region Assignment Dialog */}
+      <RegionAssignmentDialog
+        isOpen={isAssignRegionDialogOpen}
+        setIsOpen={setIsAssignRegionDialogOpen}
+        userData={userData}
+        onRegionAssign={handleRegionAssign}
+        isLoading={isLoading}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete {userData.username}'s account?
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteUser}>
+              Delete User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   )
 }

@@ -69,13 +69,15 @@ export const updateUser = async (req, res) => {
 }
 
 export const createRegionAndAssignOfficial = async (req, res) => {
+  console.log(req.body)
   const { name, polygon, officialId } = req.body
 
   // Validate input
   if (!name || !polygon || !officialId) {
-    return res
-      .status(400)
-      .json({ message: "Region name, polygon, and officialId are required." })
+    return res.status(400).json({
+      message: "Region name, polygon, and officialId are required.",
+      success: false,
+    })
   }
 
   try {
@@ -85,7 +87,9 @@ export const createRegionAndAssignOfficial = async (req, res) => {
     })
 
     if (!official || official.role !== "OFFICER") {
-      return res.status(400).json({ message: "User is not a valid official." })
+      return res
+        .status(400)
+        .json({ message: "User is not a valid official.", success: false })
     }
 
     // Step 2: Create Region
@@ -106,12 +110,44 @@ export const createRegionAndAssignOfficial = async (req, res) => {
     })
 
     return res.status(201).json({
-      message: `Region '${region.name}' created and assigned to official '${official.username}' successfully.`,
+      message: `Region  created and assigned to official '${official.username}' successfully.`,
       region,
       official: updatedOfficial,
+      success: true,
     })
   } catch (error) {
     console.error("Error in createRegionAndAssignOfficial:", error)
-    return res.status(500).json({ message: "Internal server error." })
+    return res
+      .status(500)
+      .json({ message: "Internal server error.", success: false })
+  }
+}
+
+export const getUserWithDetails = async (req, res) => {
+  try {
+    const { userId } = req.params
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        // Region
+        region: true,
+        // Reports
+        reportsSubmitted: true,
+        reportsAssignedToMe: true,
+        reportsAssignedToWorker: true,
+      },
+    })
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found", success: false })
+    }
+
+    res.json({ user, success: true })
+  } catch (error) {
+    console.error("Error fetching user:", error)
+    res
+      .status(500)
+      .json({ message: "Server error", error: error.message, success: false })
   }
 }

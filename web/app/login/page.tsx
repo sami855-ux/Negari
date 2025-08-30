@@ -60,8 +60,11 @@ export default function LoginPage() {
         dispatch(setUser(res.user))
         toast.success("Logged in successfully!")
 
-        router.push("/official")
-        reset()
+        console.log(res.user)
+        if (res.user.role === "ADMIN") router.push("/admin")
+        if (res.user.role === "OFFICER") router.push("/official")
+
+        // reset()
       } else {
         console.error("Sign in failed:", res.message)
         toast.error(res.message || "Failed to log in")
@@ -78,10 +81,10 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen">
       {/* Left side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
+      <div className="flex items-center justify-center w-full px-4 py-12 lg:w-1/2 sm:px-6 lg:px-8">
         <div className="w-full max-w-xl">
-          <Card className="w-full border-0 rounded-2xl overflow-hidden ">
-            <CardHeader className="space-y-2 pb-4">
+          <Card className="w-full overflow-hidden border-0 rounded-2xl ">
+            <CardHeader className="pb-4 space-y-2">
               <CardTitle className="text-2xl font-bold text-center text-green-700">
                 Welcome Back
               </CardTitle>
@@ -94,7 +97,7 @@ export default function LoginPage() {
               <div className="space-y-4">
                 <Button
                   variant="outline"
-                  className="w-full h-12 font-medium text-gray-700 transition-all duration-300 border-2 border-gray-200 bg-white  hover:shadow-md group"
+                  className="w-full h-12 font-medium text-gray-700 transition-all duration-300 bg-white border-2 border-gray-200 hover:shadow-md group"
                   type="button"
                   onClick={handleClickGoogle}
                 >
@@ -158,12 +161,12 @@ export default function LoginPage() {
                       id="email"
                       type="email"
                       autoComplete="email"
-                      className="h-12 transition-all duration-300 border-2 border-gray-200 outline-none focus:border-green-500 text-base rounded-xl bg-white"
+                      className="h-12 text-base transition-all duration-300 bg-white border-2 border-gray-200 outline-none focus:border-green-500 rounded-xl"
                       placeholder="Enter your email address"
                     />
                   </div>
                   {errors.email && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center">
+                    <p className="flex items-center mt-1 text-sm text-red-500">
                       {errors.email.message as string}
                     </p>
                   )}
@@ -197,12 +200,12 @@ export default function LoginPage() {
                       id="password"
                       type={showPassword ? "text" : "password"}
                       autoComplete="current-password"
-                      className="h-12 transition-all duration-300 border-2 border-gray-200 focus:border-green-500 rounded-xl bg-white  pr-10"
+                      className="h-12 pr-10 transition-all duration-300 bg-white border-2 border-gray-200 focus:border-green-500 rounded-xl"
                       placeholder="Enter your password"
                     />
                     <button
                       type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute text-gray-400 transform -translate-y-1/2 right-3 top-1/2 hover:text-gray-600"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? (
@@ -213,7 +216,7 @@ export default function LoginPage() {
                     </button>
                   </div>
                   {errors.password && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center">
+                    <p className="flex items-center mt-1 text-sm text-red-500">
                       {errors.password.message as string}
                     </p>
                   )}
@@ -222,11 +225,11 @@ export default function LoginPage() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-12 text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 transition-all duration-300 rounded-lg shadow-md hover:shadow-lg"
+                  className="w-full h-12 text-white transition-all duration-300 rounded-lg shadow-md bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 hover:shadow-lg"
                 >
                   {isLoading ? (
                     <span className="flex items-center justify-center gap-3">
-                      <Loader2 className="animate-spin w-5 h-5" />
+                      <Loader2 className="w-5 h-5 animate-spin" />
                       <span>Signing in...</span>
                     </span>
                   ) : (
@@ -237,7 +240,7 @@ export default function LoginPage() {
                 </Button>
               </form>
 
-              <p className="text-gray-600 text-center text-sm">
+              <p className="text-sm text-center text-gray-600">
                 Don't have an account?{" "}
                 <Link
                   href="/signup"
@@ -272,17 +275,17 @@ export default function LoginPage() {
       </div>
 
       {/* Right side - Green Info Panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-600 via-emerald-600 to-green-800 relative overflow-hidden">
+      <div className="relative hidden overflow-hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-600 via-emerald-600 to-green-800">
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
 
         {/* Abstract shapes */}
-        <div className="absolute top-20 left-20 w-64 h-64 bg-white/10 rounded-full blur-2xl"></div>
-        <div className="absolute bottom-20 right-20 w-64 h-64 bg-green-400/20 rounded-full blur-2xl"></div>
+        <div className="absolute w-64 h-64 rounded-full top-20 left-20 bg-white/10 blur-2xl"></div>
+        <div className="absolute w-64 h-64 rounded-full bottom-20 right-20 bg-green-400/20 blur-2xl"></div>
 
         {/* Content overlay */}
-        <div className="relative z-10 flex flex-col justify-center items-center text-center text-white px-16">
+        <div className="relative z-10 flex flex-col items-center justify-center px-16 text-center text-white">
           <div className="max-w-xl">
-            <h2 className="text-4xl font-extrabold mb-6 font-jakarta text-left">
+            <h2 className="mb-6 text-4xl font-extrabold text-left font-jakarta">
               Report Issues, Build Stronger Communities!
             </h2>
             <p className="text-[19px] text-white/90 mb-8 text-left font-jakarta">
@@ -294,14 +297,14 @@ export default function LoginPage() {
             {/* Feature list */}
             <div className="space-y-4 text-left">
               <div className="flex items-center">
-                <div className="flex-shrink-0 bg-white/20 p-2 rounded-lg mr-4">
+                <div className="flex-shrink-0 p-2 mr-4 rounded-lg bg-white/20">
                   <Shield className="w-5 h-5 text-white" />
                 </div>
                 <span className="font-jakarta">AI-powered spam protection</span>
               </div>
 
               <div className="flex items-center">
-                <div className="flex-shrink-0 bg-white/20 p-2 rounded-lg mr-4">
+                <div className="flex-shrink-0 p-2 mr-4 rounded-lg bg-white/20">
                   <Lock className="w-5 h-5 text-white" />
                 </div>
                 <span className="font-jakarta">
@@ -310,7 +313,7 @@ export default function LoginPage() {
               </div>
 
               <div className="flex items-center">
-                <div className="flex-shrink-0 bg-white/20 p-2 rounded-lg mr-4">
+                <div className="flex-shrink-0 p-2 mr-4 rounded-lg bg-white/20">
                   <Mail className="w-5 h-5 text-white" />
                 </div>
                 <span className="font-jakarta">

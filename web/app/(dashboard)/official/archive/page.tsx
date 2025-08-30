@@ -91,6 +91,9 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import useGetOfficerReports from "@/hooks/useOfficerReports"
 import { useRouter } from "next/navigation"
+import toast from "react-hot-toast"
+import { useSelector } from "react-redux"
+import { RootState } from "@/store"
 
 type ArchiveReport = {
   id: string
@@ -154,11 +157,15 @@ const formatStatus = (status: string): string => {
 
 export default function ReportArchive() {
   const router = useRouter()
+  // const x = useSelector((store: RootState) => store.user)
 
-  const { isLoading, reports: archivedData } = useGetOfficerReports(
-    "31cb47d9-9184-43e3-8a72-8a721c5560fe"
-  )
+  const {
+    isLoading,
+    reports: archivedData,
+    refetch,
+  } = useGetOfficerReports("31cb47d9-9184-43e3-8a72-8a721c5560fe")
 
+  const [isRefreshing, setIsRefreshing] = React.useState(false)
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -168,9 +175,21 @@ export default function ReportArchive() {
   const [rowSelection, setRowSelection] = React.useState({})
   const [globalFilter, setGlobalFilter] = React.useState("")
   const [reports, setReports] = React.useState<ArchiveReport[]>([])
-  const [selectedReport, setSelectedReport] =
-    React.useState<ArchiveReport | null>(null)
   const [activeTab, setActiveTab] = React.useState("all")
+
+  const refreshReport = async () => {
+    setIsRefreshing(true)
+    try {
+      await refetch?.()
+      toast.success("Report refreshed successfully!")
+    } catch {
+      toast.error("Error while refreshing report!")
+    } finally {
+      setTimeout(() => {
+        setIsRefreshing(false)
+      }, 500)
+    }
+  }
 
   React.useEffect(() => {
     if (!isLoading && archivedData) {
@@ -430,7 +449,6 @@ export default function ReportArchive() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-        <span className="ml-2 text-muted-foreground">Loading reports...</span>
       </div>
     )
   }
@@ -454,14 +472,20 @@ export default function ReportArchive() {
                   View and manage archived community reports across all statuses
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center">
                 <Button
+                  onClick={refreshReport}
                   variant="outline"
                   size="sm"
-                  className="gap-2 bg-transparent"
+                  disabled={isRefreshing}
+                  className="flex items-center gap-2 bg-transparent"
                 >
-                  <RefreshCw className="w-4 h-4" />
-                  Refresh
+                  <RefreshCw
+                    className={`h-4 w-4 transition-transform duration-500 ${
+                      isRefreshing ? "animate-spin" : ""
+                    }`}
+                  />
+                  {isRefreshing ? "Refreshing..." : "Refresh"}
                 </Button>
               </div>
             </div>

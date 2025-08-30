@@ -85,16 +85,16 @@ export default function Page() {
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="p-3 space-y-6 sm:p-6">
       {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 min-h-fit">
         {stats.map((stat) => (
           <Card
             key={stat.title}
-            className="border-green-100 hover:bg-green-50 hover:border-green-200"
+            className="transition-colors border-green-100 hover:bg-green-50 hover:border-green-200"
           >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-[15px] font-medium text-gray-700">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-medium text-gray-700 sm:text-base">
                 {stat.title}
               </CardTitle>
               <div className={`p-2 rounded-lg ${stat.bgColor}`}>
@@ -102,10 +102,10 @@ export default function Page() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-blue-900">
+              <div className="text-2xl font-bold text-blue-900 sm:text-3xl">
                 {stat.value}
               </div>
-              <p className="text-sm font-grotesk text-green-600 font-medium">
+              <p className="text-xs font-medium text-green-600 sm:text-sm">
                 {stat.change} from last week
               </p>
             </CardContent>
@@ -113,24 +113,27 @@ export default function Page() {
         ))}
       </div>
 
+      {/* Reports + Map */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Assigned Reports */}
         <Card className="border-green-100">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-gray-700">
-              <FileText className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base text-gray-700 sm:text-lg">
+              <FileText className="w-5 h-5" />
               Assigned Reports
             </CardTitle>
-            <CardDescription>Your current active assignments</CardDescription>
+            <CardDescription className="text-sm">
+              Your current active assignments
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {assignedReports.map((report) => (
               <div
                 key={report.id}
-                className="flex items-center justify-between p-4 rounded-lg border border-green-100 hover:bg-blue-50 transition-colors"
+                className="flex flex-col gap-3 p-4 transition-colors border border-green-100 rounded-lg sm:flex-row sm:items-center sm:justify-between hover:bg-blue-50"
               >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
+                <div className="flex-1 space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
                     <h4 className="font-medium text-gray-800">
                       {report.title}
                     </h4>
@@ -153,19 +156,19 @@ export default function Page() {
                       {report.priority}
                     </Badge>
                   </div>
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 sm:text-sm">
                     <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" color="green" />
+                      <MapPin className="w-3 h-3 text-green-600" />
                       {report.location}
                     </span>
-                    <span className="text-orange-400 font-semibold font-jakarta">
+                    <span className="font-semibold text-orange-500">
                       {report.time}
                     </span>
                   </div>
                 </div>
                 <Button
                   size="sm"
-                  className="bg-gradient-to-r from-green-500 to-green-600 px-4 font-jakarta  text-white"
+                  className="px-4 text-white bg-gradient-to-r from-green-500 to-green-600"
                 >
                   View
                 </Button>
@@ -177,25 +180,25 @@ export default function Page() {
         {/* Interactive Map Preview */}
         <Card className="border-green-100">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-gray-700">
-              <MapPin className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base text-gray-700 sm:text-lg">
+              <MapPin className="w-5 h-5" />
               Interactive Map
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm">
               Your patrol area and active incidents
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="aspect-video rounded-lg bg-gradient-to-br from-blue-100 to-green-100 flex items-center justify-center border border-blue-200">
-              <div className="text-center space-y-2">
-                <MapPin className="h-12 w-12 text-blue-600 mx-auto" />
-                <p className="text-gray-700 font-medium">
+            <div className="flex items-center justify-center border border-blue-200 rounded-lg aspect-video bg-gradient-to-br from-blue-100 to-green-100">
+              <div className="p-2 space-y-2 text-center">
+                <MapPin className="w-10 h-10 mx-auto text-blue-600 sm:h-12 sm:w-12" />
+                <p className="text-sm font-medium text-gray-700 sm:text-base">
                   Interactive Map View
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-xs text-gray-600 sm:text-sm">
                   3 active incidents in your area
                 </p>
-                <Button className="bg-gradient-to-r from-green-200 to-green-400 hover:from-green-300 hover:to-green-500 text-gray-800">
+                <Button className="text-sm text-gray-800 bg-gradient-to-r from-green-200 to-green-400 hover:from-green-300 hover:to-green-500">
                   Open Full Map
                 </Button>
               </div>
@@ -204,117 +207,125 @@ export default function Page() {
         </Card>
       </div>
 
+      {/* Bottom Section */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Personal Statistics */}
         <Card className="border-green-100">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-gray-700">
-              <TrendingUp className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base text-gray-700 sm:text-lg">
+              <TrendingUp className="w-5 h-5" />
               Personal Statistics
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-700">Cases Resolved</span>
-                <span className="font-medium text-gray-800">85%</span>
+            {[
+              { label: "Cases Resolved", value: 85 },
+              { label: "Response Time", value: 92 },
+              { label: "Citizen Satisfaction", value: 96 },
+            ].map((stat) => (
+              <div key={stat.label} className="space-y-1">
+                <div className="flex justify-between text-xs sm:text-sm">
+                  <span className="text-gray-700">{stat.label}</span>
+                  <span className="font-medium text-gray-800">
+                    {stat.value}%
+                  </span>
+                </div>
+                <Progress
+                  value={stat.value}
+                  className="h-2 [&>div]:bg-green-400"
+                />
               </div>
-              <Progress value={85} className="h-2 [&>div]:bg-green-400" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-700">Response Time</span>
-                <span className="font-medium text-gray-800">92%</span>
-              </div>
-              <Progress value={92} className="h-2 [&>div]:bg-green-400" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-700">Citizen Satisfaction</span>
-                <span className="font-medium text-gray-800">96%</span>
-              </div>
-              <Progress value={96} className="h-2 [&>div]:bg-green-400" />
-            </div>
+            ))}
           </CardContent>
         </Card>
 
         {/* High-Priority Queue */}
         <Card className="border-red-100 bg-red-50">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-700">
-              <AlertTriangle className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base text-red-700 sm:text-lg">
+              <AlertTriangle className="w-5 h-5" />
               High-Priority Queue
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="p-3 bg-white rounded-lg border border-red-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-800">Emergency Call</p>
-                  <p className="text-sm text-gray-600">Downtown Plaza</p>
+            {[
+              {
+                title: "Emergency Call",
+                location: "Downtown Plaza",
+                level: "URGENT",
+              },
+              {
+                title: "Traffic Accident",
+                location: "Highway 101",
+                level: "HIGH",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="p-3 bg-white border border-red-200 rounded-lg"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="font-medium text-gray-800">{item.title}</p>
+                    <p className="text-xs text-gray-600 sm:text-sm">
+                      {item.location}
+                    </p>
+                  </div>
+                  <Badge className="text-red-700 bg-red-200">
+                    {item.level}
+                  </Badge>
                 </div>
-                <Badge
-                  variant="destructive"
-                  className="bg-red-200 text-red-700"
-                >
-                  URGENT
-                </Badge>
               </div>
-            </div>
-            <div className="p-3 bg-white rounded-lg border border-red-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-800">Traffic Accident</p>
-                  <p className="text-sm text-gray-600">Highway 101</p>
-                </div>
-                <Badge
-                  variant="destructive"
-                  className="bg-red-200 text-red-700"
-                >
-                  HIGH
-                </Badge>
-              </div>
-            </div>
+            ))}
           </CardContent>
         </Card>
 
-        {/* Messages & Comments */}
+        {/* Messages */}
         <Card className="border-green-100">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-900">
-              <MessageSquare className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base text-green-900 sm:text-lg">
+              <MessageSquare className="w-5 h-5" />
               Recent Messages
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="p-3 bg-blue-50 rounded-lg">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-blue-200 rounded-full flex items-center justify-center">
-                  <Users className="h-4 w-4 text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">Dispatch</p>
-                  <p className="text-sm text-gray-700">
-                    New assignment available
-                  </p>
-                  <p className="text-xs text-gray-500">5 minutes ago</p>
+          <CardContent className="space-y-3">
+            {[
+              {
+                sender: "Dispatch",
+                text: "New assignment available",
+                time: "5 minutes ago",
+                color: "bg-blue-50",
+                iconBg: "bg-blue-200",
+                iconColor: "text-blue-600",
+              },
+              {
+                sender: "Citizen",
+                text: "Thank you for your help!",
+                time: "1 hour ago",
+                color: "bg-green-50",
+                iconBg: "bg-green-200",
+                iconColor: "text-gray-600",
+              },
+            ].map((msg) => (
+              <div key={msg.sender} className={`p-3 rounded-lg ${msg.color}`}>
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`w-8 h-8 ${msg.iconBg} rounded-full flex items-center justify-center`}
+                  >
+                    <Users className={`h-4 w-4 ${msg.iconColor}`} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">
+                      {msg.sender}
+                    </p>
+                    <p className="text-xs text-gray-700 sm:text-sm">
+                      {msg.text}
+                    </p>
+                    <p className="text-xs text-gray-500">{msg.time}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="p-3 bg-green-50 rounded-lg">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-green-200 rounded-full flex items-center justify-center">
-                  <Users className="h-5 w-5 text-gray-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">Citizen</p>
-                  <p className="text-sm text-gray-700">
-                    Thank you for your help!
-                  </p>
-                  <p className="text-xs text-gray-500">1 hour ago</p>
-                </div>
-              </div>
-            </div>
+            ))}
           </CardContent>
         </Card>
       </div>

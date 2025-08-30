@@ -10,6 +10,7 @@ import http from "http"
 // import routes
 import userRoutes from "./routes/user.route.js"
 import authRoutes from "./routes/auth.route.js"
+import regionRoutes from "./routes/region.route.js"
 import ratingRoutes from "./routes/rating.route.js"
 import reportRoutes from "./routes/report.route.js"
 import googleAuthRoutes from "./routes/google.route.js"
@@ -22,7 +23,6 @@ import systemPolicyRoutes from "./routes/systemPolicy.route.js"
 import "./utils/passport.js"
 import job from "./utils/cron.js"
 import { setupSocketIO } from "./socket/socket.js"
-// import { moderateText } from "./services/ModeratText.js"
 
 dotenv.config()
 
@@ -72,6 +72,7 @@ app.use("/api/feedback", feedbackRoutes)
 app.use("/api/category", categoryRoutes)
 app.use("/api/policy", systemPolicyRoutes)
 app.use("/api/notifications", notificationRoutes)
+app.use("/api/region", regionRoutes)
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({ message: "Project backend is running ✅" })

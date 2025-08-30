@@ -109,7 +109,7 @@ export default function MapView({ reports, onMarkerClick }: MapViewProps) {
   }, [])
 
   return (
-    <div className="w-full h-full rounded-lg overflow-hidden">
+    <div className="w-full h-full rounded-lg overflow-hidden z-10 relative">
       <MapContainer
         key={Date.now()}
         ref={mapRef}

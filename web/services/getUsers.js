@@ -45,3 +45,18 @@ export const updateUser = async (userId, data) => {
     return null
   }
 }
+
+export const getSingleUser = async (userId) => {
+  try {
+    const res = await axiosInstance.get(`/user/${userId}`)
+
+    if (res.data.success) {
+      return res.data
+    } else {
+      return null
+    }
+  } catch (error) {
+    console.error("Error updating user:", error)
+    return null
+  }
+}

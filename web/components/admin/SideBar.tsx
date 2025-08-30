@@ -130,8 +130,8 @@ export default function AppSidebar() {
   }
 
   return (
-    <Sidebar className="border-r border-gray-200 " collapsible="icon">
-      <SidebarHeader className="p-4">
+    <Sidebar className="bg-white border-r border-gray-200" collapsible="icon">
+      <SidebarHeader className="p-4 bg-white">
         <div className="flex items-center gap-3 pt-2">
           <Image
             src={Logo}
@@ -150,7 +150,7 @@ export default function AppSidebar() {
           </div>
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="bg-white">
         <SidebarGroup>
           <SidebarGroupLabel className="text-gray-700 font-semibold text-[15px] font-jakarta">
             Main Menu

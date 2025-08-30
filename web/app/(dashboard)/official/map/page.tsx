@@ -12,6 +12,8 @@ import {
   CheckCircle,
   Clock,
   RotateCcw,
+  AlertCircle,
+  X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -31,6 +33,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import RegionStatus from "@/components/official/RegionMap"
 
 // Dynamic import for the map to avoid SSR issues
 const MapView = dynamic(() => import("@/components/official/MapView"), {
@@ -91,6 +94,7 @@ const mockReports = [
 ]
 
 export default function ReportDashboard() {
+  const [isAssigned, setIsAssigned] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedReport, setSelectedReport] = useState<any>(null)
   const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(false)
@@ -141,7 +145,69 @@ export default function ReportDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      {/* Overlay for unassigned region */}
+      {!isAssigned && (
+        <div className="fixed inset-0 w-full h-screen z-50 flex items-center justify-center p-4 pointer-events-none">
+          <style jsx>{`
+            .leaflet-container,
+            .leaflet-map-pane,
+            .leaflet-overlay-pane,
+            .leaflet-marker-pane,
+            .leaflet-popup-pane,
+            .leaflet-shadow-pane,
+            .leaflet-tile-pane {
+              z-index: 10 !important;
+            }
+          `}</style>
+
+          {/* Overlay that covers only the map area */}
+          <div className="absolute left-0 top-0 right-0 bottom-0 bg-background/25 backdrop-blur-md pointer-events-auto flex items-center justify-center">
+            <div className="bg-gradient-to-br from-card to-card/80 border-2 border-gray-200 rounded-2xl p-4 ml-32 max-w-md w-full backdrop-blur-sm">
+              {/* Icon and Title */}
+              <div className="text-center mb-3">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-100 rounded-full mb-4">
+                  <AlertCircle className="h-8 w-8 text-yellow-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-foreground mb-2">
+                  Awaiting Region Assignment
+                </h2>
+              </div>
+
+              {/* Message */}
+              <p className="text-muted-foreground text-center text-base leading-relaxed mb-6 font-jakarta">
+                Your account is currently being processed for region assignment.
+                You'll gain full access to the dashboard once an administrator
+                completes this setup.
+              </p>
+
+              {/* Status Indicator */}
+              <div className="flex items-center justify-center space-x-2 mb-6">
+                <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                <span className="text-sm font-medium text-yellow-600">
+                  Status: Pending Assignment
+                </span>
+              </div>
+
+              {/* Contact Info */}
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  Need immediate assistance?{" "}
+                  <button
+                    className="text-primary hover:text-primary/80 font-medium underline underline-offset-2 transition-colors"
+                    onClick={() => {
+                      /* Contact logic */
+                    }}
+                  >
+                    Contact support
+                  </button>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header Search */}
       <div className="border-b bg-card">
         <div className="container mx-auto px-2 py-4">
