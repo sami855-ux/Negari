@@ -2,7 +2,6 @@
 
 Negari is a platform that empowers citizens to report community issues, enabling officials and workers to manage and resolve them efficiently.  
 
----
 
 ## Screenshots
 
