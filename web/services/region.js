@@ -23,3 +23,27 @@ export const getAllRegion = async () => {
     }
   }
 }
+
+export const getRegionByOfficer = async (officerId) => {
+  try {
+    const res = await axiosInstance.get(`/region/${officerId}`)
+
+    if (res.data.success) {
+      return {
+        data: res.data.data,
+        success: true,
+      }
+    } else {
+      return {
+        data: null,
+        success: false,
+      }
+    }
+  } catch (error) {
+    console.log("Error while fetching" + error)
+    return {
+      data: null,
+      success: false,
+    }
+  }
+}
