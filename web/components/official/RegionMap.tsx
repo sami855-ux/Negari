@@ -9,13 +9,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
 import { MapPin, Trash2, User, Mail, Shield, Calendar, X } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useQuery } from "@tanstack/react-query"
 import { getAllRegion } from "@/services/region"
+import ReactDOMServer from "react-dom/server"
+import Image from "next/image"
 
 // Dynamically import leaflet components
 const MapContainer = dynamic(
@@ -164,20 +167,48 @@ export default function RegionAssignmentDialog({
     }
   }
 
+  const RegionPopup = ({ region }: { region: RegionData }) => {
+    return (
+      <Card className="w-56 border-none">
+        <CardHeader>
+          <CardTitle className="text-lg">{region.name}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-2">
+            {region.users.length > 0 ? (
+              region.users.map((user) => (
+                <div key={user.username} className="flex items-center gap-2">
+                  <Avatar className="h-6 w-6">
+                    {user.profilePicture ? (
+                      <AvatarImage src={user.profilePicture} />
+                    ) : (
+                      <AvatarFallback>
+                        {user.username.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <span className="text-sm">{user.username}</span>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">Assigned to: None</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   // Alternative approach using event handlers
   const handleRegionClick = (region: RegionData) => {
-    const assignedUsers = region.users.map((user) => user.username).join(", ")
     return (e: any) => {
-      const popup = L.popup()
+      const popupContent = ReactDOMServer.renderToString(
+        <RegionPopup region={region} />
+      )
+
+      L.popup()
         .setLatLng(e.latlng)
-        .setContent(
-          `
-          <div class="p-2">
-            <h3 class="font-bold">${region.name}</h3>
-            <p class="text-sm mt-1">Assigned to: ${assignedUsers || "None"}</p>
-          </div>
-        `
-        )
+        .setContent(popupContent)
         .openOn(e.target._map)
     }
   }
@@ -231,10 +262,12 @@ export default function RegionAssignmentDialog({
               <div className="relative mb-4">
                 <div className="flex items-center justify-center w-20 h-20 text-2xl font-bold text-white rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
                   {userData.profilePicture ? (
-                    <img
-                      src={userData.profilePicture}
+                    <Image
+                      src={userData.profilePicture || "/default-avatar.png"}
                       alt={userData.username}
-                      className="object-cover w-full h-full rounded-full"
+                      width={40}
+                      height={40}
+                      className="object-cover rounded-full"
                     />
                   ) : (
                     userData.username.charAt(0).toUpperCase()
@@ -366,24 +399,18 @@ export default function RegionAssignmentDialog({
                     </span>
                   </DialogDescription>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsOpen(false)}
-                  className="w-8 h-8"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
               </div>
 
               {/* Mobile user info */}
               <div className="flex items-center gap-2 p-2 mt-3 rounded-lg md:hidden bg-muted">
                 <div className="flex items-center justify-center w-10 h-10 font-bold text-white rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
                   {userData.profilePicture ? (
-                    <img
-                      src={userData.profilePicture}
+                    <Image
+                      src={userData.profilePicture || "/default-avatar.png"}
                       alt={userData.username}
-                      className="object-cover w-full h-full rounded-full"
+                      width={40}
+                      height={40}
+                      className="object-cover rounded-full"
                     />
                   ) : (
                     userData.username.charAt(0).toUpperCase()
@@ -466,7 +493,7 @@ export default function RegionAssignmentDialog({
 
                 {/* Drawing instructions overlay */}
                 {drawnPolygons.length === 0 && (
-                  <div className="absolute max-w-xs p-3 border rounded-md shadow-sm top-2 left-2 bg-background/90 backdrop-blur-sm">
+                  <div className="absolute z-[9999] max-w-xs p-3 border rounded-md shadow-sm top-2 left-2 bg-background/90 backdrop-blur-sm">
                     <p className="flex items-center gap-1 text-sm font-medium">
                       <MapPin className="w-4 h-4 text-blue-500" />
                       Drawing Instructions
