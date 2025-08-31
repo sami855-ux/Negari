@@ -85,7 +85,7 @@ import { getSingleUser } from "@/services/getUsers"
 import { useSelector } from "react-redux"
 import { RootState } from "@/store"
 import toast from "react-hot-toast"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { getAllRegion } from "@/services/region"
 
 // Define TypeScript interfaces
@@ -155,10 +155,8 @@ function featureToPolygon(feature: any) {
 
 export default function UserProfilePage({ params }) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { user } = useSelector((store: RootState) => store.user)
-
-  
-
 
   const [userData, setUserData] = useState<UserData | null>(null)
 
@@ -235,7 +233,7 @@ export default function UserProfilePage({ params }) {
       const payload = {
         polygon: featureToPolygon(customGeojson),
         name: "New Region",
-        officialId: user?.id || "e25166d2-20bd-465e-b4b4-4afddbcfe0d7",
+        officialId: params.userId,
       }
 
       const response = await axiosInstance.post(
@@ -245,6 +243,8 @@ export default function UserProfilePage({ params }) {
 
       if (response.data.success) {
         toast.success(response.data.message || "Region assigned successfully")
+
+        queryClient.invalidateQueries({ queryKey: ["Region"] })
       }
     } catch (error: any) {
       console.error(
