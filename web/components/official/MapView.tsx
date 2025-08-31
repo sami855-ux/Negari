@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useMemo } from "react"
 import {
   MapContainer,
   TileLayer,
@@ -61,23 +61,13 @@ const createCustomIcon = (status: string) => {
   })
 }
 
-// Static polygon: example around Addis Ababa
-const regionPolygon: [number, number][] = [
-  [9.04, 38.69],
-  [9.04, 38.88],
-  [8.94, 38.88],
-  [8.94, 38.69],
-]
-
-const regionBounds = L.latLngBounds(regionPolygon)
-
 interface Report {
   id: number
   title: string
   description: string
   status: string
   category: string
-  location: [number, number]
+  location: [number, number] // [lat, lng]
   assignedTo: string
   createdAt: string
   priority: string
@@ -86,23 +76,43 @@ interface Report {
 interface MapViewProps {
   reports: Report[]
   onMarkerClick: (report: Report) => void
+  polygon: any // GeoJSON polygon
 }
 
-function MapController({ reports }: { reports: Report[] }) {
-  const map = useMap()
-
-  useEffect(() => {
-    map.fitBounds(regionBounds)
-    map.setMaxBounds(regionBounds) // Prevent panning outside
-    map.setMinZoom(12) // Optional: control zoom in
-    map.setMaxZoom(18) // Optional: control zoom out
-  }, [map])
-
-  return null
-}
-
-export default function MapView({ reports, onMarkerClick }: MapViewProps) {
+export default function MapView({
+  reports,
+  onMarkerClick,
+  polygon,
+}: MapViewProps) {
   const mapRef = useRef<L.Map>(null)
+
+  // Convert GeoJSON polygon (lng, lat) → Leaflet (lat, lng)
+  const leafletPolygon = useMemo(() => {
+    if (!polygon) return []
+    // polygon is [[[lng, lat], [lng, lat], ...]]
+    return polygon[0].map(([lng, lat]: [number, number]) => [lat, lng])
+  }, [polygon])
+
+  // Compute bounds based on polygon
+  const regionBounds = useMemo(() => {
+    if (!leafletPolygon.length) return L.latLngBounds([[0, 0]])
+    return L.latLngBounds(leafletPolygon as [number, number][])
+  }, [leafletPolygon])
+
+  function MapController() {
+    const map = useMap()
+
+    useEffect(() => {
+      if (leafletPolygon.length) {
+        map.fitBounds(regionBounds)
+        map.setMaxBounds(regionBounds)
+        map.setMinZoom(12)
+        map.setMaxZoom(18)
+      }
+    }, [map, regionBounds, leafletPolygon])
+
+    return null
+  }
 
   useEffect(() => {
     injectLeafletStylesheet()
@@ -113,7 +123,7 @@ export default function MapView({ reports, onMarkerClick }: MapViewProps) {
       <MapContainer
         key={Date.now()}
         ref={mapRef}
-        center={[8.99, 38.78]}
+        center={leafletPolygon[0] || [8.99, 38.78]}
         zoom={13}
         style={{ height: "100%", width: "100%" }}
         maxBounds={regionBounds}
@@ -124,8 +134,12 @@ export default function MapView({ reports, onMarkerClick }: MapViewProps) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        <Polygon positions={regionPolygon} pathOptions={{ color: "blue" }} />
-        <MapController reports={reports} />
+        {/* Draw polygon if available */}
+        {leafletPolygon.length > 0 && (
+          <Polygon positions={leafletPolygon} pathOptions={{ color: "blue" }} />
+        )}
+
+        <MapController />
 
         {reports.map((report) => (
           <Marker
