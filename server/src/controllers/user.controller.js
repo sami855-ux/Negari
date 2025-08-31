@@ -69,8 +69,9 @@ export const updateUser = async (req, res) => {
 }
 
 export const createRegionAndAssignOfficial = async (req, res) => {
-  console.log(req.body)
   const { name, polygon, officialId } = req.body
+
+  console.log(req.body)
 
   // Validate input
   if (!name || !polygon || !officialId) {
@@ -84,6 +85,7 @@ export const createRegionAndAssignOfficial = async (req, res) => {
     // Step 1: Validate Official
     const official = await prisma.user.findUnique({
       where: { id: officialId },
+      include: { region: true }, // check if official already has a region
     })
 
     if (!official || official.role !== "OFFICER") {
@@ -92,7 +94,15 @@ export const createRegionAndAssignOfficial = async (req, res) => {
         .json({ message: "User is not a valid official.", success: false })
     }
 
-    // Step 2: Create Region
+    // Step 2: Prevent multiple region assignments
+    if (official.region) {
+      return res.status(400).json({
+        message: `Official '${official.username}' is already assigned to region '${official.region.name}'.`,
+        success: false,
+      })
+    }
+
+    // Step 3: Create Region
     const region = await prisma.region.create({
       data: {
         name,
@@ -100,7 +110,7 @@ export const createRegionAndAssignOfficial = async (req, res) => {
       },
     })
 
-    // Step 3: Assign region to the official
+    // Step 4: Assign region to the official
     const updatedOfficial = await prisma.user.update({
       where: { id: officialId },
       data: {
@@ -110,7 +120,7 @@ export const createRegionAndAssignOfficial = async (req, res) => {
     })
 
     return res.status(201).json({
-      message: `Region  created and assigned to official '${official.username}' successfully.`,
+      message: `Region created and assigned to official '${official.username}' successfully.`,
       region,
       official: updatedOfficial,
       success: true,
