@@ -20,32 +20,36 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { getTimeElapsed } from "@/lib/utils"
 
 export default function Page() {
+  const router = useRouter()
+
   const assignedReports = [
     {
       id: "RPT-2024-001",
       title: "Traffic Violation - Main Street",
-      priority: "High",
+      urgency: "High",
       status: "In Progress",
       location: "Main St & 5th Ave",
-      time: "2 hours ago",
+      reportedOn: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
     },
     {
       id: "RPT-2024-002",
       title: "Noise Complaint - Residential",
-      priority: "Medium",
+      urgency: "Medium",
       status: "Pending",
       location: "Oak Street 123",
-      time: "4 hours ago",
+      reportedOn: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4 hours ago
     },
     {
       id: "RPT-2024-003",
       title: "Suspicious Activity",
-      priority: "High",
+      urgency: "High",
       status: "Urgent",
       location: "Park Avenue",
-      time: "30 minutes ago",
+      reportedOn: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
     },
   ]
 
@@ -59,7 +63,7 @@ export default function Page() {
       bgColor: "bg-green-50",
     },
     {
-      title: "Active Cases",
+      title: "In Progress Reports",
       value: "8",
       change: "-3",
       icon: FileText,
@@ -67,12 +71,12 @@ export default function Page() {
       bgColor: "bg-blue-50",
     },
     {
-      title: "Response Time",
+      title: "Rejected Reports ",
       value: "12m",
       change: "-2m",
       icon: Clock,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50",
+      color: "text-red-600",
+      bgColor: "bg-red-50",
     },
     {
       title: "Citizen Feedback",
@@ -85,7 +89,7 @@ export default function Page() {
   ]
 
   return (
-    <div className="p-3 space-y-6 sm:p-6">
+    <div className="p-2 space-y-6 sm:p-2">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 min-h-fit">
         {stats.map((stat) => (
@@ -139,21 +143,21 @@ export default function Page() {
                     </h4>
                     <Badge
                       variant={
-                        report.priority === "High"
+                        report.urgency === "CRITICAL"
                           ? "destructive"
-                          : report.priority === "Medium"
+                          : report.urgency === "HIGH"
                           ? "default"
                           : "secondary"
                       }
                       className={
-                        report.priority === "High"
+                        report.urgency === "CRITICAL"
                           ? "bg-red-100 text-red-700 hover:bg-red-200"
-                          : report.priority === "Medium"
+                          : report.urgency === "HIGH"
                           ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
                           : ""
                       }
                     >
-                      {report.priority}
+                      {report.urgency}
                     </Badge>
                   </div>
                   <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 sm:text-sm">
@@ -162,7 +166,7 @@ export default function Page() {
                       {report.location}
                     </span>
                     <span className="font-semibold text-orange-500">
-                      {report.time}
+                      {getTimeElapsed(report.reportedOn)}
                     </span>
                   </div>
                 </div>
@@ -198,7 +202,10 @@ export default function Page() {
                 <p className="text-xs text-gray-600 sm:text-sm">
                   3 active incidents in your area
                 </p>
-                <Button className="text-sm text-gray-800 bg-gradient-to-r from-green-200 to-green-400 hover:from-green-300 hover:to-green-500">
+                <Button
+                  onClick={() => router.push("/official/map")}
+                  className="text-sm text-gray-800 bg-gradient-to-r from-green-200 to-green-400 hover:from-green-300 hover:to-green-500"
+                >
                   Open Full Map
                 </Button>
               </div>
