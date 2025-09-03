@@ -76,6 +76,7 @@ model Report {
   title              String
   description        String
   imageUrls          String[]
+  resolutionImages   String[]
   videoUrl           String?
   status             ReportStatus  @default(PENDING)
   severity           SeverityLevel @default(MEDIUM)
@@ -97,6 +98,7 @@ model Report {
   assignedToWorkerId String?
   rejectionReason    String?
   rejectedAt         DateTime?
+  inProgressAt       DateTime?
 
   // New category relation
   categoryId String
