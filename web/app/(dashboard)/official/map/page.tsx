@@ -40,6 +40,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useSelector } from "react-redux"
 import { RootState } from "@/store"
 import { getRegionByOfficer } from "@/services/region"
+import { getTimeElapsed } from "@/lib/utils"
 
 // Report status type
 type ReportStatus =
@@ -57,8 +58,8 @@ type SeverityLevel = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
 const MapView = dynamic(() => import("@/components/official/MapView"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full bg-muted animate-pulse rounded-lg flex items-center justify-center">
-      <MapPin className="h-8 w-8 text-muted-foreground" />
+    <div className="flex items-center justify-center w-full h-full rounded-lg bg-muted animate-pulse">
+      <MapPin className="w-8 h-8 text-muted-foreground" />
     </div>
   ),
 })
@@ -69,8 +70,14 @@ interface Report {
   title: string
   description: string
   status: ReportStatus
-  category: string
-  location: [number, number]
+  category: {
+    name: string
+  }
+  reporter: {
+    id: string
+    username: string
+  }
+  locationId: string
   assignedTo: string
   createdAt: string
   priority: SeverityLevel
@@ -86,6 +93,14 @@ interface Report {
   tags?: string[]
   imageUrls?: string[]
   videoUrl?: string
+  location: {
+    latitude: number
+    longitude: number
+    address?: string
+    city?: string
+  }
+  rejectionReason: string
+  rejectedAt: string
 }
 
 export default function ReportDashboard() {
@@ -108,10 +123,14 @@ export default function ReportDashboard() {
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
 
   // Get reports from region data or empty array
-  const reports: Report[] = region?.data?.reports || []
+  const reports: Report[] = useMemo(
+    () => region?.data?.reports || [],
+    [region?.data?.reports]
+  )
 
   // Derived value: officer is assigned if region data exists
   const isAssigned = !!region?.data
+  // const isAssigned = false
 
   // Calculate statistics
   const stats = {
@@ -195,16 +214,16 @@ export default function ReportDashboard() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "RESOLVED":
-        return <CheckCircle className="h-4 w-4" />
+        return <CheckCircle className="w-4 h-4" />
       case "URGENT":
       case "CRITICAL":
-        return <AlertTriangle className="h-4 w-4" />
+        return <AlertTriangle className="w-4 h-4" />
       case "PENDING":
-        return <Clock className="h-4 w-4" />
+        return <Clock className="w-4 h-4" />
       case "IN_PROGRESS":
-        return <RotateCcw className="h-4 w-4" />
+        return <RotateCcw className="w-4 h-4" />
       default:
-        return <Clock className="h-4 w-4" />
+        return <Clock className="w-4 h-4" />
     }
   }
 
@@ -234,7 +253,10 @@ export default function ReportDashboard() {
   }
 
   // Extract unique values for filter options from actual reports
-  const categories = [...new Set(reports.map((report) => report.category))]
+  const categories = [
+    ...new Set(reports.map((report) => report.category?.name)),
+  ]
+
   const assignedOfficials = [
     ...new Set(reports.map((report) => report.assignedTo)),
   ]
@@ -250,10 +272,10 @@ export default function ReportDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="relative min-h-screen bg-background">
       {/* Overlay for unassigned region */}
       {!isAssigned && (
-        <div className="fixed inset-0 w-full h-screen z-50 flex items-center justify-center p-4 pointer-events-none">
+        <div className="fixed inset-0 z-20 flex items-center justify-center w-full h-screen p-4 pointer-events-none">
           <style jsx>{`
             .leaflet-container,
             .leaflet-map-pane,
@@ -267,27 +289,27 @@ export default function ReportDashboard() {
           `}</style>
 
           {/* Overlay that covers only the map area */}
-          <div className="absolute left-0 top-0 right-0 bottom-0 bg-background/25 backdrop-blur-md pointer-events-auto flex items-center justify-center">
-            <div className="bg-gradient-to-br from-card to-card/80 border-2 border-gray-200 rounded-2xl p-4 ml-32 max-w-md w-full backdrop-blur-sm">
+          <div className="absolute top-0 bottom-0 left-0 right-0 flex items-center justify-center pointer-events-auto bg-background/25 backdrop-blur-md">
+            <div className="w-full max-w-md p-4 ml-32 border-2 border-gray-200 bg-gradient-to-br from-card to-card/80 rounded-2xl backdrop-blur-sm">
               {/* Icon and Title */}
-              <div className="text-center mb-3">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-100 rounded-full mb-4">
-                  <AlertCircle className="h-8 w-8 text-yellow-600" />
+              <div className="mb-3 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 mb-4 bg-yellow-100 rounded-full">
+                  <AlertCircle className="w-8 h-8 text-yellow-600" />
                 </div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">
+                <h2 className="mb-2 text-2xl font-bold text-foreground">
                   Awaiting Region Assignment
                 </h2>
               </div>
 
               {/* Message */}
-              <p className="text-muted-foreground text-center text-base leading-relaxed mb-6 font-jakarta">
+              <p className="mb-6 text-base leading-relaxed text-center text-muted-foreground font-jakarta">
                 Your account is currently being processed for region assignment.
                 You'll gain full access to the dashboard once an administrator
                 completes this setup.
               </p>
 
               {/* Status Indicator */}
-              <div className="flex items-center justify-center space-x-2 mb-6">
+              <div className="flex items-center justify-center mb-6 space-x-2">
                 <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
                 <span className="text-sm font-medium text-yellow-600">
                   Status: Pending Assignment
@@ -299,7 +321,7 @@ export default function ReportDashboard() {
                 <p className="text-sm text-muted-foreground">
                   Need immediate assistance?{" "}
                   <button
-                    className="text-primary hover:text-primary/80 font-medium underline underline-offset-2 transition-colors"
+                    className="font-medium underline transition-colors text-primary hover:text-primary/80 underline-offset-2"
                     onClick={() => {
                       /* Contact logic */
                     }}
@@ -315,15 +337,15 @@ export default function ReportDashboard() {
 
       {/* Header with Search and Stats */}
       <div className="border-b bg-card">
-        <div className="container mx-auto px-2 py-4">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="container px-2 py-4 mx-auto">
+          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="relative w-full md:w-1/2">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Search className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search reports by title, description, or tags..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-12 text-base"
+                className="h-12 pl-10 text-base"
               />
             </div>
 
@@ -334,11 +356,11 @@ export default function ReportDashboard() {
                 onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
                 className="flex items-center gap-1"
               >
-                <Filter className="h-4 w-4" />
+                <Filter className="w-4 h-4" />
                 {isFiltersExpanded ? (
-                  <ChevronUp className="h-4 w-4" />
+                  <ChevronUp className="w-4 h-4" />
                 ) : (
-                  <ChevronDown className="h-4 w-4" />
+                  <ChevronDown className="w-4 h-4" />
                 )}
                 Filters
               </Button>
@@ -348,64 +370,64 @@ export default function ReportDashboard() {
                 onClick={resetFilters}
                 className="text-muted-foreground"
               >
-                <RotateCcw className="h-4 w-4 mr-1" />
+                <RotateCcw className="w-4 h-4 mr-1" />
                 Reset
               </Button>
             </div>
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+          <div className="grid grid-cols-2 gap-4 mt-4 md:grid-cols-4">
             <Card className="bg-background">
-              <CardContent className="p-3 flex items-center justify-between">
+              <CardContent className="flex items-center justify-between p-3">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Reports</p>
                   <p className="text-2xl font-bold">{stats.total}</p>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                  <MapPin className="h-5 w-5 text-blue-600" />
+                <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full">
+                  <MapPin className="w-5 h-5 text-blue-600" />
                 </div>
               </CardContent>
             </Card>
 
             <Card className="bg-background">
-              <CardContent className="p-3 flex items-center justify-between">
+              <CardContent className="flex items-center justify-between p-3">
                 <div>
                   <p className="text-sm text-muted-foreground">Resolved</p>
                   <p className="text-2xl font-bold text-green-600">
                     {stats.resolved}
                   </p>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+                <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
                 </div>
               </CardContent>
             </Card>
 
             <Card className="bg-background">
-              <CardContent className="p-3 flex items-center justify-between">
+              <CardContent className="flex items-center justify-between p-3">
                 <div>
                   <p className="text-sm text-muted-foreground">Urgent</p>
                   <p className="text-2xl font-bold text-red-600">
                     {stats.urgent}
                   </p>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                <div className="flex items-center justify-center w-10 h-10 bg-red-100 rounded-full">
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
                 </div>
               </CardContent>
             </Card>
 
             <Card className="bg-background">
-              <CardContent className="p-3 flex items-center justify-between">
+              <CardContent className="flex items-center justify-between p-3">
                 <div>
                   <p className="text-sm text-muted-foreground">Pending</p>
                   <p className="text-2xl font-bold text-yellow-600">
                     {stats.pending}
                   </p>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-yellow-100 flex items-center justify-center">
-                  <Clock className="h-5 w-5 text-yellow-600" />
+                <div className="flex items-center justify-center w-10 h-10 bg-yellow-100 rounded-full">
+                  <Clock className="w-5 h-5 text-yellow-600" />
                 </div>
               </CardContent>
             </Card>
@@ -416,8 +438,8 @@ export default function ReportDashboard() {
       {/* Expandable Filters */}
       {isFiltersExpanded && (
         <div className="border-b bg-muted/30">
-          <div className="container mx-auto px-2 py-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="container px-2 py-4 mx-auto">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
               {/* Category */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Category</label>
@@ -464,32 +486,6 @@ export default function ReportDashboard() {
                 </Select>
               </div>
 
-              {/* Assigned Official */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center space-x-2">
-                  <Users className="h-4 w-4" />
-                  <span>Assigned To</span>
-                </label>
-                <Select
-                  value={filters.assignedTo}
-                  onValueChange={(value) =>
-                    setFilters({ ...filters, assignedTo: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Officials" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Officials</SelectItem>
-                    {assignedOfficials.map((official) => (
-                      <SelectItem key={official} value={official.toLowerCase()}>
-                        {official}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
               {/* Severity */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Severity</label>
@@ -515,8 +511,8 @@ export default function ReportDashboard() {
 
               {/* Date Range */}
               <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center space-x-2">
-                  <Calendar className="h-4 w-4" />
+                <label className="flex items-center space-x-2 text-sm font-medium">
+                  <Calendar className="w-4 h-4" />
                   <span>Date Range</span>
                 </label>
                 <Select
@@ -542,7 +538,7 @@ export default function ReportDashboard() {
       )}
 
       {/* Results Count */}
-      <div className="container mx-auto px-2 py-3">
+      <div className="container px-2 py-3 mx-auto">
         <p className="text-sm text-muted-foreground">
           Showing {filteredReports.length} of {reports.length} reports
           {searchQuery && (
@@ -555,17 +551,17 @@ export default function ReportDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto py-4">
+      <div className="container py-4 mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-[calc(100vh-280px)]">
           {/* Reports List */}
-          <div className="lg:col-span-1 overflow-auto">
+          <div className="overflow-auto lg:col-span-1">
             <Card className="h-full border border-gray-100 shadow-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg font-semibold text-gray-800">
                   Reports List
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-0">
+              <CardContent className="p-0 px-1">
                 {filteredReports.length === 0 ? (
                   <div className="p-4 text-center text-muted-foreground">
                     No reports found matching your criteria
@@ -575,9 +571,9 @@ export default function ReportDashboard() {
                     {filteredReports.map((report) => (
                       <Card
                         key={report.id}
-                        className={`cursor-pointer transition-all hover:shadow-md ${
+                        className={`cursor-pointer transition-all hover:shadow-md border-gray-200 ${
                           selectedReport?.id === report.id
-                            ? "border-primary bg-primary/5"
+                            ? "border-gray-300 bg-gray-300/5"
                             : ""
                         }`}
                         onClick={() => {
@@ -586,8 +582,8 @@ export default function ReportDashboard() {
                         }}
                       >
                         <CardContent className="p-3">
-                          <div className="flex justify-between items-start">
-                            <h3 className="font-medium text-sm line-clamp-1">
+                          <div className="flex items-start justify-between">
+                            <h3 className="text-sm font-medium line-clamp-1">
                               {report.title}
                             </h3>
                             <Badge
@@ -595,14 +591,14 @@ export default function ReportDashboard() {
                                 report.status
                               )} text-white text-xs`}
                             >
-                              {report.status.charAt(0) +
-                                report.status.slice(1).toLowerCase()}
+                              {report.status?.charAt(0) +
+                                report.status?.slice(1).toLowerCase()}
                             </Badge>
                           </div>
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                          <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
                             {report.description}
                           </p>
-                          <div className="flex justify-between items-center mt-2">
+                          <div className="flex items-center justify-between mt-2">
                             <span className="text-xs font-medium">
                               {report.assignedTo}
                             </span>
@@ -622,7 +618,7 @@ export default function ReportDashboard() {
           {/* Map View */}
           <div className="lg:col-span-3">
             <Card className="h-full border border-gray-100 shadow-sm">
-              <CardContent className="p-0 h-full">
+              <CardContent className="h-full p-0">
                 <MapView
                   reports={filteredReports}
                   onMarkerClick={handleMarkerClick}
@@ -636,30 +632,23 @@ export default function ReportDashboard() {
 
       {/* Slide-out Info Panel */}
       <Sheet open={isInfoPanelOpen} onOpenChange={setIsInfoPanelOpen}>
-        <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
+        <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
           <SheetHeader className="pb-4">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <SheetTitle className="flex items-center space-x-2">
-                <MapPin className="h-5 w-5" />
+                <MapPin className="w-5 h-5" />
                 <span>Report Details</span>
               </SheetTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsInfoPanelOpen(false)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
             </div>
           </SheetHeader>
 
           {selectedReport && (
-            <div className="space-y-6 py-2">
+            <div className="py-2 space-y-6">
               <div>
                 <h3 className="text-xl font-semibold">
                   {selectedReport.title}
                 </h3>
-                <p className="text-muted-foreground mt-2">
+                <p className="mt-2 text-muted-foreground">
                   {selectedReport.description}
                 </p>
               </div>
@@ -671,7 +660,7 @@ export default function ReportDashboard() {
                   <label className="text-sm font-medium text-muted-foreground">
                     Status
                   </label>
-                  <div className="flex items-center space-x-2 mt-1">
+                  <div className="flex items-center mt-1 space-x-2">
                     {getStatusIcon(selectedReport.status)}
                     <Badge
                       className={`${getStatusColor(
@@ -688,17 +677,22 @@ export default function ReportDashboard() {
                   <label className="text-sm font-medium text-muted-foreground">
                     Category
                   </label>
-                  <p className="mt-1 font-medium">{selectedReport.category}</p>
+                  <p className="mt-1 font-medium">
+                    {`${selectedReport.category.name}`.charAt(0) +
+                      `${selectedReport.category.name}`.slice(1).toLowerCase()}
+                  </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
-                    Assigned To
+                    Reporter
                   </label>
                   <p className="mt-1 font-medium">
-                    {selectedReport.assignedTo}
+                    {selectedReport.isAnonymous
+                      ? "Report Identity is Hidden"
+                      : selectedReport.reporter.username}
                   </p>
                 </div>
 
@@ -706,28 +700,13 @@ export default function ReportDashboard() {
                   <label className="text-sm font-medium text-muted-foreground">
                     Created
                   </label>
-                  <p className="mt-1 font-medium">
-                    {new Date(selectedReport.createdAt).toLocaleDateString()}
+                  <p className="mt-1 font-medium text-gray-800">
+                    {getTimeElapsed(selectedReport.createdAt)} ago
                   </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Priority
-                  </label>
-                  <Badge
-                    variant="outline"
-                    className={`mt-1 ${getSeverityColor(
-                      selectedReport.priority
-                    )}`}
-                  >
-                    {selectedReport.priority.charAt(0) +
-                      selectedReport.priority.slice(1).toLowerCase()}
-                  </Badge>
-                </div>
-
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
                     Severity
@@ -768,13 +747,31 @@ export default function ReportDashboard() {
                   <label className="text-sm font-medium text-muted-foreground">
                     Resolution Notes
                   </label>
-                  <div className="mt-1 p-3 bg-muted rounded-md">
+                  <div className="p-3 mt-1 rounded-md bg-muted">
                     <p className="text-sm">{selectedReport.resolutionNote}</p>
                     {selectedReport.resolvedAt && (
-                      <p className="text-xs text-muted-foreground mt-2">
+                      <p className="mt-2 text-xs text-muted-foreground">
                         Resolved on:{" "}
                         {new Date(
                           selectedReport.resolvedAt
+                        ).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+              {selectedReport.rejectionReason && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Rejection Notes
+                  </label>
+                  <div className="p-3 mt-1 rounded-md bg-muted">
+                    <p className="text-sm">{selectedReport.rejectionReason}</p>
+                    {selectedReport.rejectedAt && (
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        Resolved on:{" "}
+                        {new Date(
+                          selectedReport.rejectedAt
                         ).toLocaleDateString()}
                       </p>
                     )}
@@ -785,13 +782,7 @@ export default function ReportDashboard() {
               <Separator />
 
               <div className="space-y-3">
-                <Button className="w-full">Update Status</Button>
-                <Button variant="outline" className="w-full">
-                  Assign to Me
-                </Button>
-                <Button variant="outline" className="w-full">
-                  Add Comment
-                </Button>
+                <Button className="w-full">See More Details</Button>
               </div>
             </div>
           )}
