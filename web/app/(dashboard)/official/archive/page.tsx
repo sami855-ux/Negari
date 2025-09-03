@@ -103,7 +103,13 @@ type ArchiveReport = {
   reportedOn: string
   archivedOn: string | null
   urgency: "HIGH" | "MEDIUM" | "LOW"
-  status: "PENDING" | "VERIFIED" | "IN_PROGRESS" | "RESOLVED" | "REJECTED" // Added VERIFIED
+  status:
+    | "PENDING"
+    | "VERIFIED"
+    | "IN_PROGRESS"
+    | "RESOLVED"
+    | "REJECTED"
+    | "NEEDS_MORE_INFO"
   category: string
   reportedBy: string
   assignedTo?: string
@@ -129,6 +135,8 @@ const statusColors = {
     "bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300",
   REJECTED:
     "bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300",
+  NEEDS_MORE_INFO:
+    "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300",
 }
 
 const statusIcons = {
@@ -137,6 +145,7 @@ const statusIcons = {
   PENDING: AlertTriangle,
   RESOLVED: RotateCcw,
   REJECTED: Trash2,
+  NEEDS_MORE_INFO: User,
 }
 
 const formatCategory = (category: string) => {
@@ -157,13 +166,13 @@ const formatStatus = (status: string): string => {
 
 export default function ReportArchive() {
   const router = useRouter()
-  // const x = useSelector((store: RootState) => store.user)
+  const { user } = useSelector((store: RootState) => store.user)
 
   const {
     isLoading,
     reports: archivedData,
     refetch,
-  } = useGetOfficerReports("31cb47d9-9184-43e3-8a72-8a721c5560fe")
+  } = useGetOfficerReports(user?.user?.id)
 
   const [isRefreshing, setIsRefreshing] = React.useState(false)
   const [sorting, setSorting] = React.useState<SortingState>([])
@@ -341,7 +350,7 @@ export default function ReportArchive() {
               size="sm"
               className="w-8 h-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-800"
               onClick={() => {
-                if (row.original.status === "PENDING") {
+                if (row.original.status === "PENDING" || row.original.status === "NEEDS_MORE_INFO") {
                   router.push(`/official/archive/${report.id}`)
                 }
                 if (row.original.status !== "PENDING") {
@@ -427,7 +436,9 @@ export default function ReportArchive() {
   })
 
   const stats = React.useMemo(() => {
-    const pending = reports.filter((item) => item.status === "PENDING").length
+    const pending = reports.filter(
+      (item) => item.status === "PENDING" || item.status === "NEEDS_MORE_INFO"
+    ).length
     const resolved = reports.filter((item) => item.status === "RESOLVED").length
     const rejected = reports.filter((item) => item.status === "REJECTED").length
     const inProgress = reports.filter(
