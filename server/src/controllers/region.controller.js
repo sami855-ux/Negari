@@ -33,7 +33,14 @@ export const getRegionByOfficer = async (req, res) => {
       include: {
         region: {
           include: {
-            reports: true,
+            reports: {
+              include: {
+                location: true,
+                category: true,
+                AssignedReports_worker: true,
+                reporter: true,
+              },
+            },
           },
         },
       },
