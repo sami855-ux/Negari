@@ -38,7 +38,7 @@ import MediaViewer from "@/components/official/MediaViewer"
 import { VideoViewer } from "@/components/official/VideoViewer"
 import useGetReport from "@/hooks/useGetReport"
 import { Location, User as UserType } from "@/lib/types"
-import { formatDate } from "@/lib/utils"
+import { formatDate, getTimeElapsed } from "@/lib/utils"
 
 import defaultUser from "@/public/assests/default-user.jpg"
 import {
@@ -72,7 +72,8 @@ import {
 } from "@/components/ui/command"
 import { updateReportDynamic } from "@/services/report"
 import toast from "react-hot-toast"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { getAllWorkers } from "@/services/getUsers"
 
 interface Report {
   id: string
@@ -119,6 +120,7 @@ const statusColors = {
   RESOLVED: "bg-green-100 text-green-800",
   REJECTED: "bg-gray-100 text-gray-800",
   APPROVED: "bg-purple-100 text-purple-800",
+  NEEDS_MORE_INFO: "bg-yellow-100 text-yellow-800",
 }
 
 const severityColors = {
@@ -134,16 +136,20 @@ interface ReportDetailPageProps {
 }
 
 // Replace this with your actual worker list from props or API
-const workers = [
-  { id: "45f5a1a6-85f6-48e8-9281-f0651cd8ff31", name: "Abel Bekele" },
-  { id: "45f5a1a6-85f6-48e8-9281-f0651cd8ff31", name: "Mekdes Yilma" },
-  { id: "45f5a1a6-85f6-48e8-9281-f0651cd8ff31", name: "Samuel Endale" },
-]
+// const workers = [
+//   { id: "45f5a1a6-85f6-48e8-9281-f0651cd8ff31", name: "Abel Bekele" },
+//   { id: "45f5a1a6-85f6-48e8-9281-f0651cd8ff31", name: "Mekdes Yilma" },
+//   { id: "45f5a1a6-85f6-48e8-9281-f0651cd8ff31", name: "Samuel Endale" },
+// ]
 const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
   const router = useRouter()
   const queryClient = useQueryClient()
 
   const { isLoading, report: reportData } = useGetReport(params.reportId)
+  const { isLoading: isWorkerLoading, data: workers } = useQuery({
+    queryKey: ["workers"],
+    queryFn: getAllWorkers,
+  })
 
   const [report, setReport] = useState<Report | null>(null)
   const [isOpen, setIsOpen] = useState(false)
@@ -260,6 +266,9 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                     <CardDescription className="mt-2">
                       Reported by {report.reporter?.username} •{" "}
                       {formatDate(new Date(report.createdAt))}
+                    </CardDescription>
+                    <CardDescription className="mt-1 text-orange-600">
+                      {getTimeElapsed(report.createdAt)} ago
                     </CardDescription>
                   </div>
                   <Badge
@@ -677,54 +686,76 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
 
             {/* Conditionally show Assign Worker if status is VERIFIED */}
             {newStatus === "VERIFIED" && (
-              <div className="space-y-2">
-                <Label htmlFor="assignedWorker" className="text-sm font-medium">
-                  Assign a Worker
-                </Label>
-                <Popover
-                  open={openWorkerPopover}
-                  onOpenChange={setOpenWorkerPopover}
-                >
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      className="w-full justify-between"
-                    >
-                      {selectedWorker
-                        ? workers.find((w) => w.id === selectedWorker)?.name
-                        : "Select worker..."}
-                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[350px] p-0">
-                    <Command>
-                      <CommandInput
-                        placeholder="Search worker..."
-                        className="h-9"
-                      />
-                      <CommandEmpty>No worker found.</CommandEmpty>
-                      <CommandGroup>
-                        {workers.map((worker) => (
-                          <CommandItem
-                            key={worker.id}
-                            onSelect={() => {
-                              setSelectedWorker(worker.id)
-                              setOpenWorkerPopover(false)
-                            }}
-                            className="flex items-center justify-between py-2"
-                          >
-                            <span className=""> {worker.name}</span>
+              <div className="grid gap-4 py-12">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="assignedWorker"
+                    className="text-sm font-medium"
+                  >
+                    Assign a Worker
+                  </Label>
 
-                            <Badge className="text-green-700 bg-green-100 font-jakarta text-xs">
-                              Active
-                            </Badge>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                  <Popover
+                    open={openWorkerPopover}
+                    onOpenChange={setOpenWorkerPopover}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="justify-between w-full"
+                        disabled={isWorkerLoading}
+                      >
+                        {isWorkerLoading
+                          ? "Loading workers..."
+                          : selectedWorker
+                          ? workers?.find((w) => w.id === selectedWorker)
+                              ?.username
+                          : "Select worker..."}
+                        <ChevronDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
+                      </Button>
+                    </PopoverTrigger>
+
+                    <PopoverContent className="w-[350px] p-0">
+                      {isWorkerLoading ? (
+                        // Skeleton loader
+                        <div className="p-4 space-y-2">
+                          {[1, 2, 3].map((i) => (
+                            <div
+                              key={i}
+                              className="h-8 bg-gray-200 rounded-md animate-pulse"
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <Command>
+                          <CommandInput
+                            placeholder="Search worker..."
+                            className="h-9"
+                          />
+                          <CommandEmpty>No worker found.</CommandEmpty>
+                          <CommandGroup>
+                            {workers?.map((worker) => (
+                              <CommandItem
+                                key={worker.id}
+                                onSelect={() => {
+                                  setSelectedWorker(worker.id)
+                                  setOpenWorkerPopover(false)
+                                }}
+                                className="flex items-center justify-between py-2"
+                              >
+                                <span>{worker.username}</span>
+                                <Badge className="text-xs text-green-700 bg-green-100 font-jakarta">
+                                  Active
+                                </Badge>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </Command>
+                      )}
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
             )}
 
@@ -760,7 +791,7 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
               Cancel
             </Button>
             <Button
-              className="bg-green-500 hover:bg-green-600 text-white"
+              className="text-white bg-green-500 hover:bg-green-600"
               disabled={
                 isUpdating ||
                 (["REJECTED", "RESOLVED"].includes(newStatus) &&
@@ -777,9 +808,8 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                   status: "REJECTED",
                   notes: resolutionNotes,
                 }
-                const resolvedData = {
-                  status: "RESOLVED",
-                  notes: resolutionNotes,
+                const needMoreInfoData = {
+                  status: "NEEDS_MORE_INFO",
                 }
 
                 handleReportUpdate(
@@ -787,7 +817,7 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                     ? VerifiedData
                     : newStatus === "REJECTED"
                     ? rejectedData
-                    : resolvedData
+                    : needMoreInfoData
                 )
               }}
             >
