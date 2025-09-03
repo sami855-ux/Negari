@@ -78,7 +78,7 @@ export default function AppSidebar() {
   const pathname = usePathname()
 
   return (
-    <Sidebar className="border-r border-blue-200 z-[9999]" collapsible="icon">
+    <Sidebar className="border-r border-blue-200 z-[50]" collapsible="icon">
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3 pt-2">
           <Image
