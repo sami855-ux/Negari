@@ -191,7 +191,7 @@ export default function MapView({
                     className={`px-2 py-1 rounded text-white ${
                       report.status === "RESOLVED"
                         ? "bg-green-500"
-                        : report.status === "REJECTED"
+                        : report.status == "REJECTED"
                         ? "bg-red-500"
                         : report.status === "PENDING"
                         ? "bg-yellow-500"
