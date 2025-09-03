@@ -98,7 +98,7 @@ export function Header() {
                   alt="Officer Dawit"
                 />
                 <AvatarFallback className="bg-green-500 text-primary-foreground">
-                  DA
+                  {`${user.user.username}`.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             </Button>
