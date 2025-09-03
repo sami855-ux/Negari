@@ -60,3 +60,19 @@ export const getSingleUser = async (userId) => {
     return null
   }
 }
+
+export const getAllWorkers = async () => {
+  try {
+    const res = await axiosInstance.get("/user/workers")
+    console.log(res.data)
+
+    if (res.data.success) {
+      return res.data.workers
+    } else {
+      return []
+    }
+  } catch (error) {
+    console.log("Error while getting the workers", error)
+    return []
+  }
+}
