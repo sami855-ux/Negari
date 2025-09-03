@@ -516,6 +516,7 @@ export const getReportById = async (req, res) => {
         reporter: true,
         assignedTo: true,
         feedback: true,
+        AssignedReports_worker: true,
         category: {
           select: {
             id: true,
@@ -532,6 +533,8 @@ export const getReportById = async (req, res) => {
     const result = {
       ...report,
       category: report.category?.name || null,
+      AssignedReports_worker:
+        report.AssignedReports_worker.username || "Unassigned",
     }
 
     return res.json({ report: result, success: true })
@@ -547,7 +550,14 @@ export const changeReportStatus = async (req, res) => {
     const { status, resolutionNote } = req.body
 
     // Basic validation: check if status is provided and valid
-    const allowedStatuses = ["PENDING", "IN_PROGRESS", "RESOLVED", "REJECTED"]
+    const allowedStatuses = [
+      "PENDING",
+      "IN_PROGRESS",
+      "RESOLVED",
+      "REJECTED",
+      "VERIFIED",
+      "NEEDS_MORE_INFO",
+    ]
     if (!status || !allowedStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
@@ -811,6 +821,13 @@ export const updateReportDynamic = async (req, res) => {
     // If updating status to "RESOLVED", auto set resolvedAt
     if (updateData.status === "RESOLVED") {
       updateData.resolvedAt = new Date()
+    }
+
+    if (updateData.status === "IN_PROGRESS") {
+      updateData.inProgressAt = new Date()
+    }
+    if (updateData.status === "REJECTED") {
+      updateData.rejectedAt = new Date()
     }
 
     const updatedReport = await prisma.report.update({
