@@ -5,6 +5,7 @@ import {
   deleteUser,
   getAllUsers,
   getUserWithDetails,
+  getWorkers,
   updateUser,
 } from "../controllers/user.controller.js"
 
@@ -12,6 +13,9 @@ const router = express.Router()
 
 // Get all user
 router.get("/", getAllUsers)
+
+//Get all the workers
+router.get("/workers", getWorkers)
 
 //Get A single user
 router.get("/:userId", getUserWithDetails)
