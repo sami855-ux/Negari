@@ -62,16 +62,45 @@ const createCustomIcon = (status: string) => {
 }
 
 interface Report {
-  id: number
+  id: string
   title: string
   description: string
-  status: string
+  status: ReportStatus
   category: string
-  location: [number, number] // [lat, lng]
+  locationId: string
   assignedTo: string
   createdAt: string
-  priority: string
+  priority: SeverityLevel
+  severity: SeverityLevel
+  spamScore?: number
+  confidenceScore?: number
+  isPublic?: boolean
+  toxicityScore?: number
+  resolutionNote?: string
+  resolvedAt?: string
+  updatedAt?: string
+  isAnonymous?: boolean
+  tags?: string[]
+  imageUrls?: string[]
+  videoUrl?: string
+  location: {
+    latitude: number
+    longitude: number
+    address?: string
+    city?: string
+  }
 }
+// Report status type
+type ReportStatus =
+  | "PENDING"
+  | "NEEDS_MORE_INFO"
+  | "VERIFIED"
+  | "IN_PROGRESS"
+  | "RESOLVED"
+  | "REJECTED"
+
+// Severity level type
+type SeverityLevel = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
 
 interface MapViewProps {
   reports: Report[]
@@ -86,6 +115,7 @@ export default function MapView({
 }: MapViewProps) {
   const mapRef = useRef<L.Map>(null)
 
+  console.log(reports)
   // Convert GeoJSON polygon (lng, lat) → Leaflet (lat, lng)
   const leafletPolygon = useMemo(() => {
     if (!polygon) return []
@@ -119,7 +149,7 @@ export default function MapView({
   }, [])
 
   return (
-    <div className="w-full h-full rounded-lg overflow-hidden z-10 relative">
+    <div className="relative z-10 w-full h-full overflow-hidden rounded-lg">
       <MapContainer
         key={Date.now()}
         ref={mapRef}
@@ -144,7 +174,7 @@ export default function MapView({
         {reports.map((report) => (
           <Marker
             key={report.id}
-            position={report.location}
+            position={[report.location.latitude, report.location.longitude]}
             icon={createCustomIcon(report.status)}
             eventHandlers={{
               click: () => onMarkerClick(report),
@@ -152,18 +182,18 @@ export default function MapView({
           >
             <Popup>
               <div className="p-2 min-w-[200px]">
-                <h3 className="font-semibold text-sm mb-1">{report.title}</h3>
-                <p className="text-xs text-gray-600 mb-2">
+                <h3 className="mb-1 text-sm font-semibold">{report.title}</h3>
+                <p className="mb-2 text-xs text-gray-600">
                   {report.description}
                 </p>
-                <div className="flex justify-between items-center text-xs">
+                <div className="flex items-center justify-between text-xs">
                   <span
                     className={`px-2 py-1 rounded text-white ${
-                      report.status === "resolved"
+                      report.status === "RESOLVED"
                         ? "bg-green-500"
-                        : report.status === "urgent"
+                        : report.status === "REJECTED"
                         ? "bg-red-500"
-                        : report.status === "pending"
+                        : report.status === "PENDING"
                         ? "bg-yellow-500"
                         : "bg-gray-500"
                     }`}
