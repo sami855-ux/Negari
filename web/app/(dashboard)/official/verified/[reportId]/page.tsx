@@ -72,6 +72,7 @@ interface Report {
   title: string
   description: string
   imageUrls: string[]
+  resolutionImages: string[]
   videoUrl: string
   status:
     | "PENDING"
@@ -98,9 +99,11 @@ interface Report {
   rejectedAt: string | null
   categoryId: string
   regionId: string | null
+  AssignedReports_worker: string
   location: Location
   reporter: UserType
   assignedTo: UserType
+  assignedToWorkerId: string
   feedback: string | null
   category: string
   aiAnalysis?: {
@@ -116,7 +119,7 @@ const statusColors = {
   PENDING: "bg-yellow-100 text-yellow-800  hover:bg-yellow-200",
   IN_PROGRESS: "bg-blue-100 text-blue-800 hover:bg-blue-200",
   RESOLVED: "bg-green-100 text-green-800 hover:bg-green-200",
-  REJECTED: "bg-gray-100 text-gray-800 hover:bg-gray-200",
+  REJECTED: "bg-red-100 text-red-800 hover:bg-red-200",
   VERIFIED: "bg-purple-100 text-purple-800 hover:bg-purple-200",
   NEEDS_MORE_INFO: "bg-yellow-100 text-yellow-800",
 }
@@ -138,13 +141,6 @@ const formatDate = (dateString: string) => {
   })
 }
 
-// Replace this with your actual worker list from props or API
-// const workers = [
-//   { id: "45f5a1a6-85f6-48e8-9281-f0651cd8ff31", name: "Abel Bekele" },
-//   { id: "45f5a1a6-85f6-48e8-9281-f0651cd8ff31", name: "Mekdes Yilma" },
-//   { id: "45f5a1a6-85f6-48e8-9281-f0651cd8ff31", name: "Samuel Endale" },
-// ]
-
 interface ReportDetailPageProps {
   params: {
     reportId: string
@@ -162,11 +158,14 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
   })
 
   const [report, setReport] = useState<Report | null>(null)
+  const [media, setMedia] = useState<string[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [initialIndex, setInitialIndex] = useState(0)
   const [isVideoOpen, setIsVideoOpen] = useState(false)
   const [isUpdateSheetOpen, setIsUpdateSheetOpen] = useState(false)
-  const [selectedWorker, setSelectedWorker] = useState<string | null>(null)
+  const [selectedWorker, setSelectedWorker] = useState<string | undefined>(
+    report?.assignedToWorkerId
+  )
   const [openWorkerPopover, setOpenWorkerPopover] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
 
@@ -191,12 +190,14 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
           queryKey: ["Single_Report", report?.id],
         })
 
-        toast.success("New Worker assigned successfully!")
+        toast.success("Report updated successfully!")
+
+        router.back()
       } else {
-        toast.error("Failed to assign worker")
+        toast.error("Failed to update report")
       }
     } catch (error) {
-      toast.error("Failed to assign worker")
+      toast.error("Failed to update report")
     } finally {
       setIsUpdating(false)
     }
@@ -371,36 +372,75 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                 )}
 
                 {report?.status === "IN_PROGRESS" && (
-                  <div className="w-full p-4 mb-5 border rounded-xl border-muted bg-background bg-green-50">
-                    {/* Team Info Section */}
-                    <div className="flex items-center gap-3 px-4 pb-3 mb-4">
-                      <div className="relative">
-                        <Image
-                          src={defaultUser}
-                          alt={"Team member"}
-                          width={50}
-                          height={50}
-                          className="object-cover border-2 border-green-100 rounded-full"
-                        />
-                        <span className="absolute flex items-center justify-center w-5 h-5 text-xs text-white bg-green-500 border-2 border-white rounded-full -bottom-1 -right-1">
-                          ✓
-                        </span>
+                  <div className="w-full p-5 mb-5 border rounded-xl border-muted bg-gradient-to-br from-green-50 to-emerald-50/30">
+                    {/* Header Section */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="relative flex -space-x-2">
+                          {[1, 2, 3].map((index) => (
+                            <div key={index} className="relative">
+                              <Image
+                                src={defaultUser}
+                                alt={"Team member"}
+                                width={40}
+                                height={40}
+                                className="object-cover border-2 border-white rounded-full shadow-sm"
+                              />
+                              {index === 1 && (
+                                <span className="absolute flex items-center justify-center w-4 h-4 text-xs text-white bg-green-500 border-2 border-white rounded-full -bottom-1 -right-1">
+                                  ✓
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-semibold">
+                            {report.AssignedReports_worker}'s Team
+                          </h4>
+                          <p className="text-xs text-muted-foreground">
+                            Actively working on this task
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="text-sm font-medium">Samuel's Team</h4>
-                        <p className="text-xs text-muted-foreground">
-                          Assigned to task
-                        </p>
+                      <span className="px-3 py-1 text-xs font-medium text-green-700 bg-green-200 rounded-full">
+                        IN PROGRESS
+                      </span>
+                    </div>
+
+                    {/* Status Message */}
+                    <div className="p-3 mb-4 text-sm text-green-800 border rounded-lg bg-green-100/70 border-green-200/50">
+                      <div className="flex items-start gap-2">
+                        <svg
+                          className="w-4 h-4 mt-0.5 text-green-600 shrink-0"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        <p>The team has accepted this report and begun work</p>
                       </div>
                     </div>
-                    <p className="px-2 py-2 my-2 text-sm text-green-700 bg-green-100 rounded-lg">
-                      The team accepts the report and begins work at the
-                      earliest convenience
-                    </p>
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+
+                    {/* Task Metrics */}
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="p-3 bg-white border rounded-lg shadow-sm border-muted/30">
+                        <p className="mb-1 text-xs text-muted-foreground">
+                          Time Elapsed
+                        </p>
+                        <p className="text-sm font-medium">3 days</p>
+                      </div>
+                    </div>
+
+                    {/* Timeline */}
+                    <div className="mb-4">
+                      <h5 className="flex items-center gap-2 mb-3 text-xs font-medium text-muted-foreground">
                         <svg
-                          className="w-4 h-4 text-green-500 animate-pulse"
+                          className="w-4 h-4 text-green-600"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -409,22 +449,392 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth={2}
-                            d="M13 10V3L4 14h7v7l9-11h-7z"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                           />
                         </svg>
-                        Work Progress
-                      </span>
-                      <span className="px-2 py-1 text-sm font-semibold text-green-600 rounded-full bg-green-50">
-                        {20}%
+                        Recent Activity
+                      </h5>
+                      <div className="space-y-2">
+                        <div className="flex items-start gap-2 text-xs">
+                          <div className="w-2 h-2 mt-1.5 bg-green-500 rounded-full"></div>
+                          <div>
+                            <p className="font-medium">
+                              Task assigned to {report?.AssignedReports_worker}
+                              's team
+                            </p>
+                            <p className="text-muted-foreground">2 days ago</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2 text-xs">
+                          <div className="w-2 h-2 mt-1.5 bg-green-500 rounded-full"></div>
+                          <div>
+                            <p className="font-medium">
+                              Initial assessment completed
+                            </p>
+                            <p className="text-muted-foreground">1 day ago</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2 text-xs">
+                          <div className="w-2 h-2 mt-1.5 bg-green-300 rounded-full"></div>
+                          <div>
+                            <p className="font-medium">
+                              Implementation in progress
+                            </p>
+                            <p className="text-muted-foreground">Today</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {report?.status === "RESOLVED" && (
+                  <div className="w-full p-5 mb-5 border rounded-xl border-muted bg-gradient-to-br from-blue-50 to-indigo-50/30">
+                    {/* Header Section */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="relative">
+                          <Image
+                            src={defaultUser}
+                            alt={"Team member"}
+                            width={50}
+                            height={50}
+                            className="object-cover border-2 border-blue-100 rounded-full shadow-sm"
+                          />
+                          <span className="absolute flex items-center justify-center w-5 h-5 text-xs text-white bg-blue-500 border-2 border-white rounded-full -bottom-1 -right-1">
+                            ✓
+                          </span>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-semibold">
+                            {report?.AssignedReports_worker}'s Team
+                          </h4>
+                          <p className="text-xs text-muted-foreground">
+                            Task completed successfully
+                          </p>
+                        </div>
+                      </div>
+                      <span className="px-3 py-1 text-xs font-medium text-white bg-blue-500 rounded-full">
+                        RESOLVED
                       </span>
                     </div>
-                    <Progress
-                      value={30}
-                      className="h-3 rounded-full bg-muted/20"
-                      indicatorClassName="bg-gradient-to-r from-green-400 via-green-500 to-green-600 rounded-full transition-all duration-700 shadow-lg shadow-green-100"
-                    />
-                    <div className="mt-1 text-xs text-right text-green-600 animate-pulse">
-                      {30 > 20 ? "Ahead of schedule" : "On track"}
+
+                    {/* Completion Message */}
+                    <div className="p-3 mb-4 text-sm text-blue-800 border rounded-lg bg-blue-100/70 border-blue-200/50">
+                      <div className="flex items-start gap-2">
+                        <svg
+                          className="w-4 h-4 mt-0.5 text-blue-600 shrink-0"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        <p>
+                          The task has been completed successfully and marked as
+                          resolved
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Resolution Images Gallery */}
+                    {report?.resolutionImages &&
+                      report.resolutionImages.length > 0 && (
+                        <div className="p-4 mb-4 bg-white border rounded-lg shadow-sm border-muted/30">
+                          <h5 className="flex items-center gap-2 mb-3 text-xs font-medium text-muted-foreground">
+                            <svg
+                              className="w-4 h-4 text-blue-600"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                              />
+                            </svg>
+                            Resolution Images ({report.resolutionImages.length})
+                          </h5>
+                          <div className="grid grid-cols-3 gap-2">
+                            {report.resolutionImages
+                              .slice(0, 3)
+                              .map((image, index) => (
+                                <div
+                                  key={index}
+                                  className="relative aspect-square"
+                                >
+                                  <Image
+                                    src={image}
+                                    alt={`Resolution image ${index + 1}`}
+                                    fill
+                                    className="object-cover border rounded-md cursor-pointer border-muted/30"
+                                    onClick={() => {
+                                      openMedia(index)
+                                      setMedia(report?.resolutionImages)
+                                    }}
+                                  />
+                                  {index === 2 &&
+                                    report.resolutionImages.length > 3 && (
+                                      <div
+                                        className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md cursor-pointer"
+                                        onClick={() => {
+                                          // Function to open image gallery
+                                          openMedia(index)
+                                          setMedia(report?.resolutionImages)
+                                        }}
+                                      >
+                                        <span className="text-sm font-medium text-white">
+                                          +{report.resolutionImages.length - 3}
+                                        </span>
+                                      </div>
+                                    )}
+                                </div>
+                              ))}
+                          </div>
+                          {report.resolutionImages.length > 3 && (
+                            <button
+                              className="w-full py-2 mt-3 text-xs text-blue-600 transition-colors rounded-md bg-blue-50 hover:bg-blue-100"
+                              onClick={() => {
+                                // Function to open image gallery with all images
+                                openMedia(2)
+                                setMedia(report?.resolutionImages)
+                              }}
+                            >
+                              View all {report.resolutionImages.length} images
+                            </button>
+                          )}
+                        </div>
+                      )}
+
+                    {/* Resolution Details */}
+                    <div className="p-4 mb-4 bg-white border rounded-lg shadow-sm border-muted/30">
+                      <h5 className="flex items-center gap-2 mb-3 text-xs font-medium text-muted-foreground">
+                        <svg
+                          className="w-4 h-4 text-blue-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                        Resolution Summary
+                      </h5>
+                      <p className="text-sm capitalize">
+                        {report?.resolutionNote}
+                      </p>
+                    </div>
+
+                    {/* Completion Metrics */}
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="p-3 bg-white border rounded-lg shadow-sm border-muted/30">
+                        <p className="mb-1 text-xs text-muted-foreground">
+                          Time to Resolution
+                        </p>
+                        <p className="text-sm font-medium">5 days</p>
+                      </div>
+                      <div className="p-3 bg-white border rounded-lg shadow-sm border-muted/30">
+                        <p className="mb-1 text-xs text-muted-foreground">
+                          Completed On
+                        </p>
+                        <p className="text-sm font-medium">
+                          {formatDate(report?.resolvedAt)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-3">
+                      <button className="flex items-center justify-center flex-1 gap-2 py-2 text-sm font-medium text-blue-700 transition-colors bg-blue-100 rounded-lg hover:bg-blue-200">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                          />
+                        </svg>
+                        Send a message to the Reporter
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleReportUpdate({
+                            status: "PENDING",
+                          })
+                        }}
+                        disabled={isUpdating}
+                        className="flex items-center justify-center flex-1 gap-2 py-2 text-sm font-medium text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700"
+                      >
+                        {isUpdating ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Reopening...
+                          </>
+                        ) : (
+                          "Reopen Report"
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {report?.status === "REJECTED" && (
+                  <div className="w-full p-5 mb-5 border rounded-xl border-muted bg-gradient-to-br from-rose-50 to-red-50/30">
+                    {/* Header Section */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div>
+                          <h4 className="text-sm font-semibold">
+                            Report have been rejected
+                          </h4>
+                        </div>
+                      </div>
+                      <span className="px-3 py-1 text-xs font-medium text-white rounded-full bg-rose-500">
+                        REJECTED
+                      </span>
+                    </div>
+
+                    {/* Rejection Message */}
+                    <div className="p-3 mb-4 text-sm border rounded-lg text-rose-800 bg-rose-100/70 border-rose-200/50">
+                      <div className="flex items-start gap-2">
+                        <svg
+                          className="w-4 h-4 mt-0.5 text-rose-600 shrink-0"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                        <p>
+                          The Officer has reviewed this report and decided not
+                          to proceed with the reported issue
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Rejection Details */}
+                    <div className="p-4 mb-4 bg-white border rounded-lg shadow-sm border-muted/30">
+                      <h5 className="flex items-center gap-2 mb-3 text-xs font-medium text-muted-foreground">
+                        <svg
+                          className="w-4 h-4 text-rose-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                          />
+                        </svg>
+                        Reason for Rejection
+                      </h5>
+                      <p className="text-sm text-rose-800">
+                        {report?.rejectionReason || "No reason provided"}
+                      </p>
+                    </div>
+
+                    {/* Rejection Metrics */}
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="p-3 bg-white border rounded-lg shadow-sm border-muted/30">
+                        <p className="mb-1 text-xs text-muted-foreground">
+                          Rejected On
+                        </p>
+                        <p className="text-sm font-medium">
+                          {formatDate(report?.rejectedAt)}
+                        </p>
+                      </div>
+                      <div className="p-3 bg-white border rounded-lg shadow-sm border-muted/30">
+                        <p className="mb-1 text-xs text-muted-foreground">
+                          Time to Decision
+                        </p>
+                        <p className="text-sm font-medium">2 days</p>
+                      </div>
+                    </div>
+
+                    {/* Next Steps */}
+                    <div className="p-4 mb-4 border rounded-lg bg-amber-50 border-amber-200/50">
+                      <h5 className="flex items-center gap-2 mb-2 text-xs font-medium text-amber-800">
+                        <svg
+                          className="w-4 h-4 text-amber-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        Recommended Next Steps
+                      </h5>
+                      <ul className="space-y-1 text-xs list-disc list-inside text-amber-700">
+                        <li>Review the rejection reason provided</li>
+                        <li>Consider editing and reopening the report</li>
+                        <li>
+                          Contact the reporter for clarification if needed
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-3">
+                      <button className="flex items-center justify-center flex-1 gap-2 py-2 text-sm font-medium transition-colors rounded-lg text-rose-700 bg-rose-100 hover:bg-rose-200">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                          />
+                        </svg>
+                        Request Clarification from reporter
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleReportUpdate({
+                            status: "PENDING",
+                          })
+                        }}
+                        disabled={isUpdating}
+                        className="flex items-center justify-center flex-1 gap-2 py-2 text-sm font-medium text-white transition-colors rounded-lg bg-rose-600 hover:bg-rose-700"
+                      >
+                        {isUpdating ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Reopening...
+                          </>
+                        ) : (
+                          "Reopen Report"
+                        )}
+                      </button>
                     </div>
                   </div>
                 )}
@@ -440,7 +850,10 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                       <div
                         key={index}
                         className="relative overflow-hidden border rounded-lg aspect-video"
-                        onClick={() => openMedia(index)}
+                        onClick={() => {
+                          openMedia(index)
+                          setMedia(report?.imageUrls)
+                        }}
                       >
                         <Image
                           src={image}
@@ -541,7 +954,7 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                 {report?.status === "VERIFIED" && (
                   <Button
                     variant="outline"
-                    className="col-span-2 text-white bg-green-600 hover:bg-green-500 hover:text-white"
+                    className="col-span-2 text-white bg-blue-600 hover:bg-blue-500 hover:text-white"
                     onClick={() => setIsUpdateSheetOpen(true)}
                   >
                     Assign to another Worker
@@ -550,9 +963,9 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
 
                 <Button
                   variant="outline"
-                  className="col-span-2 text-white bg-orange-600 hover:bg-orange-500 hover:text-white"
+                  className="col-span-2 text-white bg-green-600 hover:bg-green-500 hover:text-white"
                 >
-                  Message the Worker
+                  Send message to team
                 </Button>
               </div>
             )}
@@ -709,22 +1122,24 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                     </div>
                   </div>
                 </div>
-                <div>
-                  <h4 className="flex items-center mb-2 text-sm font-medium">
-                    <UserCog className="w-4 h-4 mr-2" />
-                    Assigned Worker Team
-                  </h4>
-                  <div className="flex items-center">
-                    <div className="flex items-center justify-center w-8 h-8 mr-3 text-orange-600 bg-orange-100 rounded-full">
-                      <UserCog className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium font-jakarta">
-                        Abebe's Team
-                      </p>
+                {report?.AssignedReports_worker && (
+                  <div>
+                    <h4 className="flex items-center mb-2 text-sm font-medium">
+                      <UserCog className="w-4 h-4 mr-2" />
+                      Assigned Worker Team
+                    </h4>
+                    <div className="flex items-center">
+                      <div className="flex items-center justify-center w-8 h-8 mr-3 text-orange-600 bg-orange-100 rounded-full">
+                        <UserCog className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium font-jakarta">
+                          {report?.AssignedReports_worker}'s Team
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 <div>
                   <h4 className="flex items-center mb-2 text-sm font-medium">
@@ -770,7 +1185,10 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                         <CheckCircle className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="font-medium">Verified</p>
+                        <p className="font-medium">
+                          {`${report.status}`.charAt(0) +
+                            `${report.status}`.slice(1).toLowerCase()}
+                        </p>
                         <p className="text-xs text-gray-500">
                           Confidence: {report.confidenceScore}%
                         </p>
@@ -833,16 +1251,15 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
               </div>
               <div>
                 <SheetTitle>Assign New Worker</SheetTitle>
-                <SheetDescription>
-                  Current Worker:{" "}
-                  <span className="font-semibold text-red-600">
-                    Samuel Tale Dejene
-                  </span>
-                </SheetDescription>
               </div>
             </div>
           </SheetHeader>
-
+          <SheetDescription className="mt-6 font-semibold">
+            Current Worker:{" "}
+            <span className="font-semibold text-red-600">
+              {report.AssignedReports_worker}
+            </span>
+          </SheetDescription>
           <div className="grid gap-4 py-12">
             <div className="space-y-2">
               <Label htmlFor="assignedWorker" className="text-sm font-medium">
@@ -888,21 +1305,25 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                       />
                       <CommandEmpty>No worker found.</CommandEmpty>
                       <CommandGroup>
-                        {workers?.map((worker) => (
-                          <CommandItem
-                            key={worker.id}
-                            onSelect={() => {
-                              setSelectedWorker(worker.id)
-                              setOpenWorkerPopover(false)
-                            }}
-                            className="flex items-center justify-between py-2"
-                          >
-                            <span>{worker.username}</span>
-                            <Badge className="text-xs text-green-700 bg-green-100 font-jakarta">
-                              Active
-                            </Badge>
-                          </CommandItem>
-                        ))}
+                        {workers
+                          .filter(
+                            (item) => item.id !== report?.assignedToWorkerId
+                          )
+                          ?.map((worker) => (
+                            <CommandItem
+                              key={worker.id}
+                              onSelect={() => {
+                                setSelectedWorker(worker.id)
+                                setOpenWorkerPopover(false)
+                              }}
+                              className="flex items-center justify-between py-2"
+                            >
+                              <span>{worker.username}</span>
+                              <Badge className="text-xs text-green-700 bg-green-100 font-jakarta">
+                                Active
+                              </Badge>
+                            </CommandItem>
+                          ))}
                       </CommandGroup>
                     </Command>
                   )}
@@ -942,7 +1363,7 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
       </Sheet>
 
       <MediaViewer
-        media={report.imageUrls}
+        media={media}
         initialIndex={initialIndex}
         open={isOpen}
         onOpenChange={setIsOpen}
