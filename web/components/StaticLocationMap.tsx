@@ -7,16 +7,29 @@ import L from "leaflet"
 
 // Custom icon using Lucide's MapPin
 const createCustomIcon = (color = "#3b82f6") => {
+  const svg = `
+    <div class="relative flex items-center justify-center">
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" 
+        viewBox="0 0 24 24" fill="url(#grad)" stroke="white" stroke-width="1.5" 
+        stroke-linecap="round" stroke-linejoin="round" 
+        class="drop-shadow-lg animate-bounce">
+        <defs>
+          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:${color};stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z"/>
+        <circle cx="12" cy="10" r="3" fill="white"/>
+      </svg>
+    </div>
+  `
   return L.divIcon({
-    html: `
-      <div class="relative">
-        <MapPin class="w-8 h-8" style="color: ${color}" />
-        <div class="absolute top-1/2 left-1/2 w-2 h-2 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
-      </div>
-    `,
+    html: svg,
     className: "bg-transparent border-none",
-    iconSize: [32, 32],
-    iconAnchor: [16, 32],
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40],
   })
 }
 
@@ -47,7 +60,7 @@ export function StaticLocationMap({
     <div className="relative">
       <MapContainer
         center={[latitude, longitude]}
-        zoom={17}
+        zoom={27}
         scrollWheelZoom={true}
         dragging={false}
         touchZoom={false}
@@ -61,12 +74,24 @@ export function StaticLocationMap({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <Marker position={[latitude, longitude]} icon={createCustomIcon()}>
-          {address && <Popup>{address}</Popup>}
+          {address && (
+            <Popup className="custom-popup">
+              <div className="p-2 bg-white rounded-lg shadow-md">
+                <h3 className="text-sm font-semibold text-gray-800">
+                  📍 Location
+                </h3>
+                <p className="text-xs text-gray-600">{address}</p>
+                <p className="mt-1 text-[11px] text-gray-400">
+                  Lat: {latitude.toFixed(4)}, Lng: {longitude.toFixed(4)}
+                </p>
+              </div>
+            </Popup>
+          )}
         </Marker>
       </MapContainer>
 
       {/* Static position indicator */}
-      <div className="absolute bottom-2 right-2 bg-white p-2 rounded-lg shadow-md flex items-center gap-1">
+      <div className="absolute flex items-center gap-1 p-2 bg-white rounded-lg shadow-md bottom-2 right-2">
         <Navigation className="w-4 h-4 text-blue-600" />
         <span className="text-xs font-medium">Static View</span>
       </div>
