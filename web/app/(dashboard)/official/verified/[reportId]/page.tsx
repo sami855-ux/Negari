@@ -63,9 +63,10 @@ import {
   CommandItem,
 } from "@/components/ui/command"
 import { updateReportDynamic } from "@/services/report"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import toast from "react-hot-toast"
 import { Progress } from "@/components/ui/progress"
+import { getAllWorkers } from "@/services/getUsers"
 interface Report {
   id: string
   title: string
@@ -117,6 +118,7 @@ const statusColors = {
   RESOLVED: "bg-green-100 text-green-800 hover:bg-green-200",
   REJECTED: "bg-gray-100 text-gray-800 hover:bg-gray-200",
   VERIFIED: "bg-purple-100 text-purple-800 hover:bg-purple-200",
+  NEEDS_MORE_INFO: "bg-yellow-100 text-yellow-800",
 }
 
 const severityColors = {
@@ -137,11 +139,11 @@ const formatDate = (dateString: string) => {
 }
 
 // Replace this with your actual worker list from props or API
-const workers = [
-  { id: "45f5a1a6-85f6-48e8-9281-f0651cd8ff31", name: "Abel Bekele" },
-  { id: "45f5a1a6-85f6-48e8-9281-f0651cd8ff31", name: "Mekdes Yilma" },
-  { id: "45f5a1a6-85f6-48e8-9281-f0651cd8ff31", name: "Samuel Endale" },
-]
+// const workers = [
+//   { id: "45f5a1a6-85f6-48e8-9281-f0651cd8ff31", name: "Abel Bekele" },
+//   { id: "45f5a1a6-85f6-48e8-9281-f0651cd8ff31", name: "Mekdes Yilma" },
+//   { id: "45f5a1a6-85f6-48e8-9281-f0651cd8ff31", name: "Samuel Endale" },
+// ]
 
 interface ReportDetailPageProps {
   params: {
@@ -151,9 +153,13 @@ interface ReportDetailPageProps {
 
 const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   const { isLoading, report: reportData } = useGetReport(params.reportId)
-  const queryClient = useQueryClient()
+  const { isLoading: isWorkerLoading, data: workers } = useQuery({
+    queryKey: ["workers"],
+    queryFn: getAllWorkers,
+  })
 
   const [report, setReport] = useState<Report | null>(null)
   const [isOpen, setIsOpen] = useState(false)
@@ -266,6 +272,9 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                       Reported by {report.reporter?.username} •{" "}
                       {formatDate(report.createdAt)}
                     </CardDescription>
+                    <CardDescription className="mt-1 text-orange-600">
+                      {getTimeElapsed(report.createdAt)} ago
+                    </CardDescription>
                   </div>
                   <Badge
                     className={
@@ -303,10 +312,10 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                       "flex items-center gap-3 rounded-xl border border-yellow-100 hover:border-yellow-200 bg-yellow-50 px-2 py-4 mb-5"
                     )}
                   >
-                    <AlertTriangle className=" text-yellow-600" size={50} />
+                    <AlertTriangle className="text-yellow-600 " size={50} />
 
                     <div>
-                      <p className="text-sm font-semibold text-yellow-700 pb-2">
+                      <p className="pb-2 text-sm font-semibold text-yellow-700">
                         This report is not in progress.
                       </p>
                       <p className="text-sm text-yellow-700">
@@ -315,14 +324,14 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                         may require your or administrative review or
                         reassignment.{" "}
                         <span
-                          className="font-semibold hover:underline cursor-pointer"
+                          className="font-semibold cursor-pointer hover:underline"
                           onClick={() => setIsUpdateSheetOpen(true)}
                         >
                           Message the worker
                         </span>
                       </p>
 
-                      <p className="text-orange-700 text-sm pt-2 font-semibold">
+                      <p className="pt-2 text-sm font-semibold text-orange-700">
                         {getTimeElapsed(report.createdAt)} passed since report
                         submitted{" "}
                       </p>
@@ -330,35 +339,66 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                   </div>
                 )}
 
+                {report?.status === "NEEDS_MORE_INFO" && (
+                  <div className="flex items-start gap-3 p-4 py-6 mb-3 border shadow-sm rounded-xl border-amber-100 bg-amber-50 text-amber-800">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 mt-0.5 text-amber-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01M12 19c-3.866 0-7-3.134-7-7s3.134-7 
+        7-7 7 3.134 7 7-3.134 7-7 7z"
+                      />
+                    </svg>
+
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold">
+                        More Information Required From the Reporter
+                      </span>
+                      <p className="mt-1 text-xs text-amber-700">
+                        This report cannot proceed until additional details are
+                        provided. Please review the missing information and
+                        update the report.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {report?.status === "IN_PROGRESS" && (
-                  <div className="w-full rounded-xl border border-muted p-4  bg-background mb-5 bg-green-50">
+                  <div className="w-full p-4 mb-5 border rounded-xl border-muted bg-background bg-green-50">
                     {/* Team Info Section */}
-                    <div className="flex items-center gap-3 mb-4 pb-3 px-4">
+                    <div className="flex items-center gap-3 px-4 pb-3 mb-4">
                       <div className="relative">
                         <Image
                           src={defaultUser}
                           alt={"Team member"}
                           width={50}
                           height={50}
-                          className="rounded-full object-cover border-2 border-green-100"
+                          className="object-cover border-2 border-green-100 rounded-full"
                         />
-                        <span className="absolute -bottom-1 -right-1 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center border-2 border-white">
+                        <span className="absolute flex items-center justify-center w-5 h-5 text-xs text-white bg-green-500 border-2 border-white rounded-full -bottom-1 -right-1">
                           ✓
                         </span>
                       </div>
                       <div>
-                        <h4 className="font-medium text-sm">Samuel's Team</h4>
+                        <h4 className="text-sm font-medium">Samuel's Team</h4>
                         <p className="text-xs text-muted-foreground">
                           Assigned to task
                         </p>
                       </div>
                     </div>
-                    <p className="text-green-700 bg-green-100 px-2 py-2 my-2 rounded-lg text-sm">
+                    <p className="px-2 py-2 my-2 text-sm text-green-700 bg-green-100 rounded-lg">
                       The team accepts the report and begins work at the
                       earliest convenience
                     </p>
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                         <svg
                           className="w-4 h-4 text-green-500 animate-pulse"
                           fill="none"
@@ -374,16 +414,16 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                         </svg>
                         Work Progress
                       </span>
-                      <span className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                      <span className="px-2 py-1 text-sm font-semibold text-green-600 rounded-full bg-green-50">
                         {20}%
                       </span>
                     </div>
                     <Progress
                       value={30}
-                      className="h-3 bg-muted/20 rounded-full"
+                      className="h-3 rounded-full bg-muted/20"
                       indicatorClassName="bg-gradient-to-r from-green-400 via-green-500 to-green-600 rounded-full transition-all duration-700 shadow-lg shadow-green-100"
                     />
-                    <div className="mt-1 text-xs text-green-600 text-right animate-pulse">
+                    <div className="mt-1 text-xs text-right text-green-600 animate-pulse">
                       {30 > 20 ? "Ahead of schedule" : "On track"}
                     </div>
                   </div>
@@ -583,49 +623,45 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                   </div>
                 </div>
 
-                {report.aiAnalysis && (
-                  <>
-                    <div className="p-3 bg-white border rounded-lg">
-                      <p className="text-xs text-gray-500">Urgency</p>
-                      <div className="flex items-center mt-1">
-                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div
-                            className="bg-orange-500 h-2.5 rounded-full"
-                            style={{ width: `${report.aiAnalysis.urgency}%` }}
-                          ></div>
-                        </div>
-                        <span className="ml-2 font-medium">
-                          {report.aiAnalysis.urgency}%
-                        </span>
+                <>
+                  <div className="p-3 bg-white border rounded-lg">
+                    <p className="text-xs text-gray-500">Urgency</p>
+                    <div className="flex items-center mt-1">
+                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        <div
+                          className="bg-orange-500 h-2.5 rounded-full"
+                          style={{ width: `${20}%` }}
+                        ></div>
                       </div>
+                      <span className="ml-2 font-medium">{20}%</span>
                     </div>
+                  </div>
 
-                    <div className="p-3 bg-white border rounded-lg">
-                      <p className="text-xs text-gray-500">
-                        Estimated Resolution Time
-                      </p>
-                      <p className="mt-1 font-medium">
-                        {report.aiAnalysis.estimatedResolutionTime}
-                      </p>
-                    </div>
+                  <div className="p-3 bg-white border rounded-lg">
+                    <p className="text-xs text-gray-500">
+                      Estimated Resolution Time
+                    </p>
+                    <p className="mt-1 font-medium">30 min</p>
+                  </div>
 
-                    <div>
-                      <p className="mb-2 text-sm font-medium">
-                        Recommended Actions
-                      </p>
-                      <ul className="space-y-2">
-                        {report.aiAnalysis.recommendedActions.map(
-                          (action, index) => (
-                            <li key={index} className="flex items-start">
-                              <CheckCircle className="w-4 h-4 mt-0.5 mr-2 text-green-500 flex-shrink-0" />
-                              <span className="text-sm">{action}</span>
-                            </li>
-                          )
-                        )}
-                      </ul>
-                    </div>
-                  </>
-                )}
+                  <div>
+                    <p className="mb-2 text-sm font-medium">
+                      Recommended Actions
+                    </p>
+                    <ul className="space-y-2">
+                      <li className="flex items-start">
+                        <CheckCircle className="w-4 h-4 mt-0.5 mr-2 text-green-500 flex-shrink-0" />
+                        <span className="text-sm">Take immediate action</span>
+                      </li>
+                      <li className="flex items-start">
+                        <CheckCircle className="w-4 h-4 mt-0.5 mr-2 text-green-500 flex-shrink-0" />
+                        <span className="text-sm">
+                          Follow up with the reporter
+                        </span>
+                      </li>
+                    </ul>
+                  </div>
+                </>
               </CardContent>
             </Card>
 
@@ -650,7 +686,7 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                       />
                     </div>
                     <div>
-                      <p className="font-medium font-jakarta text-sm">
+                      <p className="text-sm font-medium font-jakarta">
                         {report.isAnonymous
                           ? "Anonymous"
                           : report.reporter?.username}
@@ -669,7 +705,7 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                       <ShieldAlert className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="font-medium font-jakarta text-sm">You</p>
+                      <p className="text-sm font-medium font-jakarta">You</p>
                     </div>
                   </div>
                 </div>
@@ -683,7 +719,7 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                       <UserCog className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="font-medium font-jakarta text-sm">
+                      <p className="text-sm font-medium font-jakarta">
                         Abebe's Team
                       </p>
                     </div>
@@ -716,7 +752,7 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                       <Box size={20} />
                     </div>
                     <div>
-                      <Badge className="text-sm font-medium bg-purple-100 text-purple-700 hover:bg-purple-50">
+                      <Badge className="text-sm font-medium text-purple-700 bg-purple-100 hover:bg-purple-50">
                         {report.category || "Uncategorized"}
                       </Badge>
                     </div>
@@ -808,11 +844,11 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
           </SheetHeader>
 
           <div className="grid gap-4 py-12">
-            {/* Conditionally show Assign Worker if status is VERIFIED */}
             <div className="space-y-2">
               <Label htmlFor="assignedWorker" className="text-sm font-medium">
                 Assign a Worker
               </Label>
+
               <Popover
                 open={openWorkerPopover}
                 onOpenChange={setOpenWorkerPopover}
@@ -821,40 +857,55 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                   <Button
                     variant="outline"
                     role="combobox"
-                    className="w-full justify-between"
+                    className="justify-between w-full"
+                    disabled={isWorkerLoading}
                   >
-                    {selectedWorker
-                      ? workers.find((w) => w.id === selectedWorker)?.name
+                    {isWorkerLoading
+                      ? "Loading workers..."
+                      : selectedWorker
+                      ? workers?.find((w) => w.id === selectedWorker)?.username
                       : "Select worker..."}
-                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    <ChevronDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[350px] p-0">
-                  <Command>
-                    <CommandInput
-                      placeholder="Search worker..."
-                      className="h-9"
-                    />
-                    <CommandEmpty>No worker found.</CommandEmpty>
-                    <CommandGroup>
-                      {workers.map((worker) => (
-                        <CommandItem
-                          key={worker.id}
-                          onSelect={() => {
-                            setSelectedWorker(worker.id)
-                            setOpenWorkerPopover(false)
-                          }}
-                          className="flex items-center justify-between py-2"
-                        >
-                          <span className=""> {worker.name}</span>
 
-                          <Badge className="text-green-700 bg-green-100 font-jakarta text-xs">
-                            Active
-                          </Badge>
-                        </CommandItem>
+                <PopoverContent className="w-[350px] p-0">
+                  {isWorkerLoading ? (
+                    // Skeleton loader
+                    <div className="p-4 space-y-2">
+                      {[1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className="h-8 bg-gray-200 rounded-md animate-pulse"
+                        />
                       ))}
-                    </CommandGroup>
-                  </Command>
+                    </div>
+                  ) : (
+                    <Command>
+                      <CommandInput
+                        placeholder="Search worker..."
+                        className="h-9"
+                      />
+                      <CommandEmpty>No worker found.</CommandEmpty>
+                      <CommandGroup>
+                        {workers?.map((worker) => (
+                          <CommandItem
+                            key={worker.id}
+                            onSelect={() => {
+                              setSelectedWorker(worker.id)
+                              setOpenWorkerPopover(false)
+                            }}
+                            className="flex items-center justify-between py-2"
+                          >
+                            <span>{worker.username}</span>
+                            <Badge className="text-xs text-green-700 bg-green-100 font-jakarta">
+                              Active
+                            </Badge>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </Command>
+                  )}
                 </PopoverContent>
               </Popover>
             </div>
@@ -868,7 +919,7 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
               Cancel
             </Button>
             <Button
-              className="bg-green-500 hover:bg-green-600 text-white"
+              className="text-white bg-green-500 hover:bg-green-600"
               disabled={isUpdating}
               onClick={() => {
                 const data = {
