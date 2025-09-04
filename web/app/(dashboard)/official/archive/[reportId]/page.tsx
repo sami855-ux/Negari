@@ -1,14 +1,12 @@
 "use client"
 
 import {
-  MapPin,
   AlertTriangle,
   User,
   HardHat,
   ShieldAlert,
   Flag,
   CheckCircle,
-  Clock,
   ChevronLeft,
   ImageIcon,
   VideoIcon,
@@ -81,7 +79,7 @@ interface Report {
   description: string
   imageUrls: string[]
   videoUrl: string
-  status: "PENDING" | "APPROVED" | "REJECTED" | "RESOLVED"
+  status: "PENDING" | "VERIFIED" | "REJECTED" | "RESOLVED" | "NEEDS_MORE_INFO"
   severity: "LOW" | "MEDIUM" | "HIGH"
   spamScore: number
   confidenceScore: number
