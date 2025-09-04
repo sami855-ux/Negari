@@ -82,7 +82,7 @@ const Welcome = () => {
                 onPress={() => promptAsync({ useProxy: true })}
               >
                 <GoogleIcon className="w-5 h-5" />
-                <Text className="ml-2 font-medium text-white font-geist">
+                <Text className="ml-2 font-medium text-white font-geist hi">
                   Continue with Google
                 </Text>
               </TouchableOpacity>
@@ -120,6 +120,11 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: 0,
+  },
+  hi: {
+    fontSize: 36,
+    color: "red",
+    textTransform: "uppercase",
   },
 })
 
