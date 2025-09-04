@@ -22,6 +22,14 @@
 import prisma from "../prisma/client.js"
 
 const DUPLICATE_RADIUS_M = 100
+const VALID_STATUSES = [
+  "PENDING",
+  "IN_PROGRESS",
+  "RESOLVED",
+  "REJECTED",
+  "VERIFIED",
+  "NEEDS_MORE_INFO",
+]
 
 const metersToLatDegrees = (m) => m / 111_320
 const metersToLonDegrees = (m, lat) =>
@@ -366,6 +374,7 @@ export const getAllReports = async (req, res) => {
     const reports = await prisma.report.findMany({
       include: {
         location: true,
+        AssignedReports_worker: true,
         reporter: {
           select: {
             id: true,
@@ -398,6 +407,7 @@ export const getAllReports = async (req, res) => {
     const result = reports.map((report) => ({
       ...report,
       category: report.category?.name || null,
+      AssignedReports_worker: report.AssignedReports_worker?.username || null,
     }))
 
     res.status(200).json({ reports: result, success: true })
@@ -423,6 +433,7 @@ export const getReportsByStatus = async (req, res) => {
         reporter: true,
         assignedTo: true,
         feedback: true,
+        AssignedReports_worker: true,
         reporter: {
           select: {
             id: true,
@@ -446,6 +457,7 @@ export const getReportsByStatus = async (req, res) => {
     const result = reports.map((report) => ({
       ...report,
       category: report.category?.name || null,
+      AssignedReports_worker: report.AssignedReports_worker?.username || null,
     }))
 
     res.json({ reports: result, success: true })
