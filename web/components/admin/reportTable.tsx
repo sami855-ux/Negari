@@ -104,6 +104,7 @@ export function ReportsTable({ reports, isLoading }: ReportsTableProps) {
     RESOLVED: "bg-emerald-200 text-emerald-800 hover:bg-emerald-100",
     REJECTED: "bg-red-200 text-red-800 hover:bg-red-100",
     VERIFIED: "bg-green-200 text-green-800 hover:bg-green-100",
+    NEEDS_MORE_INFO: "bg-yellow-200 text-yellow-800 hover:bg-yellow-100",
   }
 
   const uniqueCategories = useMemo(() => {
