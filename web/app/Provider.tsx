@@ -26,33 +26,34 @@ const ProviderState = ({ children }) => {
       <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
         <QueryClientProvider client={queryClient}>
           <ReactQueryDevtools />
-
-          <NotificationProvider>
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                style: {
-                  background: "#000", // Black background
-                  color: "#fff", // White text
-                  borderRadius: "8px",
-                  fontSize: "15px",
-                },
-                success: {
-                  iconTheme: {
-                    primary: "#4ade80", // Green icon for success
-                    secondary: "#000", // Match background
+          <Provider store={store}>
+            <NotificationProvider>
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  style: {
+                    background: "#000", // Black background
+                    color: "#fff", // White text
+                    borderRadius: "8px",
+                    fontSize: "15px",
                   },
-                },
-                error: {
-                  iconTheme: {
-                    primary: "#f87171", // Red icon for errors
-                    secondary: "#000",
+                  success: {
+                    iconTheme: {
+                      primary: "#4ade80", // Green icon for success
+                      secondary: "#000", // Match background
+                    },
                   },
-                },
-              }}
-            />
-            <Provider store={store}>{children}</Provider>
-          </NotificationProvider>
+                  error: {
+                    iconTheme: {
+                      primary: "#f87171", // Red icon for errors
+                      secondary: "#000",
+                    },
+                  },
+                }}
+              />
+              {children}
+            </NotificationProvider>
+          </Provider>
         </QueryClientProvider>
       </GoogleOAuthProvider>
     </>
