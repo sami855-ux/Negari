@@ -21,6 +21,8 @@ import {
   Edit2,
   ChevronDown,
   UserCog,
+  MessageSquare,
+  Star,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -67,6 +69,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import toast from "react-hot-toast"
 import { Progress } from "@/components/ui/progress"
 import { getAllWorkers } from "@/services/getUsers"
+import { format } from "date-fns"
 interface Report {
   id: string
   title: string
@@ -104,7 +107,6 @@ interface Report {
   reporter: UserType
   assignedTo: UserType
   assignedToWorkerId: string
-  feedback: string | null
   category: string
   aiAnalysis?: {
     urgency: number
@@ -112,6 +114,11 @@ interface Report {
     similarPastIssues: number
     estimatedResolutionTime: string
     recommendedActions: string[]
+  }
+  feedback: {
+    rating: number
+    comment: string
+    createdAt: string
   }
 }
 
@@ -1092,7 +1099,7 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                   <div className="flex items-center">
                     <div className="relative w-8 h-8 mr-3 overflow-hidden rounded-full">
                       <Image
-                        src={report.reporter?.profileImage || defaultUser}
+                        src={report.reporter?.profilePicture || defaultUser}
                         alt={report.reporter?.username || "Anonymous"}
                         fill
                         className="object-cover"
@@ -1235,6 +1242,45 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                       </p>
                     )}
                   </div>
+                )}
+
+                {/* Feedback Card */}
+                {report.feedback && (
+                  <Card className="border-green-200">
+                    <CardHeader className="rounded-t-lg bg-green-50">
+                      <CardTitle className="flex items-center text-green-800">
+                        <MessageSquare className="w-5 h-5 mr-2" />
+                        <span>Feedback</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-4">
+                      <div className="flex items-center mb-2">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-5 w-5 ${
+                              i < report.feedback.rating
+                                ? "text-yellow-500 fill-yellow-500"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                        <span className="ml-2 text-sm text-gray-500">
+                          {format(
+                            new Date(report.feedback.createdAt),
+                            "MMM dd, yyyy"
+                          )}
+                        </span>
+                      </div>
+                      {report.feedback.comment && (
+                        <div className="p-3 mt-2 rounded-lg bg-green-50">
+                          <p className="text-green-800">
+                            {report.feedback.comment}
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 )}
               </CardContent>
             </Card>
