@@ -28,11 +28,13 @@ import { SignedOut } from "@/services/auth"
 import { useDispatch, useSelector } from "react-redux"
 import { signOutUser } from "@/store/slices/userSlice"
 import { RootState } from "@/store"
+import { useNotifications } from "./NotificationProiveder"
 
 export function Header() {
   const router = useRouter()
   const dispatch = useDispatch()
   const { user } = useSelector((state: RootState) => state.user)
+  const { unreadCount } = useNotifications()
 
   const handleSignOut = async () => {
     try {
@@ -82,7 +84,7 @@ export function Header() {
             variant="destructive"
             className="absolute flex items-center justify-center w-4 h-4 p-0 text-xs rounded-full -top-1 -right-1"
           >
-            3
+            {unreadCount}
           </Badge>
         </Button>
 
@@ -98,7 +100,7 @@ export function Header() {
                   alt="Officer Dawit"
                 />
                 <AvatarFallback className="bg-green-500 text-primary-foreground">
-                  {`${user.user.username}`.slice(0, 2).toUpperCase()}
+                  {`${user?.user?.username}`.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             </Button>
