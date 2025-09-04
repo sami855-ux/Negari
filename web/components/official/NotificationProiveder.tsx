@@ -1,6 +1,12 @@
 "use client"
 
-import { createContext, useContext, useState, type ReactNode } from "react"
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   X,
@@ -13,16 +19,28 @@ import {
   Star,
   Zap,
 } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
+import { useSelector } from "react-redux"
+import { RootState } from "@/store"
+import {
+  deleteNotificationEach,
+  getUserNotifications,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
+} from "@/services/notification"
 
 export type NotificationType =
-  | "LIKE"
-  | "COMMENT"
-  | "FOLLOW"
-  | "MESSAGE"
-  | "SYSTEM"
-  | "ACHIEVEMENT"
-  | "REMINDER"
-  | "PROMOTION"
+  | "NEW_REPORT"
+  | "STATUS_UPDATED"
+  | "ASSIGNED_TO_YOU"
+  | "SYSTEM_ALERT"
+  | "SYSTEM_CHECK"
+  | "ROLE_PERMISSION_UPDATE"
+  | "USER_UPDATED"
+  | "ASSIGNED_WORKER"
+  | "REPORT_REOPENED"
+  | "FEEDBACK"
+  | "WORK_TO_COMPLETE"
 
 export interface Notification {
   id: string
@@ -34,8 +52,8 @@ export interface Notification {
   createdById?: string
   createdBy?: {
     id: string
-    name: string
-    avatar?: string
+    username: string
+    profilePicture?: string
   }
   createdAt: Date
 }
@@ -43,6 +61,7 @@ export interface Notification {
 interface NotificationContextType {
   notifications: Notification[]
   unreadCount: number
+  isLoading: boolean
   markAsRead: (id: string) => void
   markAllAsRead: () => void
   deleteNotification: (id: string) => void
@@ -65,103 +84,57 @@ export const useNotifications = () => {
   return context
 }
 
-// Mock data
-const mockNotifications: Notification[] = [
-  {
-    id: "1",
-    recipientId: "user1",
-    type: "LIKE",
-    message: "Sarah liked your post about React development",
-    isRead: false,
-    createdById: "user2",
-    createdBy: {
-      id: "user2",
-      name: "Sarah Johnson",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    createdAt: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
-  },
-  {
-    id: "2",
-    recipientId: "user1",
-    type: "COMMENT",
-    message: "Mike commented on your project showcase",
-    metadata: {
-      postId: "post123",
-      comment: "This looks amazing! Great work on the UI design.",
-    },
-    isRead: false,
-    createdById: "user3",
-    createdBy: {
-      id: "user3",
-      name: "Mike Davis",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    createdAt: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
-  },
-  {
-    id: "3",
-    recipientId: "user1",
-    type: "FOLLOW",
-    message: "Emma started following you",
-    isRead: true,
-    createdById: "user4",
-    createdBy: {
-      id: "user4",
-      name: "Emma Wilson",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-  },
-  {
-    id: "4",
-    recipientId: "user1",
-    type: "ACHIEVEMENT",
-    message: "Congratulations! You've reached 1000 followers",
-    metadata: { achievement: "1k_followers", badge: "🎉" },
-    isRead: false,
-    createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-  },
-  {
-    id: "5",
-    recipientId: "user1",
-    type: "SYSTEM",
-    message: "Your account security has been updated",
-    isRead: true,
-    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-  },
-  {
-    id: "6",
-    recipientId: "user1",
-    type: "PROMOTION",
-    message: "Special offer: 50% off premium features this week!",
-    metadata: { discount: 50, code: "PREMIUM50" },
-    isRead: false,
-    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-  },
-]
-
 export function NotificationProvider({ children }: { children: ReactNode }) {
-  const [notifications, setNotifications] =
-    useState<Notification[]>(mockNotifications)
+  const { user } = useSelector((store: RootState) => store.user)
+
+  const { data, isLoading } = useQuery<Notification[]>({
+    queryKey: ["Notifications_for_user"],
+    queryFn: () => getUserNotifications(user?.user?.id),
+    enabled: !!user?.user?.id,
+  })
+
+  const [notifications, setNotifications] = useState<Notification[]>([])
+
   const [toastNotifications, setToastNotifications] = useState<Notification[]>(
     []
   )
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
 
-  const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-    )
+  const markAsRead = async (id: string) => {
+    try {
+      const res = await markNotificationAsRead(id)
+      if (res) {
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+        )
+      }
+    } catch (error) {
+      console.log(error)
+    }
   }
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
+  const markAllAsRead = async () => {
+    try {
+      const res = await markAllNotificationsAsRead(user?.user?.id)
+      if (res) {
+        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
+      }
+    } catch (error) {
+      console.log(error)
+    }
   }
 
-  const deleteNotification = (id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id))
+  const deleteNotification = async (id: string) => {
+    try {
+      const res = await deleteNotificationEach(id)
+
+      if (res) {
+        setNotifications((prev) => prev.filter((n) => n.id !== id))
+      }
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   const addNotification = (
@@ -188,6 +161,14 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     setToastNotifications((prev) => prev.filter((n) => n.id !== id))
   }
 
+  useEffect(() => {
+    if (data && Array.isArray(data)) {
+      setNotifications(data)
+    } else {
+      setNotifications([])
+    }
+  }, [data])
+
   return (
     <NotificationContext.Provider
       value={{
@@ -197,12 +178,13 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         markAllAsRead,
         deleteNotification,
         addNotification,
+        isLoading,
       }}
     >
       {children}
 
       {/* Toast Notifications */}
-      <div className="fixed top-4 right-4 z-50 space-y-2">
+      <div className="fixed z-50 space-y-2 top-4 right-4">
         <AnimatePresence>
           {toastNotifications.map((notification) => (
             <motion.div
@@ -210,7 +192,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
               initial={{ x: 400, opacity: 0, scale: 0.8 }}
               animate={{ x: 0, opacity: 1, scale: 1 }}
               exit={{ x: 400, opacity: 0, scale: 0.8 }}
-              className="bg-white/90 backdrop-blur-lg border border-white/20 rounded-xl p-4 shadow-lg max-w-sm"
+              className="max-w-sm p-4 border shadow-lg bg-white/90 backdrop-blur-lg border-white/20 rounded-xl"
             >
               <div className="flex items-start space-x-3">
                 <div className="flex-shrink-0">
@@ -220,13 +202,13 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                   <p className="text-sm font-medium text-gray-900 truncate">
                     {notification.message}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">Just now</p>
+                  <p className="mt-1 text-xs text-gray-500">Just now</p>
                 </div>
                 <button
                   onClick={() => removeToast(notification.id)}
                   className="flex-shrink-0 text-gray-400 hover:text-gray-600"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             </motion.div>
