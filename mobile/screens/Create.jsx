@@ -1,6 +1,4 @@
-"use client"
-
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm, Controller } from "react-hook-form"
 import {
   View,
@@ -13,7 +11,9 @@ import {
   ScrollView,
   Switch,
   Alert,
+  ActivityIndicator,
 } from "react-native"
+import { LinearGradient } from "expo-linear-gradient"
 import {
   ArrowLeft,
   ArrowRight,
@@ -37,8 +37,11 @@ import ImagePickerComp from "@/components/ImagePicker"
 import VideoPickerComponent from "../components/VideoPicker"
 import { createReport } from "@/services/report"
 import { useSelector } from "react-redux"
+import { getCategories } from "../services/category"
+import LocationPicker from "../components/LocationPicker"
+import DateTimePickerComponent from "../components/DateTimePicker"
 
-const categories = [
+const mockCategories = [
   "AI suggest",
   "Roads",
   "Water",
@@ -51,6 +54,9 @@ const categories = [
 
 const CreateScreen = () => {
   const { user } = useSelector((store) => store.auth)
+
+  const [categories, setCategories] = useState(mockCategories)
+  const [isCategoryLoading, setIsCategoryLoading] = useState(false)
 
   const [currentStep, setCurrentStep] = useState(1)
   const [showImagePicker, setShowImagePicker] = useState(false)
@@ -125,6 +131,20 @@ const CreateScreen = () => {
     )
   }
 
+  const handleGetCategories = async () => {
+    try {
+      setIsCategoryLoading(true)
+
+      const res = await getCategories()
+
+      setCategories(res)
+    } catch (error) {
+      console.error("Error fetching categories:", error)
+    } finally {
+      setIsCategoryLoading(false)
+    }
+  }
+
   const onSubmit = async (data) => {
     try {
       const reportData = {
@@ -185,6 +205,10 @@ const CreateScreen = () => {
       Alert.alert("Error", error.message)
     }
   }
+
+  useEffect(() => {
+    handleGetCategories()
+  }, [])
 
   const ProgressBar = () => (
     <View className="px-5 py-4">
@@ -310,6 +334,7 @@ const CreateScreen = () => {
       <Text className="mt-6 mb-2 text-base font-semibold text-gray-900 font-geist">
         Category
       </Text>
+
       <View className="relative z-10">
         <TouchableOpacity
           className="flex-row items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-md"
@@ -321,9 +346,7 @@ const CreateScreen = () => {
                 <Sparkles size={16} color="#7C3AED" />
                 <Text
                   className="text-[#d7c6f4] text-sm ml-2 font-geist"
-                  style={{
-                    color: "#7C3AED",
-                  }}
+                  style={{ color: "#7C3AED" }}
                 >
                   Let the AI detect
                 </Text>
@@ -342,35 +365,48 @@ const CreateScreen = () => {
         </TouchableOpacity>
 
         {isOpen && (
-          <View className="absolute left-0 right-0 mt-1 bg-white border border-gray-100 rounded-lg shadow-lg top-14">
-            {categories.map((item) => (
-              <TouchableOpacity
-                key={item}
-                className={`flex-row items-center px-4 py-2 ${formValues.category === item ? "bg-gray-50" : ""}`}
-                onPress={() => {
-                  setValue("category", item)
-                  setIsOpen(false)
-                }}
-              >
-                {item === "AI suggest" ? (
-                  <View className="flex-row items-center">
-                    <Sparkles size={16} color="#7C3AED" />
-                    <Text
-                      className="ml-2 text-sm font-geist"
-                      style={{
-                        color: "#7C3AED",
-                      }}
-                    >
-                      Let the AI detect
+          <View className="absolute left-0 right-0 mt-1 bg-white border border-gray-100 rounded-lg shadow-lg top-14 max-h-56">
+            {isCategoryLoading ? (
+              <View className="flex-row items-center justify-center py-4">
+                <ActivityIndicator size="small" color="#7C3AED" />
+                <Text className="ml-2 text-sm text-gray-500 font-geist">
+                  Loading categories...
+                </Text>
+              </View>
+            ) : categories.length > 0 ? (
+              categories.map((item) => (
+                <TouchableOpacity
+                  key={item}
+                  className={`flex-row items-center px-4 py-2 ${
+                    formValues.category === item ? "bg-gray-50" : ""
+                  }`}
+                  onPress={() => {
+                    setValue("category", item)
+                    setIsOpen(false)
+                  }}
+                >
+                  {item === "AI suggest" ? (
+                    <View className="flex-row items-center">
+                      <Sparkles size={16} color="#7C3AED" />
+                      <Text
+                        className="ml-2 text-sm font-geist"
+                        style={{ color: "#7C3AED" }}
+                      >
+                        Let the AI detect
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text className="text-sm text-gray-800 font-geist">
+                      {item}
                     </Text>
-                  </View>
-                ) : (
-                  <Text className="text-sm text-gray-800 font-geist">
-                    {item}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            ))}
+                  )}
+                </TouchableOpacity>
+              ))
+            ) : (
+              <Text className="px-4 py-3 text-sm text-gray-500 font-geist">
+                No categories available
+              </Text>
+            )}
           </View>
         )}
       </View>
@@ -378,103 +414,176 @@ const CreateScreen = () => {
   )
 
   const renderStep3 = () => (
-    <ScrollView className="px-5 pt-5">
-      <Text className="mb-2 text-base font-semibold text-gray-800 font-geist">
-        Upload Media
-      </Text>
-      <Text className="mb-4 text-sm text-gray-500 font-geist">
-        You can upload up to 4 images and a video
-      </Text>
+    <ScrollView className="px-5 pt-5" showsVerticalScrollIndicator={false}>
+      <View className="mb-6">
+        <Text className="mb-2 text-lg font-semibold text-gray-800 font-geist">
+          Upload Media
+        </Text>
+        <Text className="mb-4 text-sm text-gray-500 font-geist">
+          Add visual evidence to help us understand the issue better
+        </Text>
+
+        <View className="flex-row items-center mb-6">
+          <View className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+            <LinearGradient
+              colors={["#a855f7", "#3b82f6"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{
+                height: "100%",
+                width: `${(formValues.images.length / 4) * 100}%`,
+                borderRadius: 999,
+              }}
+            />
+          </View>
+          <Text className="ml-3 text-xs font-medium text-gray-500 font-geist">
+            {" "}
+            {formValues.images.length}/4 photos
+          </Text>
+        </View>
+      </View>
 
       {/* Video Preview */}
       {formValues.video && (
-        <View className="relative mb-4">
-          <View className="items-center justify-center w-full h-40 bg-gray-100 rounded-lg">
-            <VideoIcon size={40} color="#64748B" />
+        <View className="relative mb-6 overflow-hidden bg-gray-100 rounded-xl">
+          <View className="items-center justify-center w-full h-48">
+            <VideoIcon size={40} color="#7C3AED" />
+            <Text className="mt-2 text-sm font-medium text-gray-600 font-geist">
+              Video added
+            </Text>
           </View>
           <TouchableOpacity
-            className="absolute items-center justify-center w-6 h-6 bg-red-500 rounded-full -top-2 -right-2"
+            className="absolute items-center justify-center w-8 h-8 bg-red-500 rounded-full shadow-md -top-2 -right-2"
             onPress={removeVideo}
+            activeOpacity={0.8}
           >
-            <X size={14} color="#FFFFFF" />
+            <X size={16} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
       )}
 
       {/* Upload Buttons */}
-      <View className="flex-row items-center justify-center mb-6 space-x-4">
-        {/* Image Button */}
+      <View className="flex-row mb-8 space-x-4">
+        {/* Image Upload */}
         <TouchableOpacity
-          className={`w-44 flex-row items-center justify-center py-4 border border-dashed border-gray-200 rounded-md bg-white ${
-            formValues.images.length >= 4 ? "opacity-50" : "hover:bg-blue-50"
+          className={`flex-1 h-36 rounded-2xl border-2 border-dashed p-4 items-center justify-center bg-white ${
+            formValues.images.length >= 4
+              ? "opacity-50 border-gray-200"
+              : "border-purple-300 active:bg-purple-50"
           }`}
           onPress={() => setShowImagePicker(true)}
           disabled={formValues.images.length >= 4}
-          style={{ borderColor: "#d7c6f4" }}
+          activeOpacity={0.75}
+          style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.05,
+            shadowRadius: 4,
+            elevation: 3,
+          }}
         >
-          <Camera size={24} color="#7C3AED" />
-          <View className="flex flex-col items-center pt-1 ml-2">
-            <Text className="text-blue-500 font-geist">
-              {formValues.images.length > 0 ? "Add More Photos" : "Add Photos"}
-            </Text>
+          <View className="w-12 h-12 mb-2 rounded-full bg-purple-100 items-center justify-center">
+            <Camera size={24} color="#7C3AED" />
           </View>
+          <Text className="text-sm font-medium text-center text-purple-700 font-geist">
+            {formValues.images.length > 0 ? "Add More" : "Add Photos"}
+          </Text>
+          <Text className="text-xs text-center text-gray-500 font-geist mt-1">
+            {formValues.images.length >= 4
+              ? "Maximum reached"
+              : `${4 - formValues.images.length} remaining`}
+          </Text>
         </TouchableOpacity>
 
-        {/* Video Button */}
+        {/* Video Upload */}
         <TouchableOpacity
-          className={`w-44 flex-row items-center justify-center py-4 border  border-gray-200 rounded-md bg-white  ${
-            formValues.video ? "opacity-50" : "hover:bg-gray-100"
+          className={`flex-1 h-36 rounded-2xl border-2 p-4 items-center justify-center bg-white ${
+            formValues.video
+              ? "bg-green-50 border-green-200"
+              : "border-blue-200 active:bg-blue-50"
           }`}
           onPress={() => setShowVideoPicker(true)}
           disabled={!!formValues.video}
-          style={{ borderColor: "#d7c6f4" }}
+          activeOpacity={0.75}
+          style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.05,
+            shadowRadius: 4,
+            elevation: 3,
+          }}
         >
-          <VideoIcon size={24} color="#7C3AED" />
-          <Text className="ml-2 text-blue-500 font-geist">
+          <View
+            className={`w-12 h-12 mb-2 rounded-full items-center justify-center ${
+              formValues.video ? "bg-green-100" : "bg-blue-100"
+            }`}
+          >
+            <VideoIcon
+              size={24}
+              color={formValues.video ? "#10B981" : "#3B82F6"}
+            />
+          </View>
+          <Text
+            className={`text-sm font-medium text-center font-geist ${
+              formValues.video ? "text-green-700" : "text-blue-700"
+            }`}
+          >
             {formValues.video ? "Video Added" : "Add Video"}
+          </Text>
+          <Text className="text-xs text-center text-gray-500 font-geist mt-1">
+            {formValues.video ? "Tap to replace" : "Optional"}
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* Image Previews */}
       {formValues.images.length > 0 && (
-        <View className="flex-row flex-wrap gap-3 mb-4">
-          {formValues.images.map((uri, index) => (
-            <View key={index} className="relative">
-              <Image source={{ uri }} className="w-40 h-40 rounded-lg" />
-              <TouchableOpacity
-                className="absolute items-center justify-center w-6 h-6 bg-red-500 rounded-full -top-2 -right-2"
-                onPress={() => removeImage(index)}
-              >
-                <X size={14} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
-          ))}
+        <View className="mb-6">
+          <Text className="mb-3 text-sm font-medium text-gray-700 font-geist">
+            Your Photos ({formValues.images.length})
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="pb-4"
+          >
+            {formValues.images.map((uri, index) => (
+              <View key={index} className="relative mr-4">
+                <Image
+                  source={{ uri }}
+                  className="w-32 h-32 rounded-xl shadow-sm"
+                />
+                <TouchableOpacity
+                  className="absolute items-center justify-center w-7 h-7 bg-red-500 rounded-full shadow-md -top-2 -right-2"
+                  onPress={() => removeImage(index)}
+                  activeOpacity={0.8}
+                >
+                  <X size={14} color="#FFFFFF" />
+                </TouchableOpacity>
+                <View className="absolute bottom-0 left-0 right-0 p-1 bg-black bg-opacity-40 rounded-b-xl">
+                  <Text className="text-xs text-center text-white font-geist">
+                    Photo {index + 1}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </ScrollView>
         </View>
       )}
+
+      {/* Help Text */}
+      <View className="p-4 bg-blue-50 rounded-xl">
+        <Text className="text-sm text-blue-800 font-geist">
+          <Text className="font-semibold">Tip:</Text> Clear photos and videos
+          help us resolve your issue faster.
+        </Text>
+      </View>
     </ScrollView>
   )
 
   const renderStep4 = () => (
     <ScrollView className="px-5 pt-5">
-      <Text className="mb-3 text-base font-medium text-gray-800 font-geist">
-        Location of Issue
-      </Text>
-      <View className="flex-row gap-3 mb-3">
-        <TouchableOpacity className="flex-row items-center justify-center flex-1 py-3 bg-green-100 border border-gray-200 rounded-md">
-          <MapPin size={20} color={"#f3c53c"} />
-          <Text className="ml-2 text-green-500 font-geist">
-            Use Current Location
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="flex-row items-center justify-center flex-1 py-3 border border-gray-200 rounded-md">
-          <Map size={20} className="text-[#f3c53c]" color={"#f3c53c"} />
-          <Text className="ml-2 text-green-500 font-geist">Pick on Map</Text>
-        </TouchableOpacity>
-      </View>
-      <Text className="mb-6 text-sm text-gray-500 font-jakarta">
-        Selected: {formValues.location}
-      </Text>
+      <LocationPicker setValue={setValue} />
 
       <View className="flex-row items-center justify-between py-4 mb-6 bg-white border border-gray-100 rounded-xl">
         <View className="flex-row items-center">
@@ -511,56 +620,7 @@ const CreateScreen = () => {
         />
       </View>
 
-      <View className="my-9">
-        <Text className="mb-3 text-base font-medium tracking-wider text-gray-800 font-geist">
-          Time of Issue
-        </Text>
-        <View className="flex-row gap-3">
-          {/* Date Picker */}
-          <TouchableOpacity
-            className="flex-row items-center flex-1 px-4 py-3 bg-white border border-gray-100 rounded-xl"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.05,
-              shadowRadius: 3,
-              elevation: 2,
-            }}
-          >
-            <View className="items-center justify-center w-10 h-10 py-2 mr-3 bg-blue-50 rounded-xl">
-              <Calendar size={16} color="#3B82F6" />
-            </View>
-            <View>
-              <Text className="text-xs text-gray-500 font-geist">Date</Text>
-              <Text className="font-medium text-gray-800 font-geist">
-                {formValues.date}
-              </Text>
-            </View>
-          </TouchableOpacity>
-
-          {/* Time Picker */}
-          <TouchableOpacity
-            className="flex-1 flex-row items-center py-3.5 px-4 border border-gray-100 rounded-xl bg-white"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.05,
-              shadowRadius: 3,
-              elevation: 2,
-            }}
-          >
-            <View className="items-center justify-center w-8 h-8 mr-3 rounded-lg bg-blue-50">
-              <Clock size={16} color="#3B82F6" />
-            </View>
-            <View>
-              <Text className="text-xs text-gray-500 font-geist">Time</Text>
-              <Text className="font-medium text-gray-900 font-geist">
-                {formValues.time}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <DateTimePickerComponent formValues={formValues} setValue={setValue} />
     </ScrollView>
   )
 
@@ -636,7 +696,7 @@ const CreateScreen = () => {
         <View className="mb-3">
           <Text className="text-sm text-gray-500 font-geist">Location</Text>
           <Text className="text-gray-900 font-jakarta">
-            {formValues.location}
+            {formValues.location.address}, {formValues.location.city}
           </Text>
         </View>
         <View className="mb-3">
