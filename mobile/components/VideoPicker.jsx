@@ -1,4 +1,12 @@
-import { Modal, Pressable, TouchableOpacity, Text, View } from "react-native"
+import React from "react"
+import {
+  Modal,
+  Pressable,
+  TouchableOpacity,
+  Text,
+  View,
+  Platform,
+} from "react-native"
 import * as ImagePicker from "expo-image-picker"
 import { Video, Camera, X } from "lucide-react-native"
 
@@ -9,17 +17,30 @@ const VideoPickerComponent = ({ visible, onClose, onVideoSelected }) => {
       const result = fromCamera
         ? await ImagePicker.launchCameraAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-            quality: 0.8,
-            videoQuality: 0.8,
+            allowsEditing: false,
+            quality: 0.7, // compress video a bit
           })
         : await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-            quality: 0.8,
-            videoQuality: 0.8,
+            allowsEditing: false,
+            quality: 0.7,
           })
 
-      if (!result.canceled && onVideoSelected) {
-        onVideoSelected(result.assets[0].uri)
+      if (result.canceled) return
+
+      let finalUri = result.assets[0].uri
+
+      // If needed, handle web Blob conversion
+      if (Platform.OS === "web") {
+        const response = await fetch(finalUri)
+        const blob = await response.blob()
+        const file = new File([blob], "upload.mp4", { type: blob.type })
+        onVideoSelected(file)
+        console.log(file)
+      } else {
+        // Mobile: pass local file path
+        onVideoSelected(finalUri)
+        console.log(finalUri)
       }
     } catch (error) {
       console.error("Video picker error:", error)
@@ -34,12 +55,12 @@ const VideoPickerComponent = ({ visible, onClose, onVideoSelected }) => {
       onRequestClose={onClose}
     >
       {/* Overlay */}
-      <Pressable className="absolute inset-0 bg-black/50" onPress={onClose} />
+      <Pressable className="absolute inset-0 bg-black/40" onPress={onClose} />
 
       {/* Picker Container */}
-      <View className="absolute bottom-0 w-full bg-white rounded-t-3xl p-6 shadow-xl">
+      <View className="absolute bottom-0 w-full bg-white rounded-t-3xl p-6 shadow-lg">
         {/* Header */}
-        <View className="flex-row justify-between items-center mb-6">
+        <View className="flex-row justify-between items-center mb-4">
           <Text className="text-xl font-bold text-gray-800 font-geist">
             Select Video
           </Text>
@@ -52,12 +73,12 @@ const VideoPickerComponent = ({ visible, onClose, onVideoSelected }) => {
         <View className="space-y-4">
           {/* Record Video Option */}
           <TouchableOpacity
-            className="flex-row items-center p-4 bg-green-50 rounded-lg border border-green-100 active:bg-blue-100"
+            className="flex-row items-center p-4 bg-green-50 rounded-lg border border-green-100"
             onPress={() => handlePick(true)}
-            activeOpacity={0.7}
+            activeOpacity={0.8}
           >
-            <View className="bg-blue-100 p-3 rounded-xl mr-4">
-              <Camera size={22} className="text-green-700" />
+            <View className="p-2 bg-green-100 rounded-xl mr-4">
+              <Camera size={22} color="#16a34a" />
             </View>
             <View>
               <Text className="text-base font-medium text-gray-800 font-geist">
@@ -71,11 +92,11 @@ const VideoPickerComponent = ({ visible, onClose, onVideoSelected }) => {
 
           {/* Gallery Option */}
           <TouchableOpacity
-            className="flex-row items-center p-4 bg-purple-50 rounded-xl border border-purple-100 active:bg-purple-100"
+            className="flex-row items-center p-4 bg-purple-50 rounded-lg border border-purple-100"
             onPress={() => handlePick(false)}
-            activeOpacity={0.7}
+            activeOpacity={0.8}
           >
-            <View className="bg-purple-100 p-3 rounded-xl mr-4">
+            <View className="p-2 bg-purple-100 rounded-xl mr-4">
               <Video size={22} color="#8b5cf6" />
             </View>
             <View>
