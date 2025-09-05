@@ -1,4 +1,10 @@
-import { Text, View, ScrollView, TouchableOpacity } from "react-native"
+import {
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Pressable,
+} from "react-native"
 import {
   AlertCircle,
   Bell,
@@ -24,6 +30,7 @@ import Animated, {
   withSpring,
   useSharedValue,
 } from "react-native-reanimated"
+import { useRouter } from "expo-router"
 
 // Mock data
 const activeReport = {
@@ -123,6 +130,8 @@ const severityColors = {
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity)
 
 export default function AssignedReports() {
+  const router = useRouter()
+
   const renderRightActions = () => {
     return (
       <Animated.View
@@ -154,7 +163,12 @@ export default function AssignedReports() {
         className="flex-row items-center justify-between h-16 px-4 bg-[#ce7a3b]"
       >
         <Text className="text-lg font-bold text-white font-jakarta">Tasks</Text>
-        <Bell className="absolute right-4" size={20} color="white" />
+        <Pressable
+          className="absolute right-4 top-4" // add top for correct positioning
+          onPress={() => router.push("/worker/notification")}
+        >
+          <Bell size={20} color="white" />
+        </Pressable>
       </Animated.View>
 
       <ScrollView className="flex-1 p-4">
@@ -174,10 +188,14 @@ export default function AssignedReports() {
           {/* Severity Color Strip with decorative end */}
           <View className="flex-row">
             <View
-              className={`h-2 w-full ${severityColors[activeReport.severity.toUpperCase()]}`}
+              className={`h-2 w-full ${
+                severityColors[activeReport.severity.toUpperCase()]
+              }`}
             />
             <View
-              className={`h-2 w-4 rounded-r-full ${severityColors[activeReport.severity.toUpperCase()]}`}
+              className={`h-2 w-4 rounded-r-full ${
+                severityColors[activeReport.severity.toUpperCase()]
+              }`}
             />
           </View>
 
@@ -240,7 +258,9 @@ export default function AssignedReports() {
               </View>
               <View className="mt-1 flex-row items-center">
                 <View
-                  className={`w-3 h-3 rounded-full mr-2 ${severityColors[activeReport.severity.toUpperCase()]}`}
+                  className={`w-3 h-3 rounded-full mr-2 ${
+                    severityColors[activeReport.severity.toUpperCase()]
+                  }`}
                 />
                 <Text className={`font-bold font-geist text-[#583727]`}>
                   {activeReport.severity.charAt(0).toUpperCase() +
