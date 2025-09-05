@@ -37,7 +37,7 @@ import {
   deleteSelectedNotifications,
   markAsRead,
   clearError,
-} from "../../store/slices/notificationSlice"
+} from "../../store/slices/notification"
 
 // Filter options
 const FILTER_OPTIONS = [
@@ -229,7 +229,7 @@ const NotificationScreen = () => {
           {selectMode && (
             <TouchableOpacity
               onPress={() => toggleSelectItem(item.id)}
-              className="mr-3 mt-1"
+              className="mt-1 mr-3"
             >
               {selectedItems.includes(item.id) ? (
                 <CheckSquare size={20} color="#3B82F6" />
@@ -293,7 +293,7 @@ const NotificationScreen = () => {
 
   // Render section header
   const renderSectionHeader = (title, count) => (
-    <View className="py-2 px-4 bg-gray-50">
+    <View className="px-4 py-2 bg-gray-50">
       <Text className="text-sm font-medium text-gray-700">
         {title} • {count}
       </Text>
@@ -306,7 +306,7 @@ const NotificationScreen = () => {
 
   if (isLoading && notifications.length === 0) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-100">
+      <View className="items-center justify-center flex-1 bg-gray-100">
         <Text className="text-lg text-gray-600">Loading notifications...</Text>
       </View>
     )
@@ -315,7 +315,7 @@ const NotificationScreen = () => {
   return (
     <View className="flex-1 bg-gray-100">
       {/* Header */}
-      <View className="bg-white px-4 py-4 shadow-sm">
+      <View className="px-4 py-4 bg-white shadow-sm">
         <View className="flex-row items-center justify-between mb-4">
           <Text className="text-2xl font-bold text-gray-900">
             Notifications
@@ -323,8 +323,8 @@ const NotificationScreen = () => {
 
           <View className="flex-row">
             {unreadCount > 0 && (
-              <View className="bg-blue-500 rounded-full px-2 py-1 mr-2">
-                <Text className="text-white text-xs font-bold">
+              <View className="px-2 py-1 mr-2 bg-blue-500 rounded-full">
+                <Text className="text-xs font-bold text-white">
                   {unreadCount}
                 </Text>
               </View>
@@ -332,7 +332,7 @@ const NotificationScreen = () => {
 
             <TouchableOpacity
               onPress={toggleSelectMode}
-              className="p-2 rounded-full bg-gray-100"
+              className="p-2 bg-gray-100 rounded-full"
             >
               {selectMode ? (
                 <CheckSquare size={20} color="#3B82F6" />
@@ -371,9 +371,9 @@ const NotificationScreen = () => {
 
       {/* Action Bar (visible in select mode) */}
       {selectMode && (
-        <View className="bg-blue-50 px-4 py-3 flex-row justify-between items-center">
+        <View className="flex-row items-center justify-between px-4 py-3 bg-blue-50">
           <View className="flex-row items-center">
-            <Text className="text-blue-700 font-medium mr-4">
+            <Text className="mr-4 font-medium text-blue-700">
               {selectedItems.length} selected
             </Text>
 
@@ -385,14 +385,14 @@ const NotificationScreen = () => {
           <View className="flex-row">
             <TouchableOpacity
               onPress={deleteSelected}
-              className="bg-red-500 px-3 py-1 rounded mr-2"
+              className="px-3 py-1 mr-2 bg-red-500 rounded"
             >
               <Text className="text-white">Delete</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={toggleSelectMode}
-              className="bg-blue-500 px-3 py-1 rounded"
+              className="px-3 py-1 bg-blue-500 rounded"
             >
               <Text className="text-white">Done</Text>
             </TouchableOpacity>
@@ -433,12 +433,12 @@ const NotificationScreen = () => {
         />
       ) : (
         // Empty State
-        <View className="flex-1 justify-center items-center px-10">
+        <View className="items-center justify-center flex-1 px-10">
           <Bell size={64} color="#D1D5DB" />
-          <Text className="text-xl font-bold text-gray-500 mt-4 text-center">
+          <Text className="mt-4 text-xl font-bold text-center text-gray-500">
             No notifications yet
           </Text>
-          <Text className="text-gray-400 text-center mt-2">
+          <Text className="mt-2 text-center text-gray-400">
             {selectedFilter !== "all"
               ? `You don't have any ${FILTER_OPTIONS.find(
                   (f) => f.key === selectedFilter
@@ -449,9 +449,9 @@ const NotificationScreen = () => {
           {selectedFilter !== "all" && (
             <TouchableOpacity
               onPress={() => setSelectedFilter("all")}
-              className="mt-4 bg-blue-500 px-4 py-2 rounded-lg"
+              className="px-4 py-2 mt-4 bg-blue-500 rounded-lg"
             >
-              <Text className="text-white font-medium">
+              <Text className="font-medium text-white">
                 View All Notifications
               </Text>
             </TouchableOpacity>
@@ -463,7 +463,7 @@ const NotificationScreen = () => {
       {unreadCount > 0 && !selectMode && (
         <TouchableOpacity
           onPress={handleMarkAllAsRead}
-          className="absolute bottom-4 right-4 bg-blue-500 p-3 rounded-full shadow-lg"
+          className="absolute p-3 bg-blue-500 rounded-full shadow-lg bottom-4 right-4"
         >
           <CheckCircle size={24} color="white" />
         </TouchableOpacity>
