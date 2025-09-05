@@ -37,7 +37,7 @@ import {
   deleteSelectedNotifications,
   markAsRead,
   clearError,
-} from "../../store/slices/notificationSlice"
+} from "../../store/slices/notification"
 
 // Filter options
 const FILTER_OPTIONS = [
