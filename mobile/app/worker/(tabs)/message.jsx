@@ -11,7 +11,7 @@ import {
   Animated,
   Easing,
 } from "react-native"
-import { useMessage } from "../../components/MessageContext"
+import { useMessage } from "../../../components/MessageContext"
 import { useNavigation } from "@react-navigation/native"
 import {
   ChevronRight,
@@ -102,7 +102,7 @@ export default function ConversationListScreen() {
 
   const navigateToChat = (officer) => {
     router.push({
-      pathname: "/(tabs)/chat",
+      pathname: "/worker/(tabs)/chat",
       params: {
         conversationId: officer.id,
         officer: JSON.stringify(officer),

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Alert,
   Keyboard,
+  ActivityIndicator,
 } from "react-native"
 import { ArrowLeft } from "lucide-react-native"
 import { useRouter } from "expo-router"
@@ -99,8 +100,14 @@ const OtpVerification = ({ navigation }) => {
           })
         )
 
+        console.log(res)
         dispatch(setOtpEmail(null))
-        router.push("/worker/(tabs)")
+
+        if (res.user.role === "WORKER") {
+          router.push("/worker/(tabs)")
+        } else if (res.user.role === "CITIZEN") {
+          router.push("/(tabs)")
+        }
       } else {
         Alert.alert("Error", res.message)
       }
@@ -155,18 +162,35 @@ const OtpVerification = ({ navigation }) => {
       <TouchableOpacity
         className={`py-4 rounded-xl ${otp.join("").length === 6 ? "bg-[#774287]" : "bg-purple-200"}`}
         onPress={handleVerify}
-        disabled={otp.join("").length !== 6}
+        disabled={otp.join("").length !== 6 || isLoading}
         activeOpacity={0.8}
         style={{
           flexDirection: "row",
           justifyContent: "center",
           alignItems: "center",
+          shadowColor: "#000",
+          shadowOffset: {
+            width: 0,
+            height: 2,
+          },
+          shadowOpacity: otp.join("").length === 6 ? 0.25 : 0,
+          shadowRadius: 3.84,
+          elevation: otp.join("").length === 6 ? 5 : 0,
         }}
       >
         {isLoading && (
-          <SpinningLoader size={20} color="white" style={{ marginRight: 8 }} />
+          <ActivityIndicator
+            size="small"
+            color="white"
+            style={{ marginRight: 12 }}
+          />
         )}
-        <Text className="text-[15px] font-semibold text-center text-white font-jakarta">
+        <Text
+          className="text-[16px] font-semibold text-center font-jakarta"
+          style={{
+            color: otp.join("").length === 6 ? "white" : "#9CA3AF",
+          }}
+        >
           {isLoading ? "Verifying..." : "Verify OTP"}
         </Text>
       </TouchableOpacity>

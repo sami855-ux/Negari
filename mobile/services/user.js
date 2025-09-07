@@ -38,15 +38,9 @@ export const VerifyOpt = async (email, otp) => {
     )
 
     if (res.data.success) {
-      return {
-        success: true,
-        message: "Email verified successfully!",
-      }
+      return res.data
     } else {
-      return {
-        success: false,
-        message: res.data.message || "Verification failed",
-      }
+      return res.data
     }
   } catch (error) {
     console.log(error)

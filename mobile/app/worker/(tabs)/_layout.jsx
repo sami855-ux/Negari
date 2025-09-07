@@ -6,6 +6,7 @@ import {
   ShoppingBag,
   User,
   ClipboardList,
+  ChartBar,
 } from "lucide-react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import Animated, {
@@ -118,6 +119,14 @@ const Layout = () => {
               icon={ClipboardList}
               label="Tasks"
             />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="message"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <AnimatedTabItem focused={focused} icon={ChartBar} label="Chat" />
           ),
         }}
       />

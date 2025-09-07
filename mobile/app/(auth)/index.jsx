@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   TextInput,
+  ActivityIndicator,
 } from "react-native"
 import { useForm, Controller } from "react-hook-form"
 import {
@@ -20,7 +21,6 @@ import {
 } from "lucide-react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
-import { SpinningLoader } from "../../utils/SpinnerLoader"
 import { useDispatch } from "react-redux"
 import { loginUser } from "../../store/slices/auth"
 
@@ -53,8 +53,11 @@ const LoginScreen = () => {
       if (res.success) {
         Alert.alert("Success", "You have successfully logged in!")
 
-        // Navigate after successful login
-        router.push("/(tabs)")
+        if (res.user.role === "WORKER") {
+          router.push("/worker/(tabs)")
+        } else if (res.user.role === "CITIZEN") {
+          router.push("/(tabs)")
+        }
       }
     } catch (error) {
       console.error("Login error:", error)
@@ -210,8 +213,8 @@ const LoginScreen = () => {
             }}
           >
             {isLoading && (
-              <SpinningLoader
-                size={20}
+              <ActivityIndicator
+                size="small"
                 color="white"
                 style={{ marginRight: 8 }}
               />

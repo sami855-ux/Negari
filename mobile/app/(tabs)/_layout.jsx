@@ -120,7 +120,7 @@ const Layout = () => {
         <Tabs.Screen
           name="message"
           options={{
-            title: "Messages",
+            title: "Chat",
             tabBarLabel: ({ focused }) => (
               <Text
                 className="font-geist"
@@ -129,7 +129,7 @@ const Layout = () => {
                   fontWeight: focused ? "600" : "500",
                 }}
               >
-                Messages
+                Chat
               </Text>
             ),
             tabBarIcon: ({ focused, size }) => {

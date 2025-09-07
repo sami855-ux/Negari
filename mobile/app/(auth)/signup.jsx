@@ -14,6 +14,7 @@ import {
 } from "lucide-react-native"
 import { useState } from "react"
 import {
+  ActivityIndicator,
   Alert,
   Image,
   KeyboardAvoidingView,
@@ -135,6 +136,7 @@ const SignupPage = () => {
         // )
 
         dispatch(setOtpEmail(res?.user?.email))
+        console.log(res.user)
         router.push("/(auth)/Otp")
       } else {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
@@ -575,22 +577,35 @@ const SignupPage = () => {
                 <TouchableOpacity
                   onPress={handleSignup}
                   disabled={loading}
-                  className="overflow-hidden rounded-md"
+                  className="overflow-hidden rounded-xl"
+                  activeOpacity={0.9}
                 >
                   <LinearGradient
-                    colors={["#774287"]}
+                    colors={
+                      loading ? ["#9F7AEA", "#805AD5"] : ["#774287", "#5B21B6"]
+                    }
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
-                    className="flex-row items-center justify-center py-3"
+                    className="flex-row items-center justify-center py-4"
+                    style={{
+                      shadowColor: "#000",
+                      shadowOffset: {
+                        width: 0,
+                        height: 2,
+                      },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 3.84,
+                      elevation: 5,
+                    }}
                   >
                     {loading && (
-                      <SpinningLoader
-                        size={20}
+                      <ActivityIndicator
+                        size="small"
                         color="white"
-                        style={{ marginRight: 8 }}
+                        style={{ marginRight: 12 }}
                       />
                     )}
-                    <Text className="text-[15px] text-white font-jakarta">
+                    <Text className="text-[16px] font-semibold text-white font-jakarta">
                       {loading ? "Creating Account..." : "Continue"}
                     </Text>
                   </LinearGradient>
