@@ -546,7 +546,7 @@ export const getReportById = async (req, res) => {
       ...report,
       category: report.category?.name || null,
       AssignedReports_worker:
-        report.AssignedReports_worker.username || "Unassigned",
+        report.AssignedReports_worker?.username || "Unassigned",
     }
 
     return res.json({ report: result, success: true })
