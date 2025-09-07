@@ -178,3 +178,109 @@ export const getWorkers = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch workers", success: false })
   }
 }
+
+export const searchUser = async (req, res) => {
+  try {
+    const officerId = req.user.id
+    const searchQuery = req.query.username?.toString().trim().toLowerCase()
+
+    if (!searchQuery) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Username query is required" })
+    }
+
+    // Fetch officer with region
+    const officer = await prisma.user.findUnique({
+      where: { id: officerId },
+      select: { regionId: true },
+    })
+
+    if (!officer) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Officer not found" })
+    }
+
+    // Get IDs of citizens who submitted reports in officer's region
+    const citizenReports = await prisma.report.findMany({
+      where: { regionId: officer.regionId },
+      select: { reporterId: true },
+      distinct: ["reporterId"],
+    })
+    const citizenIds = citizenReports.map((r) => r.reporterId)
+
+    // Fetch all relevant users except the current user
+    const allUsers = await prisma.user.findMany({
+      where: {
+        NOT: { id: officerId }, // exclude current user
+        OR: [
+          { id: { in: citizenIds } }, // citizens reporting in region
+          { role: "ADMIN" },
+          { role: "WORKER" },
+          { role: "OFFICER" },
+        ],
+        username: { contains: searchQuery, mode: "insensitive" }, // search filter
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        profilePicture: true,
+        role: true,
+        isOnline: true,
+        lastSeen: true,
+      },
+      orderBy: { username: "asc" },
+    })
+
+    if (allUsers.length === 0) {
+      return res.status(404).json({ success: false, message: "No users found" })
+    }
+
+    return res.status(200).json({ success: true, users: allUsers })
+  } catch (error) {
+    console.error("Error searching user:", error)
+    return res.status(500).json({ success: false, message: "Server error" })
+  }
+}
+
+export const searchUsers = async (req, res) => {
+  try {
+    const currentUserId = req.user.id
+    const searchQuery = req.query.username?.toString().trim()
+
+    if (!searchQuery) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Username query is required" })
+    }
+
+    // Fetch users excluding the current user
+    const users = await prisma.user.findMany({
+      where: {
+        id: { not: currentUserId }, // exclude self
+        username: { contains: searchQuery, mode: "insensitive" }, // case-insensitive search
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        profilePicture: true,
+        role: true,
+        isOnline: true,
+        lastSeen: true,
+      },
+      orderBy: { username: "asc" },
+    })
+
+    if (users.length === 0) {
+      return res.status(404).json({ success: false, message: "No users found" })
+    }
+
+    return res.status(200).json({ success: true, users })
+  } catch (error) {
+    console.error("Error searching users:", error)
+    return res.status(500).json({ success: false, message: "Server error" })
+  }
+}

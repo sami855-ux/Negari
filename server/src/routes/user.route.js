@@ -6,8 +6,11 @@ import {
   getAllUsers,
   getUserWithDetails,
   getWorkers,
+  searchUser,
+  searchUsers,
   updateUser,
 } from "../controllers/user.controller.js"
+import { protect } from "../middleware/protect.js"
 
 const router = express.Router()
 
@@ -16,6 +19,11 @@ router.get("/", getAllUsers)
 
 //Get all the workers
 router.get("/workers", getWorkers)
+
+//Get users that can be searched from the officer
+router.get("/search", protect, searchUser)
+
+router.get("/all/search", protect, searchUsers)
 
 //Get A single user
 router.get("/:userId", getUserWithDetails)
