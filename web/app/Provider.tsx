@@ -7,6 +7,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { Provider } from "react-redux"
 import { store } from "@/store"
+import { ChatProvider } from "@/components/ChatProvider"
+import { ReactNode } from "react"
+
+// Provider
+interface ProviderProps {
+  children: ReactNode
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,7 +27,7 @@ const queryClient = new QueryClient({
   },
 })
 
-const ProviderState = ({ children }) => {
+const ProviderState: React.FC<ProviderProps> = ({ children }) => {
   return (
     <>
       <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
@@ -28,30 +35,32 @@ const ProviderState = ({ children }) => {
           <ReactQueryDevtools />
           <Provider store={store}>
             <NotificationProvider>
-              <Toaster
-                position="top-right"
-                toastOptions={{
-                  style: {
-                    background: "#000", // Black background
-                    color: "#fff", // White text
-                    borderRadius: "8px",
-                    fontSize: "15px",
-                  },
-                  success: {
-                    iconTheme: {
-                      primary: "#4ade80", // Green icon for success
-                      secondary: "#000", // Match background
+              <ChatProvider>
+                <Toaster
+                  position="top-right"
+                  toastOptions={{
+                    style: {
+                      background: "#000", // Black background
+                      color: "#fff", // White text
+                      borderRadius: "8px",
+                      fontSize: "15px",
                     },
-                  },
-                  error: {
-                    iconTheme: {
-                      primary: "#f87171", // Red icon for errors
-                      secondary: "#000",
+                    success: {
+                      iconTheme: {
+                        primary: "#4ade80", // Green icon for success
+                        secondary: "#000", // Match background
+                      },
                     },
-                  },
-                }}
-              />
-              {children}
+                    error: {
+                      iconTheme: {
+                        primary: "#f87171", // Red icon for errors
+                        secondary: "#000",
+                      },
+                    },
+                  }}
+                />
+                {children}
+              </ChatProvider>
             </NotificationProvider>
           </Provider>
         </QueryClientProvider>
