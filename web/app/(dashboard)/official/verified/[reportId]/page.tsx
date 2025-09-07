@@ -23,6 +23,8 @@ import {
   UserCog,
   MessageSquare,
   Star,
+  Send,
+  Paperclip,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -70,6 +72,10 @@ import toast from "react-hot-toast"
 import { Progress } from "@/components/ui/progress"
 import { getAllWorkers } from "@/services/getUsers"
 import { format } from "date-fns"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Textarea } from "@/components/ui/textarea"
+import axios from "axios"
 interface Report {
   id: string
   title: string
@@ -175,6 +181,45 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
   )
   const [openWorkerPopover, setOpenWorkerPopover] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
+
+  const [open, setOpen] = useState(false)
+  const [message, setMessage] = useState("")
+  const [file, setFile] = useState<File | null>(null)
+  const [isSending, setIsSending] = useState(false)
+
+  const handleSend = async () => {
+    if (!message && !file) return
+
+    setIsSending(true)
+    try {
+      const formData = new FormData()
+      if (message) formData.append("textMessage", message)
+      if (file) formData.append("image", file)
+
+      const res = await axios.post(
+        `http://localhost:5000/api/messages/${report?.assignedToWorkerId}`,
+        formData,
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      )
+
+      if (res.data.success) {
+        setMessage("")
+        setFile(null)
+        setOpen(false)
+
+        toast.success("Message sent successfully to worker's Team!")
+      }
+    } catch (error) {
+      console.log(error)
+
+      toast.error("Failed to sent message to worker's Team")
+    } finally {
+      setIsSending(false)
+    }
+  }
 
   const openMedia = (index: number) => {
     setInitialIndex(index)
@@ -333,7 +378,7 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                         reassignment.{" "}
                         <span
                           className="font-semibold cursor-pointer hover:underline"
-                          onClick={() => setIsUpdateSheetOpen(true)}
+                          onClick={() => setOpen(true)}
                         >
                           Message the worker
                         </span>
@@ -970,6 +1015,7 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
 
                 <Button
                   variant="outline"
+                  onClick={() => setOpen(true)}
                   className="col-span-2 text-white bg-green-600 hover:bg-green-500 hover:text-white"
                 >
                   Send message to team
@@ -1287,6 +1333,52 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
           </div>
         </div>
       </div>
+
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent position="right" size="sm" className="flex flex-col">
+          <SheetHeader>
+            <SheetTitle>Connect with the worker's Team</SheetTitle>
+          </SheetHeader>
+
+          <div className="flex items-end gap-2 mt-2 flex-col">
+            <Textarea
+              placeholder="Type a message..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="flex-1 resize-none"
+              rows={2}
+            />
+
+            <label className="cursor-pointer p-2 bg-gray-900 rounded-lg">
+              <input
+                type="file"
+                className="hidden"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+              />
+              <Paperclip className="h-5 w-5 text-gray-200 hover:text-gray-700 " />
+            </label>
+
+            <Button
+              size="icon"
+              onClick={handleSend}
+              disabled={isSending || (!message && !file)}
+              className="h-10 w-48 p-2 cursor-pointer flex items-center justify-center gap-2"
+            >
+              {isSending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Sending...</span>
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" />
+                  <span>Send</span>
+                </>
+              )}
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       <Sheet onOpenChange={setIsUpdateSheetOpen} open={isUpdateSheetOpen}>
         <SheetContent className="sm:max-w-md">

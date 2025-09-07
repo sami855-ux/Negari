@@ -11,6 +11,7 @@ import {
   ListChecks,
   Loader2,
   MessageSquare,
+  MessageSquareCode,
   Settings,
   Shield,
   ShieldCheck,
@@ -102,6 +103,13 @@ const otherMenuItems = [
     title: "Roles & Permissions",
     url: "/admin/roles-permissions",
     icon: Shield,
+  },
+  {
+    title: "Communications",
+    url: "/admin/communications",
+    icon: MessageSquareCode,
+    size: 22,
+    badge: "12",
   },
   {
     title: "Settings",

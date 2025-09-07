@@ -76,3 +76,36 @@ export const getAllWorkers = async () => {
     return []
   }
 }
+
+export const searchUsersAPI = async (username) => {
+  try {
+    const res = await axiosInstance.get("/user/search", {
+      params: { username },
+    })
+
+    if (res.data.success) {
+      return res.data.users
+    } else {
+      return []
+    }
+  } catch (err) {
+    console.error("Failed to search users:", err)
+    return []
+  }
+}
+export const searchAllUsersAPI = async (username) => {
+  try {
+    const res = await axiosInstance.get("/user/all/search", {
+      params: { username },
+    })
+
+    if (res.data.success) {
+      return res.data.users
+    } else {
+      return []
+    }
+  } catch (err) {
+    console.error("Failed to search users:", err)
+    return []
+  }
+}

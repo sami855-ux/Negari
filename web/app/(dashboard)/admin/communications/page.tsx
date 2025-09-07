@@ -48,7 +48,7 @@ import {
 import { useChat, User, Message } from "@/components/ChatProvider"
 import { useSelector } from "react-redux"
 import { RootState } from "@/store"
-import { searchUsersAPI } from "@/services/getUsers"
+import { searchAllUsersAPI } from "@/services/getUsers"
 
 type TabType = "inbox" | "sent" | "unread"
 
@@ -137,7 +137,7 @@ export default function CommunicationPanel() {
 
     try {
       setLoadingSearch(true)
-      const res = await searchUsersAPI(query)
+      const res = await searchAllUsersAPI(query)
       setSearchedUsers(res)
     } catch (err) {
       console.error("Failed to search users:", err)
