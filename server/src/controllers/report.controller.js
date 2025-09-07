@@ -539,7 +539,9 @@ export const getReportById = async (req, res) => {
     })
 
     if (!report) {
-      return res.status(404).json({ message: "Report not found" })
+      return res
+        .status(404)
+        .json({ message: "Report not found", success: false })
     }
 
     const result = {
@@ -549,10 +551,12 @@ export const getReportById = async (req, res) => {
         report.AssignedReports_worker?.username || "Unassigned",
     }
 
-    return res.json({ report: result, success: true })
+    return res.json({ report: result, success: true, message: "Report found" })
   } catch (error) {
     console.error("Error fetching report by ID:", error)
-    return res.status(500).json({ message: "Internal server error", error })
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error, success: false })
   }
 }
 
@@ -727,19 +731,51 @@ export const submitFeedback = async (req, res) => {
   }
 }
 
+//! On the mobile
 export const getReportsByUser = async (req, res) => {
   try {
     const { id } = req.params
 
     const reports = await prisma.report.findMany({
       where: { reporterId: id },
-      include: { location: true, feedback: true },
+      include: {
+        location: true,
+        feedback: true,
+        category: true,
+        assignedTo: true,
+      },
     })
 
-    res.json({ reports, success: true })
+    console.log(reports)
+    if (reports.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No reports found", success: false })
+    }
+
+    const result = reports.map((report) => ({
+      ...report,
+      category: report.category?.name || null,
+      assignedOfficer: report.assignedTo?.username || "Unassigned",
+      AssignedReports_worker:
+        report.AssignedReports_worker?.username || "Unassigned",
+      location:
+        report.location.city ||
+        report.location.region ||
+        report.location.address ||
+        "Unknown",
+    }))
+
+    res.json({
+      reports: result,
+      success: true,
+      message: "successfully fetched",
+    })
   } catch (err) {
     console.error("getReportsByUser error:", err)
-    res.status(500).json({ message: "Failed to fetch user reports" })
+    res
+      .status(500)
+      .json({ message: "Failed to fetch user reports", success: false })
   }
 }
 

@@ -9,193 +9,190 @@ import {
   TextInput,
   ActivityIndicator,
   Modal,
-  Pressable,
 } from "react-native"
 import { Stack, useRouter } from "expo-router"
 import {
   Search,
-  Filter,
   Clock,
   CheckCircle,
   XCircle,
   AlertCircle,
   Image as ImageIcon,
-  Video,
   Trash2,
   X,
-  ChevronDown,
   Plus,
+  SlidersHorizontal,
+  Calendar,
 } from "lucide-react-native"
 import { Swipeable } from "react-native-gesture-handler"
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated"
 import { LinearGradient } from "expo-linear-gradient"
+import { getUserReports } from "../../services/report"
+import { storage } from "../../store/slices/auth"
 
 const statusIcons = {
-  Pending: AlertCircle,
-  Approved: CheckCircle,
-  Resolved: CheckCircle,
-  Rejected: XCircle,
+  PENDING: AlertCircle,
+  VERIFIED: CheckCircle,
+  RESOLVED: CheckCircle,
+  REJECTED: XCircle,
 }
 
 const statusColors = {
-  Pending: "bg-amber-400 text-amber-800",
-  Approved: "bg-blue-400 text-blue-800",
-  Resolved: "bg-emerald-400 text-emerald-800",
-  Rejected: "bg-rose-400 text-rose-800",
+  PENDING: "bg-amber-400 text-amber-800",
+  VERIFIED: "bg-blue-400 text-blue-800",
+  RESOLVED: "bg-emerald-400 text-emerald-800",
+  REJECTED: "bg-rose-400 text-rose-800",
 }
-
-const statusTextColors = {
-  Pending: "text-amber-800",
-  Approved: "text-blue-800",
-  Resolved: "text-emerald-800",
-  Rejected: "text-rose-800",
-}
-
-const mockReports = [
-  {
-    id: "1",
-    title: "Pothole on Main Street",
-    category: "Road Damage",
-    status: "Pending",
-    date: "2023-05-15",
-    type: "image",
-    description: "Large pothole causing traffic issues",
-    location: "Main Street, Downtown",
-    assignedOfficer: "Officer Smith",
-  },
-  {
-    id: "2",
-    title: "Broken Traffic Light",
-    category: "Traffic",
-    status: "Approved",
-    date: "2023-05-10",
-    type: "video",
-    description: "Traffic light not working properly",
-    location: "5th Avenue",
-    assignedOfficer: "Officer Johnson",
-  },
-  {
-    id: "3",
-    title: "Garbage Accumulation",
-    category: "Sanitation",
-    status: "Resolved",
-    date: "2023-05-01",
-    type: "image",
-    description: "Garbage not collected for 2 weeks",
-    location: "Park Lane",
-    assignedOfficer: "Officer Williams",
-  },
-  {
-    id: "4",
-    title: "Illegal Parking",
-    category: "Traffic",
-    status: "Rejected",
-    date: "2023-04-28",
-    type: "video",
-    description: "Cars parked in no-parking zone",
-    location: "Market Square",
-  },
-]
 
 const ActivityScreen = () => {
   const router = useRouter()
+  const [user, setUser] = useState(null)
   const [reports, setReports] = useState([])
   const [filteredReports, setFilteredReports] = useState([])
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("All")
+  const [categoryFilter, setCategoryFilter] = useState("All")
   const [sortOrder, setSortOrder] = useState("newest")
   const [refreshing, setRefreshing] = useState(false)
   const [loading, setLoading] = useState(true)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [selectedReports, setSelectedReports] = useState([])
-  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [reportToDelete, setReportToDelete] = useState(null)
+
+  // Temporary filter states
+  const [tempStatusFilter, setTempStatusFilter] = useState("All")
+  const [tempCategoryFilter, setTempCategoryFilter] = useState("All")
+  const [tempSortOrder, setTempSortOrder] = useState("newest")
+
+  const handleFetchReports = async () => {
+    try {
+      if (!user?.id) return
+
+      const res = await getUserReports(user.id)
+      if (res.success) {
+        setReports(res.data || [])
+        setFilteredReports(res.data || [])
+      }
+    } catch (error) {
+      console.log("Error fetching reports:", error)
+      setReports([])
+      setFilteredReports([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setReports(mockReports)
-      setLoading(false)
-    }, 1000)
+    const fetchUser = async () => {
+      try {
+        const storedUser = await storage.getItem("user")
+        if (storedUser) {
+          setUser(JSON.parse(storedUser))
+        }
+      } catch (error) {
+        console.error("Failed to load user:", error)
+      }
+    }
 
-    return () => clearTimeout(timer)
+    fetchUser()
   }, [])
 
   useEffect(() => {
-    let result = [...reports]
+    if (user?.id) {
+      handleFetchReports()
+    }
+  }, [user?.id])
+
+  useEffect(() => {
+    filterReports()
+  }, [reports, searchQuery, statusFilter, categoryFilter, sortOrder])
+
+  const filterReports = () => {
+    // Ensure reports is always an array
+    let result = Array.isArray(reports) ? [...reports] : []
 
     if (searchQuery) {
       result = result.filter(
         (report) =>
-          report.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          report.category.toLowerCase().includes(searchQuery.toLowerCase())
+          report?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          report?.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          report?.description?.toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
 
     if (statusFilter !== "All") {
-      result = result.filter((report) => report.status === statusFilter)
+      result = result.filter((report) => report?.status === statusFilter)
+    }
+
+    if (categoryFilter !== "All") {
+      result = result.filter((report) => report?.category === categoryFilter)
     }
 
     result.sort((a, b) => {
-      const dateA = new Date(a.date).getTime()
-      const dateB = new Date(b.date).getTime()
+      const dateA = new Date(a?.createdAt || 0).getTime()
+      const dateB = new Date(b?.createdAt || 0).getTime()
       return sortOrder === "newest" ? dateB - dateA : dateA - dateB
     })
 
     setFilteredReports(result)
-  }, [reports, searchQuery, statusFilter, sortOrder])
+  }
 
   const onRefresh = useCallback(() => {
     setRefreshing(true)
-    setTimeout(() => {
+    handleFetchReports().finally(() => {
       setRefreshing(false)
-    }, 1000)
-  }, [])
+    })
+  }, [user?.id])
 
   const handleReportPress = (reportId) => {
-    if (isSelectionMode) {
-      toggleReportSelection(reportId)
-    } else {
-      router.push(`/activity/${reportId}`)
+    router.push({
+      pathname: "/(tabs)/report",
+      params: {
+        reportId: reportId,
+      },
+    })
+  }
+
+  const handleDeletePress = (reportId) => {
+    setReportToDelete(reportId)
+    setIsDeleteModalOpen(true)
+  }
+
+  const confirmDelete = () => {
+    if (reportToDelete) {
+      setReports((prev) =>
+        prev.filter((report) => report.id !== reportToDelete)
+      )
+      setReportToDelete(null)
     }
+    setIsDeleteModalOpen(false)
   }
 
-  const handleLongPress = (reportId) => {
-    if (!isSelectionMode) {
-      setIsSelectionMode(true)
-      setSelectedReports([reportId])
-    }
+  const resetFilters = () => {
+    setTempStatusFilter("All")
+    setTempCategoryFilter("All")
+    setTempSortOrder("newest")
   }
 
-  const toggleReportSelection = (reportId) => {
-    setSelectedReports((prev) =>
-      prev.includes(reportId)
-        ? prev.filter((id) => id !== reportId)
-        : [...prev, reportId]
-    )
+  const applyFilters = () => {
+    setStatusFilter(tempStatusFilter)
+    setCategoryFilter(tempCategoryFilter)
+    setSortOrder(tempSortOrder)
+    setIsFilterOpen(false)
   }
 
-  const exitSelectionMode = () => {
-    setIsSelectionMode(false)
-    setSelectedReports([])
+  const openFilterModal = () => {
+    setTempStatusFilter(statusFilter)
+    setTempCategoryFilter(categoryFilter)
+    setTempSortOrder(sortOrder)
+    setIsFilterOpen(true)
   }
 
-  const deleteSelectedReports = () => {
-    Alert.alert(
-      "Delete Reports",
-      `Are you sure you want to delete ${selectedReports.length} report(s)?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => {
-            setReports((prev) =>
-              prev.filter((report) => !selectedReports.includes(report.id))
-            )
-            exitSelectionMode()
-          },
-        },
-      ]
-    )
+  const getCategoryOptions = () => {
+    if (!Array.isArray(reports)) return ["All"]
+    const categories = [
+      ...new Set(reports.map((report) => report?.category).filter(Boolean)),
+    ]
+    return ["All", ...categories]
   }
 
   const renderRightActions = (progress, dragX, reportId) => {
@@ -207,80 +204,52 @@ const ActivityScreen = () => {
 
     return (
       <View className="flex-row items-center justify-end my-2 bg-red-500 rounded-lg">
-        <Animated.View style={{ transform: [{ scale }] }}>
+        <View style={{ transform: [{ scale }] }}>
           <TouchableOpacity
             className="justify-center h-full px-4"
-            onPress={() => {
-              Alert.alert(
-                "Delete Report",
-                "Are you sure you want to delete this report?",
-                [
-                  { text: "Cancel", style: "cancel" },
-                  {
-                    text: "Delete",
-                    style: "destructive",
-                    onPress: () => {
-                      setReports((prev) =>
-                        prev.filter((report) => report.id !== reportId)
-                      )
-                    },
-                  },
-                ]
-              )
-            }}
+            onPress={() => handleDeletePress(reportId)}
           >
             <Trash2 size={24} color="white" />
           </TouchableOpacity>
-        </Animated.View>
+        </View>
       </View>
     )
   }
 
   const renderReportItem = ({ item }) => {
-    const StatusIcon = statusIcons[item.status]
-    const TypeIcon = item.type === "image" ? ImageIcon : Video
-    const isSelected = selectedReports.includes(item.id)
+    const StatusIcon = statusIcons[item?.status] || AlertCircle
 
     return (
       <Swipeable
         renderRightActions={(progress, dragX) =>
-          !isSelectionMode && renderRightActions(progress, dragX, item.id)
+          renderRightActions(progress, dragX, item.id)
         }
-        enabled={!isSelectionMode}
       >
-        <Animated.View
-          entering={FadeIn.duration(300)}
-          exiting={FadeOut.duration(200)}
-          className={`my-2 p-4 bg-white rounded-xl  border border-gray-100 ${
-            isSelected ? "border-2 border-purple-600" : ""
-          }`}
-        >
+        <View className="p-4 my-2 bg-white border border-gray-100 rounded-lg">
           <TouchableOpacity
             onPress={() => handleReportPress(item.id)}
-            onLongPress={() => handleLongPress(item.id)}
             activeOpacity={0.7}
           >
             <View className="flex-row items-start justify-between">
               <View className="flex-1">
                 <View className="flex-row items-center">
-                  <TypeIcon size={16} className="mr-2 text-gray-500" />
-                  <Text className="text-base font-medium text-gray-800 font-geist">
-                    {item.title}
+                  <Text className="text-base font-medium text-gray-800 font-jakarta">
+                    {item?.title}
                   </Text>
                 </View>
-                <Text className="mt-1 text-sm text-gray-500 font-jakarta">
-                  {item.category}
+                <Text className="mt-1 text-sm text-gray-500 font-geist">
+                  {item?.category}
                 </Text>
               </View>
 
               <View
                 className={`px-3 py-1 rounded-full ${
-                  statusColors[item.status]
+                  statusColors[item?.status] || "bg-gray-400"
                 } flex-row items-center`}
               >
                 <StatusIcon size={14} color="white" className="mr-1" />
-                <Text className={`text-xs text-white font-geist `}>
-                  {item.status}
+                <Text className="text-xs text-white font-jakarta">
+                  {item?.status}
                 </Text>
               </View>
             </View>
@@ -288,12 +257,14 @@ const ActivityScreen = () => {
             <View className="flex-row items-center justify-between mt-3">
               <View className="flex-row items-center">
                 <Clock size={14} className="mr-1 text-gray-400" />
-                <Text className="text-[13px] text-gray-500 font-geist">
-                  {new Date(item.date).toLocaleDateString()}
+                <Text className="text-[13px] text-gray-500 font-jakarta">
+                  {item?.createdAt
+                    ? new Date(item.createdAt).toLocaleDateString()
+                    : "Unknown date"}
                 </Text>
               </View>
 
-              {item.status === "Pending" && (
+              {item?.status === "PENDING" && (
                 <View className="w-24">
                   <LinearGradient
                     colors={["#7C3AED", "#A78BFA"]}
@@ -305,200 +276,279 @@ const ActivityScreen = () => {
               )}
             </View>
           </TouchableOpacity>
-        </Animated.View>
+        </View>
       </Swipeable>
     )
   }
 
   const renderEmptyState = () => (
-    <Animated.View
-      entering={FadeIn.duration(500)}
-      className="items-center justify-center flex-1 p-8"
-    >
+    <View className="items-center justify-center flex-1 p-8">
       <View className="items-center">
         <ImageIcon size={48} className="mb-4 text-gray-300" />
-        <Text className="mb-2 text-xl font-semibold text-gray-500 font-geist">
+        <Text className="mb-2 text-xl font-semibold text-gray-500">
           No Reports Found
         </Text>
-        <Text className="mb-6 text-center text-gray-400 font-jakarta">
-          {statusFilter === "All"
+        <Text className="mb-6 text-center text-gray-400">
+          {statusFilter === "All" && categoryFilter === "All"
             ? "You haven't submitted any reports yet."
-            : `No ${statusFilter.toLowerCase()} reports found.`}
+            : `No reports found with the current filters.`}
         </Text>
         <TouchableOpacity
           className="flex-row items-center px-6 py-3 bg-purple-600 rounded-full"
           onPress={() => router.push("/(tabs)")}
         >
           <Plus size={18} color="white" className="mr-2" />
-          <Text className="text-white font-geist">Submit New Report</Text>
+          <Text className="text-white">Submit New Report</Text>
         </TouchableOpacity>
       </View>
-    </Animated.View>
+    </View>
   )
 
-  const FilterModal = () => (
+  const FilterModal = () => {
+    return (
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isFilterOpen}
+        onRequestClose={() => setIsFilterOpen(false)}
+      >
+        <View className="justify-end flex-1 bg-black/50">
+          <View className="p-6 bg-white rounded-t-3xl">
+            <View className="flex-row items-center justify-between mb-6">
+              <Text className="text-xl font-bold text-gray-800">Filters</Text>
+              <TouchableOpacity
+                onPress={() => setIsFilterOpen(false)}
+                className="p-2 bg-gray-100 rounded-full"
+              >
+                <X size={20} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+
+            <View className="mb-6">
+              <Text className="mb-3 text-lg font-semibold text-gray-800">
+                Status
+              </Text>
+              <View className="flex-row flex-wrap">
+                {["All", "PENDING", "VERIFIED", "RESOLVED", "REJECTED"].map(
+                  (status) => (
+                    <TouchableOpacity
+                      key={status}
+                      onPress={() => setTempStatusFilter(status)}
+                      className={`px-4 py-2 rounded-full mr-2 mb-2 ${
+                        tempStatusFilter === status
+                          ? "bg-purple-600"
+                          : "bg-gray-100"
+                      }`}
+                    >
+                      <Text
+                        className={`font-medium ${
+                          tempStatusFilter === status
+                            ? "text-white"
+                            : "text-gray-800"
+                        }`}
+                      >
+                        {status}
+                      </Text>
+                    </TouchableOpacity>
+                  )
+                )}
+              </View>
+            </View>
+
+            <View className="mb-6">
+              <Text className="mb-3 text-lg font-semibold text-gray-800">
+                Category
+              </Text>
+              <View className="flex-row flex-wrap">
+                {getCategoryOptions().map((category) => (
+                  <TouchableOpacity
+                    key={category}
+                    onPress={() => setTempCategoryFilter(category)}
+                    className={`px-4 py-2 rounded-full mr-2 mb-2 ${
+                      tempCategoryFilter === category
+                        ? "bg-purple-600"
+                        : "bg-gray-100"
+                    }`}
+                  >
+                    <Text
+                      className={`font-medium ${
+                        tempCategoryFilter === category
+                          ? "text-white"
+                          : "text-gray-800"
+                      }`}
+                    >
+                      {category}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View className="mb-6">
+              <Text className="mb-3 text-lg font-semibold text-gray-800">
+                Sort By
+              </Text>
+              <View className="flex-row">
+                <TouchableOpacity
+                  onPress={() => setTempSortOrder("newest")}
+                  className={`flex-1 px-4 py-3 rounded-l-lg flex-row items-center justify-center ${
+                    tempSortOrder === "newest" ? "bg-purple-600" : "bg-gray-100"
+                  }`}
+                >
+                  <Calendar
+                    size={16}
+                    color={tempSortOrder === "newest" ? "white" : "#6b7280"}
+                    className="mr-2"
+                  />
+                  <Text
+                    className={`font-medium ${
+                      tempSortOrder === "newest"
+                        ? "text-white"
+                        : "text-gray-800"
+                    }`}
+                  >
+                    Newest
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setTempSortOrder("oldest")}
+                  className={`flex-1 px-4 py-3 rounded-r-lg flex-row items-center justify-center ${
+                    tempSortOrder === "oldest" ? "bg-purple-600" : "bg-gray-100"
+                  }`}
+                >
+                  <Calendar
+                    size={16}
+                    color={tempSortOrder === "oldest" ? "white" : "#6b7280"}
+                    className="mr-2"
+                  />
+                  <Text
+                    className={`font-medium ${
+                      tempSortOrder === "oldest"
+                        ? "text-white"
+                        : "text-gray-800"
+                    }`}
+                  >
+                    Oldest
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View className="flex-row space-x-3">
+              <TouchableOpacity
+                className="items-center flex-1 py-3 bg-gray-200 rounded-lg"
+                onPress={resetFilters}
+              >
+                <Text className="font-semibold text-gray-800">Reset</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="items-center flex-1 py-3 bg-purple-600 rounded-lg"
+                onPress={applyFilters}
+              >
+                <Text className="font-semibold text-white">Apply Filters</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    )
+  }
+
+  const DeleteConfirmationModal = () => (
     <Modal
-      animationType="slide"
+      animationType="fade"
       transparent={true}
-      visible={isFilterOpen}
-      onRequestClose={() => setIsFilterOpen(false)}
+      visible={isDeleteModalOpen}
+      onRequestClose={() => setIsDeleteModalOpen(false)}
     >
-      <View className="justify-end flex-1 bg-black/50">
-        <Animated.View
-          entering={FadeIn.duration(200)}
-          exiting={FadeOut.duration(200)}
-          className="p-6 bg-white rounded-t-3xl"
-        >
-          <View className="flex-row items-center justify-between mb-6">
-            <Text className="text-xl font-bold text-gray-800">Filters</Text>
-            <TouchableOpacity onPress={() => setIsFilterOpen(false)}>
+      <View className="items-center justify-center flex-1 p-5 bg-black/50">
+        <View className="w-full max-w-md p-6 bg-white rounded-2xl">
+          <View className="flex-row items-center justify-between mb-4">
+            <Text className="text-xl font-bold text-gray-800">
+              Delete Report
+            </Text>
+            <TouchableOpacity onPress={() => setIsDeleteModalOpen(false)}>
               <X size={24} color="#6b7280" />
             </TouchableOpacity>
           </View>
 
-          <Text className="mb-3 text-lg font-semibold text-gray-800">
-            Status
-          </Text>
-          <View className="flex-row flex-wrap mb-6">
-            {["All", "Pending", "Approved", "Resolved", "Rejected"].map(
-              (status) => (
-                <TouchableOpacity
-                  key={status}
-                  onPress={() => setStatusFilter(status)}
-                  className={`px-4 py-2 rounded-full mr-2 mb-2 ${
-                    statusFilter === status ? "bg-purple-100" : "bg-gray-100"
-                  }`}
-                >
-                  <Text
-                    className={`font-medium ${
-                      statusFilter === status
-                        ? "text-purple-600"
-                        : "text-gray-800"
-                    }`}
-                  >
-                    {status}
-                  </Text>
-                </TouchableOpacity>
-              )
-            )}
+          <View className="flex-row items-start mb-6">
+            <View className="p-2 mr-3 bg-red-100 rounded-full">
+              <Trash2 size={24} color="#ef4444" />
+            </View>
+            <Text className="flex-1 text-base text-gray-600">
+              Are you sure you want to delete this report? This action cannot be
+              undone.
+            </Text>
           </View>
 
-          <Text className="mb-3 text-lg font-semibold text-gray-800">
-            Sort By
-          </Text>
-          <View className="flex-row mb-6">
+          <View className="flex-row justify-end space-x-3">
             <TouchableOpacity
-              onPress={() => setSortOrder("newest")}
-              className={`px-4 py-2 rounded-l-lg ${
-                sortOrder === "newest" ? "bg-purple-600" : "bg-gray-100"
-              }`}
+              onPress={() => setIsDeleteModalOpen(false)}
+              className="px-5 py-3 bg-gray-100 rounded-xl"
             >
-              <Text
-                className={`font-medium ${
-                  sortOrder === "newest" ? "text-white" : "text-gray-800"
-                }`}
-              >
-                Newest First
-              </Text>
+              <Text className="font-medium text-gray-800">Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => setSortOrder("oldest")}
-              className={`px-4 py-2 rounded-r-lg ${
-                sortOrder === "oldest" ? "bg-purple-600" : "bg-gray-100"
-              }`}
+              onPress={confirmDelete}
+              className="px-5 py-3 bg-red-500 rounded-xl"
             >
-              <Text
-                className={`font-medium ${
-                  sortOrder === "oldest" ? "text-white" : "text-gray-800"
-                }`}
-              >
-                Oldest First
-              </Text>
+              <Text className="font-medium text-white">Delete</Text>
             </TouchableOpacity>
           </View>
-
-          <TouchableOpacity
-            className="items-center py-3 bg-purple-600 rounded-lg"
-            onPress={() => setIsFilterOpen(false)}
-          >
-            <Text className="font-semibold text-white">Apply Filters</Text>
-          </TouchableOpacity>
-        </Animated.View>
+        </View>
       </View>
     </Modal>
   )
 
   return (
     <View className="flex-1 bg-gray-50">
-      <Stack.Screen
-        options={{
-          title: "My Reports",
-          headerRight: () => (
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginRight: 8,
-              }}
-            >
-              {isSelectionMode ? (
-                <>
-                  <TouchableOpacity
-                    onPress={deleteSelectedReports}
-                    style={{ marginRight: 16 }}
-                  >
-                    <Trash2 size={24} color="#ef4444" />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={exitSelectionMode}>
-                    <X size={24} color="#6b7280" />
-                  </TouchableOpacity>
-                </>
-              ) : (
-                <TouchableOpacity
-                  onPress={() => setIsFilterOpen(true)}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    backgroundColor: "#f3e8ff",
-                    paddingHorizontal: 10,
-                    paddingVertical: 6,
-                    borderRadius: 8,
-                  }}
-                >
-                  <Filter
-                    size={18}
-                    color="#7C3AED"
-                    style={{ marginRight: 4 }}
-                  />
-                  <Text
-                    style={{
-                      color: "#7C3AED",
-                      fontWeight: "500",
-                      fontSize: 14,
-                    }}
-                  >
-                    Filter
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          ),
-        }}
-      />
+      <Stack.Screen options={{ title: "My Reports" }} />
 
+      {/* Search and Filter Bar */}
       <View className="p-4 bg-white border-b border-gray-100">
-        <View className="relative">
-          <View className="absolute z-10 left-3 top-3">
-            <Search size={18} color="#9ca3af" />
+        <View className="flex-row items-center">
+          <View className="relative flex-1">
+            <View className="absolute z-10 left-3 top-3">
+              <Search size={18} color="#9ca3af" />
+            </View>
+            <TextInput
+              className="py-3 pl-10 pr-4 text-gray-800 bg-gray-100 rounded-lg font-jakarta"
+              placeholder="Search reports..."
+              placeholderTextColor="#9ca3af"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
           </View>
-          <TextInput
-            className="py-3 pl-10 pr-4 text-gray-800 bg-gray-100 rounded-md font-geist"
-            placeholder="Search reports..."
-            placeholderTextColor="#9ca3af"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
+
+          <TouchableOpacity
+            onPress={openFilterModal}
+            className="p-3 ml-3 bg-purple-100 rounded-lg"
+          >
+            <SlidersHorizontal size={20} color="#7C3AED" />
+          </TouchableOpacity>
         </View>
+
+        {/* Active Filters Indicator */}
+        {(statusFilter !== "All" || categoryFilter !== "All") && (
+          <View className="flex-row items-center mt-3">
+            <Text className="mr-2 text-sm text-gray-500">Active filters:</Text>
+            {statusFilter !== "All" && (
+              <View className="px-2 py-1 mr-2 bg-purple-100 rounded-full">
+                <Text className="text-xs text-purple-700">
+                  Status: {statusFilter}
+                </Text>
+              </View>
+            )}
+            {categoryFilter !== "All" && (
+              <View className="px-2 py-1 bg-purple-100 rounded-full">
+                <Text className="text-xs text-purple-700">
+                  Category: {categoryFilter}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
       </View>
 
       {loading ? (
@@ -532,6 +582,7 @@ const ActivityScreen = () => {
       )}
 
       <FilterModal />
+      <DeleteConfirmationModal />
     </View>
   )
 }

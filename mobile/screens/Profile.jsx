@@ -1,6 +1,4 @@
-"use client"
-
-import { useState } from "react"
+import React, { useEffect, useState } from "react"
 import {
   View,
   Text,
@@ -27,62 +25,72 @@ import {
   Edit3,
   Calendar,
   TrendingUp,
+  User,
+  Mail,
+  Award,
+  Bell,
+  ChevronRight,
+  Palette,
 } from "lucide-react-native"
-import { useSelector } from "react-redux"
-
-const userData = {
-  name: "Samuel Tale",
-  username: "samit",
-  location: "Addis Ababa",
-  joinDate: "Jan 2024",
-  avatar:
-    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-  stats: {
-    reports: 24,
-    resolved: 18,
-    comments: 156,
-    saved: 42,
-  },
-}
+import { useDispatch, useSelector } from "react-redux"
+import LogoutConfirmationModal from "../components/LogoutConfirmation"
+import { logout, storage } from "../store/slices/auth"
+import { useRouter } from "expo-router"
+import defaultUser from "../assets/images/defaultUser.png"
 
 const ProfileScreen = () => {
-  const { user } = useSelector((store) => store.auth)
+  const [user, setUser] = useState(null)
+  const dispatch = useDispatch()
+  const router = useRouter()
+
   const [showSettings, setShowSettings] = useState(false)
   const [anonymousReports, setAnonymousReports] = useState(false)
   const [language, setLanguage] = useState("English")
+  const [notifications, setNotifications] = useState(true)
+  const [darkMode, setDarkMode] = useState(false)
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false)
 
-  const StatCard = ({ icon, label, count, onPress, colors }) => (
-    <TouchableOpacity
-      className={`p-5 rounded-lg ${colors[0]} min-w-[45%] flex-1 relative overflow-hidden`}
-      onPress={onPress}
-      activeOpacity={0.8}
-    >
-      <View className="flex-row items-center justify-between mb-4">
-        <View className="p-3 rounded-lg bg-black/20">{icon}</View>
-        <TrendingUp size={20} color="rgba(255,255,255,0.6)" />
-      </View>
-      <Text className="mb-1 text-2xl font-bold text-white">{count}</Text>
-      <Text className="text-sm font-medium text-white/80 font-geist">
-        {label}
-      </Text>
-      <View className="absolute w-16 h-16 rounded-full -bottom-4 -right-4 bg-white/10" />
-    </TouchableOpacity>
-  )
+  const handleLogout = async () => {
+    try {
+      await storage.removeItem("token")
+      await storage.removeItem("user")
 
-  const ActionButton = ({ icon, label, onPress, variant = "default" }) => (
+      dispatch(logout())
+      setLogoutModalVisible(false)
+      router.replace("/")
+    } catch (error) {
+      console.error("Error removing from storage:", error)
+    }
+  }
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const storedUser = await storage.getItem("user")
+        if (storedUser) {
+          setUser(JSON.parse(storedUser))
+        }
+      } catch (error) {
+        console.error("Failed to load user:", error)
+      }
+    }
+
+    fetchUser()
+  }, [])
+
+  const ActionButton = ({ icon, label, onPress, color = "bg-purple-100" }) => (
     <TouchableOpacity
-      className={`flex-row items-center p-2 border-b border-gray-100`}
+      className="flex-row items-center justify-between p-4 mb-3 bg-white border border-gray-100 rounded-2xl"
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <View
-        className={`p-2 rounded-lg mr-3 ${
-          variant === "danger" ? "bg-red-200" : "bg-gray-100"
-        }`}
-      >
-        {icon}
+      <View className="flex-row items-center">
+        <View className={`p-2 rounded-xl mr-3 ${color}`}>{icon}</View>
+        <Text className="text-[15px] font-medium text-gray-800 font-geist">
+          {label}
+        </Text>
       </View>
-      <Text className={`font-medium font-geist text-gray-800`}>{label}</Text>
+      <ChevronRight size={20} color="#9ca3af" />
     </TouchableOpacity>
   )
 
@@ -93,11 +101,13 @@ const ProfileScreen = () => {
     hasSwitch = false,
     switchValue = false,
     onSwitchChange,
+    value,
+    color = "bg-purple-100",
   }) => (
-    <View className="flex-row items-center justify-between p-4 bg-white border border-gray-100 rounded-xl">
+    <View className="flex-row items-center justify-between p-4 mb-3 bg-white border border-gray-100 rounded-2xl">
       <View className="flex-row items-center flex-1">
-        <View className="p-2 mr-3 bg-gray-100 rounded-lg">{icon}</View>
-        <Text className="font-medium text-gray-800">{label}</Text>
+        <View className={`p-2 rounded-xl mr-3 ${color}`}>{icon}</View>
+        <Text className="font-medium text-gray-800 font-geist">{label}</Text>
       </View>
       {hasSwitch ? (
         <Switch
@@ -106,13 +116,14 @@ const ProfileScreen = () => {
           trackColor={{ false: "#e5e7eb", true: "#774287" }}
           thumbColor={switchValue ? "#ffffff" : "#f3f4f6"}
         />
+      ) : value ? (
+        <TouchableOpacity onPress={onPress} className="flex-row items-center">
+          <Text className="mr-2 text-gray-500 font-geist">{value}</Text>
+          <ChevronRight size={20} color="#9ca3af" />
+        </TouchableOpacity>
       ) : (
-        <TouchableOpacity onPress={onPress} className="p-2">
-          <ArrowLeft
-            size={16}
-            color="#9ca3af"
-            style={{ transform: [{ rotate: "180deg" }] }}
-          />
+        <TouchableOpacity onPress={onPress} className="p-1">
+          <ChevronRight size={20} color="#9ca3af" />
         </TouchableOpacity>
       )}
     </View>
@@ -120,59 +131,98 @@ const ProfileScreen = () => {
 
   if (showSettings) {
     return (
-      <SafeAreaView className="flex-1 bg-purple-800">
-        <StatusBar barStyle="light-content" backgroundColor="#774287" />
-        <View className="flex-row items-center px-6 py-4">
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <StatusBar barStyle="dark-content" backgroundColor="#f9fafb" />
+        <View className="flex-row items-center px-5 py-4 space-x-3 bg-white shadow-sm">
           <TouchableOpacity
-            className="p-3 rounded-lg bg-white/20"
+            className="p-2 bg-gray-100 rounded-lg"
             onPress={() => setShowSettings(false)}
             activeOpacity={0.7}
           >
-            <ArrowLeft size={20} color="#ffffff" />
+            <ArrowLeft size={20} color="#4b5563" />
           </TouchableOpacity>
-          <Text className="ml-4 text-2xl font-bold text-white">Settings</Text>
+          <Text className="ml-4 text-xl font-bold text-gray-800 font-geist">
+            Settings
+          </Text>
         </View>
 
-        <ScrollView
-          className="flex-1 bg-gray-50"
-          keyboardShouldPersistTaps="handled"
-        >
-          <View className="gap-3 p-6">
-            <SettingsItem
-              icon={<Globe size={20} color="#4549e6" />}
-              label={`Change Language (${language})`}
-              onPress={() =>
-                setLanguage(language === "English" ? "Amharic" : "English")
-              }
-            />
-            <SettingsItem
-              icon={<Lock size={20} color="#774287" />}
-              label="Anonymous Reports"
-              hasSwitch={true}
-              switchValue={anonymousReports}
-              onSwitchChange={setAnonymousReports}
-            />
-            <SettingsItem
-              icon={<Download size={20} color="#4549e6" />}
-              label="Export My Data"
-              onPress={() => console.log("Export data")}
-            />
-            <SettingsItem
-              icon={<LogOut size={20} color="#f59e0b" />}
-              label="Logout"
-              onPress={() => console.log("Logout")}
-            />
-            <SettingsItem
-              icon={<Trash2 size={20} color="#ef4444" />}
-              label="Delete Account"
-              onPress={() => console.log("Delete account")}
-            />
-            <SettingsItem
-              icon={<HelpCircle size={20} color="#774287" />}
-              label="Help & Support"
-              onPress={() => console.log("Help & Support")}
-            />
-          </View>
+        <ScrollView className="flex-1 p-5 bg-gray-50">
+          <Text className="mb-4 text-lg font-bold text-gray-700 font-geist">
+            Preferences
+          </Text>
+
+          <SettingsItem
+            icon={<Globe size={20} color="#4549e6" />}
+            label="Language"
+            value={language}
+            onPress={() =>
+              setLanguage(language === "English" ? "Amharic" : "English")
+            }
+            color="bg-blue-100"
+          />
+
+          <SettingsItem
+            icon={<Bell size={20} color="#f59e0b" />}
+            label="Notifications"
+            hasSwitch={true}
+            switchValue={notifications}
+            onSwitchChange={setNotifications}
+            color="bg-amber-100"
+          />
+
+          <SettingsItem
+            icon={<Palette size={20} color="#774287" />}
+            label="Dark Mode"
+            hasSwitch={true}
+            switchValue={darkMode}
+            onSwitchChange={setDarkMode}
+          />
+
+          <SettingsItem
+            icon={<Lock size={20} color="#774287" />}
+            label="Anonymous Reports"
+            hasSwitch={true}
+            switchValue={anonymousReports}
+            onSwitchChange={setAnonymousReports}
+          />
+
+          <Text className="mt-6 mb-4 text-lg font-bold text-gray-700 font-geist">
+            Account
+          </Text>
+
+          <SettingsItem
+            icon={<Download size={20} color="#4549e6" />}
+            label="Export My Data"
+            onPress={() => console.log("Export data")}
+            color="bg-blue-100"
+          />
+
+          <SettingsItem
+            icon={<Shield size={20} color="#10b981" />}
+            label="Privacy Policy"
+            onPress={() => console.log("Privacy policy")}
+            color="bg-green-100"
+          />
+
+          <SettingsItem
+            icon={<HelpCircle size={20} color="#774287" />}
+            label="Help & Support"
+            onPress={() => console.log("Help & Support")}
+          />
+
+          <SettingsItem
+            icon={<LogOut size={20} color="#f59e0b" />}
+            label="Logout"
+            onPress={() => console.log("Logout")}
+            color="bg-amber-100"
+          />
+
+          <SettingsItem
+            icon={<Trash2 size={20} color="#ef4444" />}
+            label="Delete Account"
+            onPress={() => console.log("Delete account")}
+            color="bg-red-100"
+          />
         </ScrollView>
       </SafeAreaView>
     )
@@ -180,113 +230,111 @@ const ProfileScreen = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
-      {/* <StatusBar barStyle="light-content" backgroundColor="#774287" /> */}
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <StatusBar barStyle="dark-content" backgroundColor="#f9fafb" />
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
         {/* Header Section */}
-        <View className="relative pb-20 overflow-hidden ">
-          <View className="flex-row items-center justify-between px-6 pt-4 pb-6 bg-gray-900">
-            <Text className="text-2xl font-bold text-white font-geist">
-              My Profile
+        <View className="pb-6 bg-white">
+          <View className="flex-row items-center justify-between px-5 pt-4 pb-5">
+            <Text className="text-2xl font-bold text-gray-800 font-geist">
+              Profile
             </Text>
             <TouchableOpacity
               onPress={() => setShowSettings(true)}
-              className="p-2"
+              className="p-3 bg-gray-100 rounded-xl"
             >
-              <Settings size={20} color="#ffffff" />
+              <Settings size={20} color="#4b5563" />
             </TouchableOpacity>
           </View>
 
           {/* Profile Card */}
-          <View className="p-8 mx-6 bg-white/70 rounded-xl">
-            <View className="items-center">
-              <View className="relative mb-6">
+          <View className="px-5">
+            <View className="flex-row items-center p-5 space-x-3 border border-gray-100 bg-slate-100 rounded-xl">
+              <View className="relative mr-8">
                 <Image
-                  source={{ uri: userData.avatar }}
-                  className="w-32 h-32 border-4 border-gray-500 rounded-full"
+                  source={{ uri: user?.profilePicture || defaultUser }}
+                  className="w-20 h-20 border-2 border-white rounded-2xl"
                 />
-                <View className="absolute w-8 h-8 bg-blue-600 border-4 border-white rounded-full -bottom-1 -right-1" />
+                <TouchableOpacity className="absolute p-1 bg-purple-600 rounded-full -bottom-1 -right-1">
+                  <Edit3 size={14} color="#ffffff" />
+                </TouchableOpacity>
               </View>
 
-              <View className="items-center">
-                <Text className="text-xl font-medium text-gray-800 font-geist">
+              <View className="flex-1">
+                <Text className="text-xl font-bold text-gray-800 capitalize font-geist">
                   {user?.username}
                 </Text>
-                <Text className="mb-5 text-gray-500 font-geist">
-                  {user?.email}
-                </Text>
-                <View className="flex-row space-x-3">
-                  <View className="flex-row items-center">
-                    <MapPin size={16} color="#774287" />
-                    <Text className="ml-2 text-gray-500 font-geist">
-                      {userData.location}
-                    </Text>
-                  </View>
-                  <View className="flex-row items-center">
-                    <Calendar size={16} color="#4549e6" />
-                    <Text className="ml-2 text-gray-500 font-geist">
-                      Joined {userData.joinDate}
+                <View className="flex-row items-center mt-1">
+                  <Mail size={14} color="#774287" />
+                  <Text className="ml-2 text-sm text-gray-500 font-geist">
+                    {user?.email}
+                  </Text>
+                </View>
+                <View className="flex-row items-center mt-2">
+                  <View className="flex-row items-center px-2 py-1 bg-purple-100 rounded-full">
+                    <Award size={12} color="#774287" />
+                    <Text className="ml-1 text-xs font-medium text-purple-700 font-jakarta">
+                      {user?.role}
                     </Text>
                   </View>
                 </View>
               </View>
             </View>
           </View>
-
-          {/* Decorative Elements */}
-          {/* <View className="absolute w-64 h-64 rounded-full -top-32 -right-32 bg-white/5" />
-          <View className="absolute w-48 h-48 rounded-full -bottom-24 -left-24 bg-white/5" /> */}
-        </View>
-
-        {/* Stats Section */}
-        <View className="px-6 mb-10 -mt-10">
-          <View className="flex-row flex-wrap gap-4">
-            <StatCard
-              icon={<FileText size={24} color="#ffffff" />}
-              label="Reports"
-              count={userData.stats.reports}
-              onPress={() => console.log("View reports")}
-              colors={["#3b82f6", "#2563eb"]}
-            />
-            <StatCard
-              icon={<CheckCircle size={24} color="#ffffff" />}
-              label="Resolved"
-              count={userData.stats.resolved}
-              onPress={() => console.log("View resolved")}
-              colors={["#10b981", "#059669"]}
-            />
-          </View>
         </View>
 
         {/* Actions Section */}
-        <View className="px-6 pt-6 mx-4 mt-8 mb-8 bg-white ">
-          <Text className="mb-6 text-xl font-medium text-gray-800 font-geist">
-            Quick Actions
+        <View className="px-5 mt-10 mb-8">
+          <Text className="my-4 text-lg font-bold text-gray-800 font-geist">
+            Account Settings
           </Text>
-          <View className="gap-3">
-            <ActionButton
-              icon={<Shield size={20} color="#774287" />}
-              label="Privacy Settings"
-              onPress={() => console.log("Privacy settings")}
-            />
-            <ActionButton
-              icon={<Edit3 size={20} color="#4549e6" />}
-              label="Edit Profile"
-              onPress={() => console.log("Edit profile")}
-            />
-            <ActionButton
-              icon={<LogOut size={20} color="#f59e0b" />}
-              label="Logout"
-              onPress={() => console.log("Logout")}
-            />
-            <ActionButton
-              icon={<Trash2 size={20} color="#ef4444" />}
-              label="Delete Account"
-              onPress={() => console.log("Delete account")}
-              variant="danger"
-            />
-          </View>
+
+          <ActionButton
+            icon={<Edit3 size={20} color="#774287" />}
+            label="Edit Profile"
+            onPress={() => console.log("Edit profile")}
+          />
+
+          <ActionButton
+            icon={<Shield size={20} color="#10b981" />}
+            label="Privacy & Security"
+            onPress={() => console.log("Privacy settings")}
+            color="bg-green-100"
+          />
+
+          <ActionButton
+            icon={<Bell size={20} color="#f59e0b" />}
+            label="Notifications"
+            onPress={() => setShowSettings(true)}
+            color="bg-amber-100"
+          />
+
+          <ActionButton
+            icon={<Globe size={20} color="#4549e6" />}
+            label="Language"
+            onPress={() => setShowSettings(true)}
+            color="bg-blue-100"
+          />
+
+          <ActionButton
+            icon={<HelpCircle size={20} color="#774287" />}
+            label="Help & Support"
+            onPress={() => console.log("Help & Support")}
+          />
+
+          <ActionButton
+            icon={<LogOut size={20} color="#f59e0b" />}
+            label="Logout"
+            onPress={() => setLogoutModalVisible(true)}
+            color="bg-amber-100"
+          />
         </View>
       </ScrollView>
+
+      <LogoutConfirmationModal
+        visible={logoutModalVisible}
+        onConfirm={handleLogout}
+        onCancel={() => setLogoutModalVisible(false)}
+      />
     </SafeAreaView>
   )
 }
