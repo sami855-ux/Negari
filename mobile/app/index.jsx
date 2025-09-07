@@ -1,5 +1,5 @@
+// app/index.jsx
 import "@/global.css"
-
 import { useRouter } from "expo-router"
 import {
   SafeAreaView,
@@ -15,9 +15,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import * as AuthSession from "expo-auth-session"
 
 import GoogleIcon from "@/utils/GoogleIcon"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import Constants from "expo-constants"
 import axios from "axios"
+import { MessageProvider } from "../components/MessageContext"
 
 WebBrowser.maybeCompleteAuthSession()
 
@@ -36,6 +37,7 @@ const Welcome = () => {
   })
 
   console.log(AuthSession.makeRedirectUri())
+
   // Handle response
   useEffect(() => {
     const handleGoogleResponse = async () => {
@@ -56,6 +58,10 @@ const Welcome = () => {
             // Store JWT locally
             await AsyncStorage.setItem("token", data.token)
             console.log("Google login successful:", data)
+
+            // Store user data for MessageProvider
+            await AsyncStorage.setItem("user", JSON.stringify(data.user))
+
             // Navigate based on user role
             // if (data.user.role === "ADMIN") router.push("/admin")
             // else if (data.user.role === "OFFICER") router.push("/official")
@@ -132,4 +138,45 @@ const styles = StyleSheet.create({
   },
 })
 
-export default Welcome
+// Create a wrapper component that provides the MessageProvider
+export default function AppWrapper() {
+  const [user, setUser] = useState({
+    username: "samuel tale",
+    role: "CITIZEN",
+    profilePicture:
+      "https://images.unsplash.com/photo-1499714608240-22fc6ad53fb2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=880&q=80",
+  })
+  const [isLoading, setIsLoading] = useState(false)
+
+  // useEffect(() => {
+  //   // Check if user is logged in
+  //   const checkAuth = async () => {
+  //     try {
+  //       const userData = await AsyncStorage.getItem("user");
+  //       if (userData) {
+  //         setUser(JSON.parse(userData));
+  //       }
+  //     } catch (error) {
+  //       console.error("Auth check failed:", error);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+
+  //   checkAuth();
+  // }, []);
+
+  if (isLoading) {
+    return (
+      <View className="items-center justify-center flex-1 bg-gray-50">
+        <Text>Loading...</Text>
+      </View>
+    )
+  }
+
+  return (
+    <MessageProvider user={user}>
+      <Welcome />
+    </MessageProvider>
+  )
+}

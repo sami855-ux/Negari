@@ -14,6 +14,7 @@
     "app/index.jsx",
     "app/_layout.jsx",
     "nativewind-env.d.ts",
-    "components/ImagePicker.jsx"
+    "components/ImagePicker.jsx",
+    "app/(tabs)/message.jsx"
   ]
 }

@@ -1,3 +1,4 @@
+import { storage } from "@/store/slices/auth"
 import axios from "axios"
 // import Constants from "expo-constants"
 
@@ -11,7 +12,18 @@ const serverUrl = "http://localhost:5000"
 
 export const axiosInstance = axios.create({
   baseURL: `${serverUrl}/api/`,
-  withCredentials: true,
+})
+
+axiosInstance.interceptors.request.use(async (config) => {
+  try {
+    const token = await storage.getItem("token")
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+  } catch (err) {
+    console.error("Error attaching token:", err)
+  }
+  return config
 })
 
 export const createReport = async (data) => {

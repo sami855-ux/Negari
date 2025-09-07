@@ -7,6 +7,15 @@ import { View } from "react-native"
 
 import SafeScreen from "@/components/SafeScreen"
 import { store } from "@/store/index"
+import { MessageProvider } from "@/components/MessageContext"
+
+const user = {
+  id: "1",
+  username: "samuel tale",
+  role: "CITIZEN",
+  profilePicture:
+    "https://images.unsplash.com/photo-1499714608240-22fc6ad53fb2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=880&q=80",
+}
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -20,36 +29,38 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <Provider store={store}>
-        <SafeScreen>
-          <Stack>
-            <Stack.Screen
-              name="index"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name="(auth)"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name="(tabs)"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name="worker/(tabs)"
-              options={{
-                headerShown: false,
-              }}
-            />
-          </Stack>
-        </SafeScreen>
+        <MessageProvider user={user}>
+          <SafeScreen>
+            <Stack>
+              <Stack.Screen
+                name="index"
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="(auth)"
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="(tabs)"
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="worker/(tabs)"
+                options={{
+                  headerShown: false,
+                }}
+              />
+            </Stack>
+          </SafeScreen>
 
-        <StatusBar style="dark" />
+          <StatusBar style="dark" />
+        </MessageProvider>
       </Provider>
     </SafeAreaProvider>
   )

@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import axios from "axios"
 import Constants from "expo-constants"
+import { Platform } from "react-native"
 
 const serverUrl =
   Constants.expoConfig?.extra?.serverUrl ||
@@ -16,12 +17,48 @@ const axiosInstance = axios.create({
 
 //Helper functions
 
+export const storage = {
+  setItem: async (key, value) => {
+    if (Platform.OS === "web") {
+      localStorage.setItem(key, value)
+    } else {
+      await AsyncStorage.setItem(key, value)
+    }
+  },
+  getItem: async (key) => {
+    if (Platform.OS === "web") {
+      return localStorage.getItem(key)
+    } else {
+      return await AsyncStorage.getItem(key)
+    }
+  },
+  removeItem: async (key) => {
+    if (Platform.OS === "web") {
+      localStorage.removeItem(key)
+    } else {
+      await AsyncStorage.removeItem(key)
+    }
+  },
+}
+
 const saveToStorage = async (token, user) => {
   try {
-    await AsyncStorage.setItem("token", token)
-    await AsyncStorage.setItem("user", JSON.stringify(user))
+    await storage.setItem("token", token)
+    await storage.setItem("user", JSON.stringify(user))
   } catch (error) {
     console.error("Error saving to storage:", error)
+  }
+}
+
+export const loadFromStorage = async () => {
+  try {
+    const token = await storage.getItem("token")
+    const userString = await storage.getItem("user")
+    const user = userString ? JSON.parse(userString) : null
+    return { token, user }
+  } catch (error) {
+    console.error("Error loading from storage:", error)
+    return { token: null, user: null }
   }
 }
 
@@ -45,9 +82,10 @@ export const loginUser = createAsyncThunk(
         password,
       })
 
-      console.log(res)
       // Save token to AsyncStorage
       if (res.data.success) {
+        console.log("Login data", res)
+
         saveToStorage(res.data.token, res.data.user)
         return res.data
       } else {

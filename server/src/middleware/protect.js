@@ -3,8 +3,19 @@ import prisma from "../prisma/client.js"
 
 export const protect = async (req, res, next) => {
   try {
-    const token = req.cookies?.token
-    console.log(token)
+    let token
+
+    // 1️⃣ Check Authorization Header (Bearer token)
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      token = req.headers.authorization.split(" ")[1]
+    }
+    // 2️⃣ (Optional) Fallback to Cookie for web users if you ever set cookies
+    else if (req.cookies?.token) {
+      token = req.cookies.token
+    }
 
     if (!token) {
       return res.status(401).json({
@@ -36,7 +47,6 @@ export const protect = async (req, res, next) => {
       })
     }
 
-    // Attach user to request
     req.user = user
     next()
   } catch (err) {

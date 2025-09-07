@@ -121,6 +121,9 @@ export const loginUser = async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
+        profilePicture: user.profilePicture,
+        lastSeen: user.lastSeen,
+        isOnline: user.isOnline,
       },
       token,
     })
@@ -169,6 +172,9 @@ export const verifyOTP = async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
+        profilePicture: user.profilePicture,
+        lastSeen: user.lastSeen,
+        isOnline: user.isOnline,
       },
       token,
     })
