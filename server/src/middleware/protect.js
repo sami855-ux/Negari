@@ -3,8 +3,8 @@ import prisma from "../prisma/client.js"
 
 export const protect = async (req, res, next) => {
   try {
-    // Get token from cookies instead of headers
     const token = req.cookies?.token
+    console.log(token)
 
     if (!token) {
       return res.status(401).json({
