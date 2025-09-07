@@ -13,12 +13,14 @@ import authRoutes from "./routes/auth.route.js"
 import regionRoutes from "./routes/region.route.js"
 import ratingRoutes from "./routes/rating.route.js"
 import reportRoutes from "./routes/report.route.js"
+import messageRoutes from "./routes/message.route.js"
 import googleAuthRoutes from "./routes/google.route.js"
 import feedbackRoutes from "./routes/feedback.route.js"
 import categoryRoutes from "./routes/category.route.js"
 import telegramAuthRoutes from "./routes/telegram.route.js"
 import notificationRoutes from "./routes/notification.route.js"
 import systemPolicyRoutes from "./routes/systemPolicy.route.js"
+import conversationRoutes from "./routes/conversation.route.js"
 
 import "./utils/passport.js"
 import job from "./utils/cron.js"
@@ -49,17 +51,7 @@ app.use(helmet())
 app.use(passport.initialize())
 
 const server = http.createServer(app)
-const io = new SocketIOServer(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST", "PATCH"],
-  },
-})
-
-// Attach io to Express app so you can access it in controllers
-app.set("io", io)
-
-setupSocketIO(io)
+setupSocketIO(server)
 
 // API Routes
 app.use("/api/user", userRoutes)
@@ -73,11 +65,13 @@ app.use("/api/category", categoryRoutes)
 app.use("/api/policy", systemPolicyRoutes)
 app.use("/api/notifications", notificationRoutes)
 app.use("/api/region", regionRoutes)
+app.use("/api/conversations", conversationRoutes)
+app.use("/api/messages", messageRoutes)
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({ message: "Project backend is running ✅" })
 })
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`🚀 Project API running on http://localhost:${PORT}`)
 })
