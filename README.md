@@ -15,26 +15,27 @@ Negari is a platform that empowers citizens to report community issues, enabling
 <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
 
   <div style="flex: 0 0 45%; text-align: center;">
-    <img width="150" height="624" alt="mobile3" src="https://github.com/user-attachments/assets/359cd89b-098e-4eb9-b354-877f1e080e5e" />
-    <p>Mobile Screen 3</p>
+    <img width="200" height="400" alt="Mobile Screen 3" src="https://github.com/user-attachments/assets/359cd89b-098e-4eb9-b354-877f1e080e5e" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);" />
+    <p style="margin-top: 10px; font-weight: bold;">Mobile Screen 3</p>
   </div>
 
   <div style="flex: 0 0 45%; text-align: center;">
-    <img width="150" height="614" alt="mobile2" src="https://github.com/user-attachments/assets/43f9635b-4fd7-462e-b41e-00187eae95ea" />
-    <p>Mobile Screen 2</p>
+    <img width="200" height="400" alt="Mobile Screen 2" src="https://github.com/user-attachments/assets/43f9635b-4fd7-462e-b41e-00187eae95ea" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);" />
+    <p style="margin-top: 10px; font-weight: bold;">Mobile Screen 2</p>
   </div>
 
   <div style="flex: 0 0 45%; text-align: center;">
-    <img width="150" height="627" alt="mobile1" src="https://github.com/user-attachments/assets/a6e77b5d-2694-4512-a7bd-a893a74de42f" />
-    <p>Mobile Screen 1</p>
+    <img width="200" height="400" alt="Mobile Screen 1" src="https://github.com/user-attachments/assets/a6e77b5d-2694-4512-a7bd-a893a74de42f" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);" />
+    <p style="margin-top: 10px; font-weight: bold;">Mobile Screen 1</p>
   </div>
 
   <div style="flex: 0 0 45%; text-align: center;">
-    <img width="150" height="635" alt="mobil4" src="https://github.com/user-attachments/assets/37ea33eb-e4a2-491d-937e-e8f39b56d58e" />
-    <p>Mobile Screen 4</p>
+    <img width="200" height="400" alt="Mobile Screen 4" src="https://github.com/user-attachments/assets/37ea33eb-e4a2-491d-937e-e8f39b56d58e" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);" />
+    <p style="margin-top: 10px; font-weight: bold;">Mobile Screen 4</p>
   </div>
 
 </div>
+
 
 
 
