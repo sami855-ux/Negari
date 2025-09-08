@@ -19,7 +19,7 @@ Negari is a platform that empowers citizens to report community issues, enabling
   <img width="150" height="614" alt="mobile2" src="https://github.com/user-attachments/assets/43f9635b-4fd7-462e-b41e-00187eae95ea" />
 
   <img width="150" height="627" alt="mobile1" src="https://github.com/user-attachments/assets/a6e77b5d-2694-4512-a7bd-a893a74de42f" />
-  <img width="280" height="635" alt="mobil4" src="https://github.com/user-attachments/assets/37ea33eb-e4a2-491d-937e-e8f39b56d58e" />
+  <img width="150" height="635" alt="mobil4" src="https://github.com/user-attachments/assets/37ea33eb-e4a2-491d-937e-e8f39b56d58e" />
 
 </div>
 
