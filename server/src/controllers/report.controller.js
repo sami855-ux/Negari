@@ -560,6 +560,134 @@ export const getReportById = async (req, res) => {
   }
 }
 
+export const getReportAssignedToWorker = async (req, res) => {
+  try {
+    const workerId = req.user.id
+
+    if (!workerId) {
+      return res
+        .status(400)
+        .json({ error: "Worker ID is required", success: false })
+    }
+
+    const report = await prisma.report.findFirst({
+      where: {
+        assignedToWorkerId: workerId,
+        status: "VERIFIED",
+      },
+      include: {
+        category: {
+          select: { id: true, name: true },
+        },
+        location: true,
+        assignedTo: true,
+      },
+      orderBy: {
+        createdAt: "desc", // gets the latest one
+      },
+    })
+
+    return res.status(200).json({
+      success: true,
+      report,
+    })
+  } catch (error) {
+    console.error("Error fetching assigned reports:", error)
+    res
+      .status(500)
+      .json({ error: "Failed to fetch reports for worker", success: false })
+  }
+}
+
+export const getReportAssignedInprogress = async (req, res) => {
+  try {
+    const workerId = req.user.id
+
+    if (!workerId) {
+      return res
+        .status(400)
+        .json({ error: "Worker ID is required", success: false })
+    }
+
+    const report = await prisma.report.findFirst({
+      where: {
+        assignedToWorkerId: workerId,
+        status: "IN_PROGRESS",
+      },
+      include: {
+        category: {
+          select: { id: true, name: true },
+        },
+        location: true,
+        assignedTo: true,
+      },
+      orderBy: {
+        createdAt: "desc", // gets the latest one
+      },
+    })
+
+    return res.status(200).json({
+      success: true,
+      report,
+    })
+  } catch (error) {
+    console.error("Error fetching assigned reports:", error)
+    res
+      .status(500)
+      .json({ error: "Failed to fetch reports for worker", success: false })
+  }
+}
+
+export const getAllReportsAssignedToWorker = async (req, res) => {
+  try {
+    const workerId = req.user.id
+
+    if (!workerId) {
+      return res
+        .status(400)
+        .json({ error: "Worker ID is required", success: false })
+    }
+
+    const reports = await prisma.report.findMany({
+      where: {
+        assignedToWorkerId: workerId,
+        status: {
+          in: ["RESOLVED", "REJECTED"],
+        },
+      },
+      include: {
+        category: {
+          select: { id: true, name: true },
+        },
+        location: true,
+        assignedTo: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    })
+    const result = reports.map((report) => ({
+      ...report,
+      category: report.category?.name || null,
+      location:
+        report.location.city ||
+        report.location.region ||
+        report.location.address ||
+        "Addis abeba",
+    }))
+
+    return res.status(200).json({
+      success: true,
+      reports,
+    })
+  } catch (error) {
+    console.error("Error fetching assigned reports:", error)
+    res
+      .status(500)
+      .json({ error: "Failed to fetch reports for worker", success: false })
+  }
+}
+
 export const changeReportStatus = async (req, res) => {
   try {
     const { id } = req.params
@@ -590,6 +718,7 @@ export const changeReportStatus = async (req, res) => {
         status,
         resolutionNote: resolutionNote || undefined,
         resolvedAt: status === "RESOLVED" ? new Date() : null,
+        inProgressAt: status === "IN_PROGRESS" ? new Date() : null,
       },
     })
 

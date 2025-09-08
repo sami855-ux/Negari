@@ -45,13 +45,37 @@ export default function RootLayout() {
                 }}
               />
               <Stack.Screen
-                name="(tabs)"
+                name="one/(tabs)"
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="one/report"
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="one/chat"
                 options={{
                   headerShown: false,
                 }}
               />
               <Stack.Screen
                 name="worker/(tabs)"
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="worker/ReportDetails"
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="worker/chat"
                 options={{
                   headerShown: false,
                 }}

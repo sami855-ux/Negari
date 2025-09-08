@@ -1,4 +1,4 @@
-import ProfileScreen from "../../screens/Profile"
+import ProfileScreen from "../../../screens/Profile"
 
 const Profile = () => {
   return <ProfileScreen />

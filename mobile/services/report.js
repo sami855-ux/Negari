@@ -53,7 +53,6 @@ export const getUserReports = async (userId) => {
   try {
     const res = await axiosInstance.get(`report/user/${userId}`)
 
-    console.log(userId, res.data)
     if (res.data.success) {
       return {
         success: true,
@@ -103,6 +102,108 @@ export const deleteReport = async (reportId) => {
   try {
     const res = await axiosInstance.delete(`report/${reportId}`)
 
+    if (res.data.success) {
+      return {
+        success: true,
+        message: res.data.message,
+      }
+    } else {
+      return {
+        success: false,
+        message: res.data.message,
+      }
+    }
+  } catch (error) {
+    console.log(error)
+    return {
+      success: false,
+      message: error,
+    }
+  }
+}
+
+export const getAssignedReport = async () => {
+  try {
+    const res = await axiosInstance.get("report/worker/assigned")
+
+    console.log(res)
+    if (res.data.success) {
+      return {
+        success: true,
+        data: res.data.report,
+      }
+    } else {
+      return {
+        success: false,
+        message: res.data.message,
+      }
+    }
+  } catch (error) {
+    console.log(error)
+    return {
+      success: false,
+      message: error,
+      data: {},
+    }
+  }
+}
+export const getAssignedReportInprogress = async () => {
+  try {
+    const res = await axiosInstance.get("report/worker/inprogress")
+
+    console.log(res)
+    if (res.data.success) {
+      return {
+        success: true,
+        data: res.data.report,
+      }
+    } else {
+      return {
+        success: false,
+        message: res.data.message,
+      }
+    }
+  } catch (error) {
+    console.log(error)
+    return {
+      success: false,
+      message: error,
+      data: {},
+    }
+  }
+}
+
+export const getAllAssignedWorkerReports = async () => {
+  try {
+    const res = await axiosInstance.get("/report/worker/exist")
+
+    if (res.data.success) {
+      return {
+        success: true,
+        data: res.data.reports,
+      }
+    } else {
+      return {
+        success: false,
+        message: res.data.message,
+      }
+    }
+  } catch (error) {
+    console.log(error)
+    return {
+      success: false,
+      message: error,
+    }
+  }
+}
+
+export const makeReportInprogress = async (reportId) => {
+  try {
+    const res = await axiosInstance.patch(`/report/status/${reportId}`, {
+      status: "IN_PROGRESS",
+    })
+
+    console.log(res.data)
     if (res.data.success) {
       return {
         success: true,

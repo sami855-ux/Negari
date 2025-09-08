@@ -22,6 +22,8 @@ import GoogleIcon from "@/utils/GoogleIcon"
 import jwtDecode from "jwt-decode"
 
 import { storage } from "../store/slices/auth"
+import { fetchNotifications } from "@/store/slices/notification"
+import { useDispatch } from "react-redux"
 
 WebBrowser.maybeCompleteAuthSession()
 
@@ -131,6 +133,7 @@ const Welcome = () => {
 
 export default function AppWrapper() {
   const router = useRouter()
+  const dispatch = useDispatch()
   const [isLoading, setIsLoading] = useState(true)
   const scaleAnim = useRef(new Animated.Value(1)).current
 
@@ -162,7 +165,7 @@ export default function AppWrapper() {
           const parseToken = JSON.parse(token)
           // Redirect based on role
           if (parseToken.role === "WORKER") router.replace("/worker/(tabs)")
-          else if (parseToken.role === "CITIZEN") router.replace("/(tabs)")
+          else if (parseToken.role === "CITIZEN") router.replace("/one/(tabs)")
         }
       } catch (err) {
         console.error("Auth check failed:", err)
@@ -171,17 +174,18 @@ export default function AppWrapper() {
       }
     }
 
+    dispatch(fetchNotifications())
     checkAuth()
-  }, [])
+  }, [dispatch])
 
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center bg-black">
+      <View className="items-center justify-center flex-1 bg-black">
         <Animated.Image
           source={require("@/assets/images/react-logo.png")} // your logo
           style={{ width: 120, height: 120, transform: [{ scale: scaleAnim }] }}
         />
-        <Text className="mt-4 text-white font-geist text-lg">Loading...</Text>
+        <Text className="mt-4 text-lg text-white font-geist">Loading...</Text>
       </View>
     )
   }

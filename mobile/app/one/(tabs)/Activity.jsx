@@ -26,8 +26,8 @@ import {
 } from "lucide-react-native"
 import { Swipeable } from "react-native-gesture-handler"
 import { LinearGradient } from "expo-linear-gradient"
-import { getUserReports } from "../../services/report"
-import { storage } from "../../store/slices/auth"
+import { getUserReports } from "../../../services/report"
+import { storage } from "../../../store/slices/auth"
 
 const statusIcons = {
   PENDING: AlertCircle,
@@ -145,7 +145,7 @@ const ActivityScreen = () => {
 
   const handleReportPress = (reportId) => {
     router.push({
-      pathname: "/(tabs)/report",
+      pathname: "/one/report",
       params: {
         reportId: reportId,
       },
@@ -285,10 +285,10 @@ const ActivityScreen = () => {
     <View className="items-center justify-center flex-1 p-8">
       <View className="items-center">
         <ImageIcon size={48} className="mb-4 text-gray-300" />
-        <Text className="mb-2 text-xl font-semibold text-gray-500">
+        <Text className="mb-2 text-xl font-semibold text-gray-500 font-geist">
           No Reports Found
         </Text>
-        <Text className="mb-6 text-center text-gray-400">
+        <Text className="mb-6 text-center text-gray-400 font-geist">
           {statusFilter === "All" && categoryFilter === "All"
             ? "You haven't submitted any reports yet."
             : `No reports found with the current filters.`}
@@ -315,7 +315,9 @@ const ActivityScreen = () => {
         <View className="justify-end flex-1 bg-black/50">
           <View className="p-6 bg-white rounded-t-3xl">
             <View className="flex-row items-center justify-between mb-6">
-              <Text className="text-xl font-bold text-gray-800">Filters</Text>
+              <Text className="text-xl font-bold text-gray-800 font-geist">
+                Filters
+              </Text>
               <TouchableOpacity
                 onPress={() => setIsFilterOpen(false)}
                 className="p-2 bg-gray-100 rounded-full"
@@ -325,7 +327,7 @@ const ActivityScreen = () => {
             </View>
 
             <View className="mb-6">
-              <Text className="mb-3 text-lg font-semibold text-gray-800">
+              <Text className="mb-3 text-base font-semibold text-gray-800 font-geist">
                 Status
               </Text>
               <View className="flex-row flex-wrap">
@@ -341,13 +343,13 @@ const ActivityScreen = () => {
                       }`}
                     >
                       <Text
-                        className={`font-medium ${
+                        className={`font-sm font-geist ${
                           tempStatusFilter === status
                             ? "text-white"
                             : "text-gray-800"
                         }`}
                       >
-                        {status}
+                        {`${status[0].toUpperCase()}${status.slice(1).toLowerCase()}`}
                       </Text>
                     </TouchableOpacity>
                   )
@@ -356,7 +358,7 @@ const ActivityScreen = () => {
             </View>
 
             <View className="mb-6">
-              <Text className="mb-3 text-lg font-semibold text-gray-800">
+              <Text className="mb-3 text-lg font-semibold text-gray-800 font-geist">
                 Category
               </Text>
               <View className="flex-row flex-wrap">
@@ -371,13 +373,13 @@ const ActivityScreen = () => {
                     }`}
                   >
                     <Text
-                      className={`font-medium ${
+                      className={`font-sm font-geist ${
                         tempCategoryFilter === category
                           ? "text-white"
                           : "text-gray-800"
                       }`}
                     >
-                      {category}
+                      {`${category[0].toUpperCase()}${category.slice(1).toLowerCase()}`}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -385,7 +387,7 @@ const ActivityScreen = () => {
             </View>
 
             <View className="mb-6">
-              <Text className="mb-3 text-lg font-semibold text-gray-800">
+              <Text className="mb-3 text-lg font-semibold text-gray-800 font-geist">
                 Sort By
               </Text>
               <View className="flex-row">
@@ -401,7 +403,7 @@ const ActivityScreen = () => {
                     className="mr-2"
                   />
                   <Text
-                    className={`font-medium ${
+                    className={`font-sm font-geist ${
                       tempSortOrder === "newest"
                         ? "text-white"
                         : "text-gray-800"
@@ -422,7 +424,7 @@ const ActivityScreen = () => {
                     className="mr-2"
                   />
                   <Text
-                    className={`font-medium ${
+                    className={`font-sm font-geist ${
                       tempSortOrder === "oldest"
                         ? "text-white"
                         : "text-gray-800"
@@ -439,13 +441,17 @@ const ActivityScreen = () => {
                 className="items-center flex-1 py-3 bg-gray-200 rounded-lg"
                 onPress={resetFilters}
               >
-                <Text className="font-semibold text-gray-800">Reset</Text>
+                <Text className="font-semibold text-gray-800 font-geist">
+                  Reset
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 className="items-center flex-1 py-3 bg-purple-600 rounded-lg"
                 onPress={applyFilters}
               >
-                <Text className="font-semibold text-white">Apply Filters</Text>
+                <Text className="font-semibold text-white font-geist">
+                  Apply Filters
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

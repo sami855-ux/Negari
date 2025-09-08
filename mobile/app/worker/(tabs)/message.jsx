@@ -102,7 +102,7 @@ export default function ConversationListScreen() {
 
   const navigateToChat = (officer) => {
     router.push({
-      pathname: "/worker/(tabs)/chat",
+      pathname: "/worker/chat",
       params: {
         conversationId: officer.id,
         officer: JSON.stringify(officer),
@@ -212,7 +212,7 @@ export default function ConversationListScreen() {
         }}
       >
         <TouchableOpacity
-          className="flex-row items-center p-5 rounded-xl mb-4 mx-4"
+          className="flex-row items-center p-5 mx-4 mb-4 rounded-xl"
           style={{
             backgroundColor: COLORS.card,
           }}
@@ -221,20 +221,20 @@ export default function ConversationListScreen() {
           <View className="relative">
             <Image
               source={{ uri: item.profilePicture }}
-              className="w-16 h-16 rounded-2xl mr-4"
+              className="w-16 h-16 mr-4 rounded-2xl"
               style={{ borderWidth: 2, borderColor: COLORS.border }}
             />
             {isOnline && (
               <View
-                className="absolute bottom-0 right-3 w-3 h-3 rounded-full border-2 border-white"
+                className="absolute bottom-0 w-3 h-3 border-2 border-white rounded-full right-3"
                 style={{ backgroundColor: COLORS.online }}
               />
             )}
           </View>
           <View className="flex-1">
-            <View className="flex-row justify-between items-center mb-1">
+            <View className="flex-row items-center justify-between mb-1">
               <Text
-                className="font-semibold font-jakarta capitalize"
+                className="font-semibold capitalize font-jakarta"
                 style={{ color: COLORS.textPrimary, fontSize: 16 }}
                 numberOfLines={1}
               >
@@ -253,7 +253,7 @@ export default function ConversationListScreen() {
 
             {/* Role Badge with dynamic styling */}
             <View
-              className="px-2 py-1 rounded-full self-start mb-1"
+              className="self-start px-2 py-1 mb-1 rounded-full"
               style={{
                 backgroundColor: badgeStyle.backgroundColor,
                 borderWidth: 1,
@@ -261,7 +261,7 @@ export default function ConversationListScreen() {
               }}
             >
               <Text
-                className="text-xs font-jakarta font-semibold"
+                className="text-xs font-semibold font-jakarta"
                 style={{ color: badgeStyle.color }}
               >
                 {formattedRole}
@@ -285,10 +285,10 @@ export default function ConversationListScreen() {
           </View>
           {unreadCount > 0 && (
             <View
-              className="ml-2 rounded-full w-6 h-6 items-center justify-center"
+              className="items-center justify-center w-6 h-6 ml-2 rounded-full"
               style={{ backgroundColor: COLORS.unread }}
             >
-              <Text className="text-xs text-white font-bold font-jakarta">
+              <Text className="text-xs font-bold text-white font-jakarta">
                 {unreadCount}
               </Text>
             </View>
@@ -306,7 +306,7 @@ export default function ConversationListScreen() {
   if (loading) {
     return (
       <View
-        className="flex-1 items-center justify-center"
+        className="items-center justify-center flex-1"
         style={{ backgroundColor: COLORS.background }}
       >
         <View className="items-center">
@@ -326,7 +326,7 @@ export default function ConversationListScreen() {
     <View className="flex-1" style={{ backgroundColor: COLORS.background }}>
       {/* Header */}
       <View className="px-6 py-5" style={{ backgroundColor: COLORS.primary }}>
-        <View className="flex-row justify-between items-center">
+        <View className="flex-row items-center justify-between">
           <View>
             <Text
               className="text-2xl font-bold font-geist"
@@ -348,13 +348,13 @@ export default function ConversationListScreen() {
 
         {/* Search Bar */}
         <View
-          className="flex-row items-center bg-white rounded-xl px-4 py-3 mt-4"
+          className="flex-row items-center px-4 py-3 mt-4 bg-white rounded-xl"
           style={{ backgroundColor: "rgba(255, 255, 255, 0.9)" }}
         >
           <Search size={20} color={COLORS.textSecondary} />
           <TextInput
             placeholder="Search conversations..."
-            className="flex-1 ml-2 font-jakarta outline-none"
+            className="flex-1 ml-2 outline-none font-jakarta"
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholderTextColor={COLORS.textSecondary}
@@ -383,21 +383,21 @@ export default function ConversationListScreen() {
             />
           }
           ListEmptyComponent={
-            <View className="flex-1 items-center justify-center mt-20 px-4">
+            <View className="items-center justify-center flex-1 px-4 mt-20">
               <View
-                className="w-20 h-20 rounded-full items-center justify-center mb-6"
+                className="items-center justify-center w-20 h-20 mb-6 rounded-full"
                 style={{ backgroundColor: "rgba(67, 97, 238, 0.1)" }}
               >
                 <MessageCircle size={40} color={COLORS.primary} />
               </View>
               <Text
-                className="text-xl font-semibold text-center mb-2 font-geist"
+                className="mb-2 text-xl font-semibold text-center font-geist"
                 style={{ color: COLORS.textPrimary }}
               >
                 No conversations yet
               </Text>
               <Text
-                className="text-center mb-6 font-jakarta"
+                className="mb-6 text-center font-jakarta"
                 style={{ color: COLORS.textSecondary, lineHeight: 20 }}
               >
                 Start a conversation with an officer{"\n"}from a report detail
@@ -411,7 +411,7 @@ export default function ConversationListScreen() {
 
       {/* Floating Action Button */}
       <TouchableOpacity
-        className="absolute bottom-6 right-6 w-14 h-14 rounded-full items-center justify-center"
+        className="absolute items-center justify-center rounded-full bottom-6 right-6 w-14 h-14"
         style={{
           backgroundColor: COLORS.accent,
           shadowColor: "#000",

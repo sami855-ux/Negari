@@ -9,21 +9,46 @@ import {
   Shield,
   LogOut,
 } from "lucide-react-native"
+import { useDispatch } from "react-redux"
+import { useRouter } from "expo-router"
+import { useEffect, useState } from "react"
+import { logout, storage } from "../../../store/slices/auth"
+import LogoutConfirmationModal from "../../../components/LogoutConfirmation"
 
 const Profile = () => {
-  // Mock data
-  const worker = {
-    name: "Samuel Tale",
-    role: "Senior Field Technician",
-    email: "samitale@workforce.com",
-    phone: "+251 (415) 555-0198",
-    isActive: true,
-    avatarUrl:
-      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200",
-    rating: 4.8,
-    yearsWithCompany: 3,
-    lastActive: "2 hours ago",
+  const dispatch = useDispatch()
+  const router = useRouter()
+
+  const [worker, setWorker] = useState(null)
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false)
+
+  const handleLogout = async () => {
+    try {
+      await storage.removeItem("token")
+      await storage.removeItem("user")
+
+      dispatch(logout())
+      setLogoutModalVisible(false)
+      router.replace("/")
+    } catch (error) {
+      console.error("Error removing from storage:", error)
+    }
   }
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const storedUser = await storage.getItem("user")
+        if (storedUser) {
+          setWorker(JSON.parse(storedUser))
+        }
+      } catch (error) {
+        console.error("Failed to load user:", error)
+      }
+    }
+
+    fetchUser()
+  }, [])
 
   return (
     <>
@@ -46,7 +71,7 @@ const Profile = () => {
           <View className="relative">
             <View className="absolute rounded-full -inset-1 bg-gradient-to-r from-violet-400 to-purple-500 blur-sm opacity-20" />
             <Image
-              source={{ uri: worker.avatarUrl }}
+              source={{ uri: worker?.profilePicture }}
               className="object-cover w-24 h-24 border-2 border-white rounded-full"
             />
           </View>
@@ -54,32 +79,20 @@ const Profile = () => {
           {/* Personal Info */}
           <View className="flex-1 ml-5">
             <View className="flex-row items-center">
-              <Text className="text-2xl font-bold text-gray-800 font-geist">
-                {worker.name}
+              <Text className="text-2xl font-bold text-gray-800 capitalize font-geist">
+                {worker?.username}
               </Text>
-              <View className="ml-2 px-2 py-0.5 bg-amber-100 rounded-full flex-row items-center">
-                <Star
-                  size={14}
-                  className="mr-1 text-amber-500"
-                  fill="#f59e0b"
-                />
-                <Text className="text-xs font-jakarta text-amber-800">
-                  {worker.rating}
-                </Text>
-              </View>
             </View>
 
-            <Text className="text-gray-600  font-jakarta mt-0.5">
-              {worker.role}
+            <Text className="text-gray-500  font-jakarta mt-0.5 text-xs font-semibold ">
+              {worker?.role}
             </Text>
 
             {/* Stats Row */}
             <View className="flex-row mt-3 space-x-3">
               <View className="flex-row items-center px-2 py-1 rounded-full bg-[#f4b93b]">
                 <Shield size={14} className="mr-1 text-white" />
-                <Text className="text-xs text-white font-geist">
-                  {worker.yearsWithCompany} yrs
-                </Text>
+                <Text className="text-xs text-white font-geist">{4} yrs</Text>
               </View>
               <View className="flex-row items-center px-2 py-1 rounded-full bg-green-50">
                 <View className="w-2 h-2 mr-1 rounded-full bg-emerald-400" />
@@ -97,15 +110,7 @@ const Profile = () => {
             <Mail size={20} className="mr-3 text-amber-500" />
             <View>
               <Text className="text-xs font-medium text-gray-400">Email</Text>
-              <Text className="text-gray-800 font-geist">{worker.email}</Text>
-            </View>
-          </View>
-
-          <View className="flex-row items-center p-3 bg-amber-50 rounded-xl">
-            <Phone size={20} className="mr-3 text-amber-500" />
-            <View>
-              <Text className="text-xs font-medium text-gray-400">Phone</Text>
-              <Text className="text-gray-800 font-geist">{worker.phone}</Text>
+              <Text className="text-gray-800 font-geist">{worker?.email}</Text>
             </View>
           </View>
         </View>
@@ -117,7 +122,10 @@ const Profile = () => {
           </Text>
 
           <View className="space-y-2">
-            <TouchableOpacity className="flex-row items-center p-4 bg-white border border-gray-100 rounded-xl">
+            <TouchableOpacity
+              className="flex-row items-center p-4 bg-white border border-gray-100 rounded-xl"
+              //! onPress={() => router.push("/worker/notification")}
+            >
               <Bell size={22} className="mr-3 text-gray-500" />
               <Text className="flex-1 text-[15px] font-medium text-gray-700 font-geist">
                 Notifications
@@ -132,13 +140,26 @@ const Profile = () => {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity className="flex-row items-center p-4 bg-white border border-gray-100 rounded-xl">
+            <TouchableOpacity
+              className="flex-row items-center p-4 bg-white border border-gray-100 rounded-xl"
+              onPress={() => {
+                router.push({
+                  pathname: "/worker/ProfileDetail",
+                  params: {
+                    userId: worker.id,
+                  },
+                })
+              }}
+            >
               <User size={22} className="mr-3 text-gray-500" />
               <Text className="flex-1 text-[15px] font-medium text-gray-700 font-geist">
                 Profile Details
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity className="flex-row items-center p-4 bg-white border border-gray-100 rounded-xl">
+            <TouchableOpacity
+              className="flex-row items-center p-4 bg-white border border-gray-100 rounded-xl"
+              onPress={() => setLogoutModalVisible(true)}
+            >
               <LogOut size={20} className="mr-3 text-rose-500" />
               <Text className="flex-1 text-[15px] font-medium text-gray-700 font-geist">
                 Logout
@@ -147,6 +168,12 @@ const Profile = () => {
           </View>
         </View>
       </View>
+
+      <LogoutConfirmationModal
+        visible={logoutModalVisible}
+        onConfirm={handleLogout}
+        onCancel={() => setLogoutModalVisible(false)}
+      />
     </>
   )
 }

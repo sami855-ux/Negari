@@ -56,7 +56,7 @@ const LoginScreen = () => {
         if (res.user.role === "WORKER") {
           router.push("/worker/(tabs)")
         } else if (res.user.role === "CITIZEN") {
-          router.push("/(tabs)")
+          router.push("/one/(tabs)")
         }
       }
     } catch (error) {

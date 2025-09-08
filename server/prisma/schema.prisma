@@ -19,6 +19,7 @@ model User {
   isVerified     Boolean   @default(false)
   isOnline       Boolean   @default(false)
   lastSeen       DateTime?
+  isActive       Boolean   @default(true)
   createdAt      DateTime  @default(now())
 
   //Reset

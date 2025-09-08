@@ -24,10 +24,10 @@ import {
 import ImagePickerComp from "../components/ImagePicker"
 import UserModal from "../components/UserModal"
 import { useLocalSearchParams, useRouter } from "expo-router"
-import { useSelector } from "react-redux"
+import { storage } from "../store/slices/auth"
 
 export default function ChatScreen() {
-  const { user } = useSelector((store) => store.auth)
+  const [user, setUser] = useState(null)
   const router = useRouter()
 
   const { messages, sendMessage, fetchMessages, loadingSend, loadingFetch } =
@@ -46,6 +46,21 @@ export default function ChatScreen() {
   useEffect(() => {
     loadMessages()
   }, [conversationId])
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const storedUser = await storage.getItem("user")
+        if (storedUser) {
+          setUser(JSON.parse(storedUser))
+        }
+      } catch (error) {
+        console.error("Failed to load user:", error)
+      }
+    }
+
+    fetchUser()
+  }, [])
 
   const loadMessages = async () => {
     try {
@@ -91,7 +106,7 @@ export default function ChatScreen() {
   }
 
   const renderMessageItem = ({ item }) => {
-    const isCurrentUser = item.senderId === user.id
+    const isCurrentUser = item.senderId === user?.id
 
     return (
       <View
@@ -107,7 +122,7 @@ export default function ChatScreen() {
           {item.type === "IMAGE" && item.attachmentUrl ? (
             <Image
               source={{ uri: item.attachmentUrl }}
-              className="w-48 h-48 rounded-lg mb-2"
+              className="w-48 h-48 mb-2 rounded-lg"
               resizeMode="cover"
             />
           ) : null}
@@ -147,7 +162,7 @@ export default function ChatScreen() {
 
   if (loadingFetch) {
     return (
-      <View className="flex-1 bg-gray-50 items-center justify-center">
+      <View className="items-center justify-center flex-1 bg-gray-50">
         <ActivityIndicator size="large" color="#059669" />
       </View>
     )
@@ -160,14 +175,20 @@ export default function ChatScreen() {
       keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
     >
       {/* Header */}
-      <View className="bg-white px-4 py-3 flex-row items-center border-b border-gray-200">
+      <View className="flex-row items-center px-4 py-3 bg-white border-b border-gray-200">
+        {/* Back Button */}
+        <TouchableOpacity className="mr-4" onPress={() => router.back()}>
+          <ArrowLeft size={24} color="#000" />
+        </TouchableOpacity>
+
+        {/* Officer Info */}
         <TouchableOpacity
           className="flex-row items-center flex-1"
           onPress={() => setShowUserModal(true)}
         >
           <Image
             source={{ uri: officer.profilePicture }}
-            className="w-10 h-10 rounded-full mr-3"
+            className="w-10 h-10 mr-3 rounded-full"
           />
           <View>
             <Text className="font-semibold text-gray-800 font-geist">
@@ -187,12 +208,12 @@ export default function ChatScreen() {
         keyExtractor={(item) => item.id}
         className="flex-1 p-4"
         ListEmptyComponent={
-          <View className="flex-1 items-center justify-center mt-20 px-4">
+          <View className="items-center justify-center flex-1 px-4 mt-20">
             <ImageIcon size={64} color="#d1d5db" />
-            <Text className="text-xl font-semibold text-gray-400 mt-4 text-center font-jakarta">
+            <Text className="mt-4 text-xl font-semibold text-center text-gray-400 font-jakarta">
               No messages yet
             </Text>
-            <Text className="text-gray-400 text-center mt-2 font-jakarta">
+            <Text className="mt-2 text-center text-gray-400 font-jakarta">
               Start a conversation with {officer.username}
             </Text>
           </View>
@@ -200,7 +221,7 @@ export default function ChatScreen() {
       />
 
       {/* Message Input */}
-      <View className="bg-white border-t border-gray-200 p-3">
+      <View className="p-3 bg-white border-t border-gray-200">
         <View className="flex-row items-center">
           <TouchableOpacity
             className="p-2 mr-2"
@@ -210,7 +231,7 @@ export default function ChatScreen() {
           </TouchableOpacity>
 
           <TextInput
-            className="flex-1 bg-gray-100 rounded-2xl px-4 py-2 mr-2 font-geist"
+            className="flex-1 px-4 py-2 mr-2 bg-gray-100 rounded-2xl font-geist"
             placeholder="Type a message..."
             value={messageText}
             onChangeText={setMessageText}

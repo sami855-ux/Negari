@@ -50,3 +50,18 @@ export const VerifyOpt = async (email, otp) => {
     }
   }
 }
+
+export const getUserDetails = async (userId) => {
+  try {
+    const res = await axiosInstance.get(`user/${userId}`)
+
+    if (res.data.success) {
+      return res.data
+    } else {
+      return null
+    }
+  } catch (error) {
+    console.log(error)
+    return null
+  }
+}

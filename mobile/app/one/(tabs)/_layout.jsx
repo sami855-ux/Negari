@@ -7,18 +7,14 @@ import {
 } from "lucide-react-native"
 import { Image, Text, Animated, Easing } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import CircledPlusIcon from "../../utils/CircleIcon"
+import CircledPlusIcon from "../../../utils/CircleIcon"
 import { useEffect, useRef } from "react"
-
-import { MessageProvider } from "../../components/MessageContext"
 
 const activeColor = "#774287" // Purple
 const hoverColor = "#4549e6" // Blue
 const inactiveColor = "#6B7280"
 
 const profileImageUri = "https://i.pravatar.cc/300"
-
-const AnimatedIcon = Animated.createAnimatedComponent(MapPinCheck) // Just using one as example, you'd create for each
 
 const Layout = () => {
   const insets = useSafeAreaInsets()

@@ -4,6 +4,8 @@ import {
   ScrollView,
   TouchableOpacity,
   Pressable,
+  ActivityIndicator,
+  RefreshControl,
 } from "react-native"
 import {
   AlertCircle,
@@ -31,95 +33,13 @@ import Animated, {
   useSharedValue,
 } from "react-native-reanimated"
 import { useRouter } from "expo-router"
-
-// Mock data
-const activeReport = {
-  id: "AR-2023-045",
-  title: "Leaking Water Pipe",
-  description:
-    "Several sections of the sidewalk along Pine Street have cracked and lifted due to tree root growth, creating tripping hazards for pedestrians. Repairs were made by leveling the sidewalk and trimming nearby roots to ensure safety.",
-  imageUrls: [], // No thumbnail for active reports
-  videoUrl: null,
-  status: "PENDING", // enum: PENDING, IN_PROGRESS, RESOLVED, etc.
-  severity: "MEDIUM", // enum: LOW, MEDIUM, HIGH, CRITICAL
-  spamScore: 0.0,
-  confidenceScore: 0.95,
-  isPublic: true,
-  toxicityScore: 0.0,
-  resolutionNote: null,
-  resolvedAt: null,
-  createdAt: "2025-08-12T09:30:00Z",
-  updatedAt: "2025-08-12T09:30:00Z",
-  isAnonymous: false,
-  tags: ["plumbing", "leak", "public-safety"],
-  location: {
-    id: "LOC-2025-001",
-    latitude: 40.7128,
-    longitude: -74.006,
-    address: "Main Street, Block 12",
-    city: "Negari City",
-    region: "Central",
-  },
-  reporter: {
-    id: "USR-2025-123",
-    username: "citizen_john",
-    profilePicture: "/avatars/john.png",
-    role: "CITIZEN",
-  },
-  category: {
-    id: "CAT-PLUMBING",
-    name: "Plumbing",
-    description: "Issues related to water supply, pipes, and leaks",
-    icon: "fa-faucet",
-    color: "#7d4f2b",
-  },
-  assignedToWorker: {
-    id: "USR-2025-456",
-    username: "worker_ali",
-    profilePicture: "/avatars/ali.png",
-    role: "WORKER",
-  },
-  regionId: "REG-2025-001",
-}
-
-const resolvedReports = [
-  {
-    id: "RR-2023-044",
-    title: "Broken Streetlight",
-    location: "Oak Avenue",
-    resolvedDate: "Yesterday",
-    severity: "low",
-    description:
-      "The streetlight at the intersection of Oak Avenue and 5th Street has stopped functioning. This has caused low visibility during nighttime, raising safety concerns for pedestrians and drivers. The bulb and wiring were inspected and replaced.",
-  },
-  {
-    id: "RR-2023-043",
-    title: "Pothole Repair",
-    location: "Elm Street",
-    resolvedDate: "2 days ago",
-    severity: "high",
-    description:
-      "A large pothole located in the middle of Elm Street near the bus stop was causing significant traffic disruptions and potential vehicle damage. The maintenance team filled and resurfaced the affected area to restore safe passage.",
-  },
-  {
-    id: "RR-2023-042",
-    title: "Overflowing Trash Bin",
-    location: "Maple Park",
-    resolvedDate: "3 days ago",
-    severity: "medium",
-    description:
-      "The trash bin near the main entrance of Maple Park was overflowing for several days, causing litter to scatter around and attracting pests. The sanitation department emptied the bin and scheduled more frequent pickups to prevent recurrence.",
-  },
-  {
-    id: "RR-2023-041",
-    title: "Damaged Sidewalk",
-    location: "Pine Street",
-    resolvedDate: "Last week",
-    severity: "medium",
-    description:
-      "Several sections of the sidewalk along Pine Street have cracked and lifted due to tree root growth, creating tripping hazards for pedestrians. Repairs were made by leveling the sidewalk and trimming nearby roots to ensure safety.",
-  },
-]
+import { useEffect, useState } from "react"
+import {
+  getAllAssignedWorkerReports,
+  getAssignedReport,
+  getAssignedReportInprogress,
+  makeReportInprogress,
+} from "../../../services/report"
 
 const severityColors = {
   low: "bg-amber-400",
@@ -131,15 +51,26 @@ const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity)
 
 export default function AssignedReports() {
   const router = useRouter()
+  const [refreshing, setRefreshing] = useState(false)
+
+  const [isActiveReportLoading, setIsActiveReportLoading] = useState(true)
+  const [activeReport, setActiveReport] = useState(null)
+
+  const [isAssignedLoading, setIsAssignedLoading] = useState(true)
+  const [assignedReportsWorker, setAssignedReportsWorker] = useState([])
+
+  const [progressReport, setProgressReport] = useState([])
+  const [isProgressLoading, setIsProgressLoading] = useState(true)
+
+  const [isUpdating, setIsUpdating] = useState(false)
 
   const renderRightActions = () => {
     return (
       <Animated.View
         entering={LightSpeedInRight.duration(300)}
-        className="justify-center px-9 my-2 ml-2 bg-red-500 rounded-r-3xl"
+        className="justify-center my-2 ml-2 bg-red-500 px-9 rounded-r-3xl"
       >
         <Trash size={18} color="white" />
-        {/* <Text className="font-bold text-white font-jakarta">Delete</Text> */}
       </Animated.View>
     )
   }
@@ -155,6 +86,112 @@ export default function AssignedReports() {
     )
   }
 
+  const handleFetchActiveReport = async () => {
+    try {
+      const res = await getAssignedReport()
+
+      if (res.success) {
+        setActiveReport(res.data)
+      } else {
+        setActiveReport(null)
+      }
+    } catch (error) {
+      console.log(error)
+      setActiveReport(null)
+    } finally {
+      setIsProgressLoading(false)
+    }
+  }
+  const handleInprogressReport = async () => {
+    try {
+      const res = await getAssignedReportInprogress()
+
+      if (res.success && res.data) {
+        setProgressReport((prev) => {
+          const alreadyExists = prev.some((report) => report.id === res.data.id)
+
+          if (alreadyExists) {
+            return prev
+          }
+
+          return [...prev, res.data]
+        })
+      } else {
+        setProgressReport([])
+      }
+    } catch (error) {
+      console.log(error)
+      setProgressReport([])
+    } finally {
+      setIsActiveReportLoading(false)
+    }
+  }
+
+  const handleFetchAllReport = async () => {
+    try {
+      const res = await getAllAssignedWorkerReports()
+
+      if (res.success) {
+        setAssignedReportsWorker(res.data || [])
+      } else {
+        setAssignedReportsWorker([])
+      }
+    } catch (error) {
+      console.log(error)
+      setAssignedReportsWorker([])
+    } finally {
+      setIsAssignedLoading(false)
+    }
+  }
+
+  const handleRefresh = async () => {
+    setRefreshing(true)
+    setIsActiveReportLoading(true)
+    setIsAssignedLoading(true)
+    setIsProgressLoading(true)
+
+    try {
+      await Promise.all([
+        handleFetchActiveReport(),
+        handleFetchAllReport(),
+        handleInprogressReport(),
+      ])
+    } catch (error) {
+      console.log("Refresh error:", error)
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
+  const handleReportUpdate = async () => {
+    setIsUpdating(true)
+    try {
+      const res = await makeReportInprogress(activeReport.id)
+
+      if (res.success) {
+        router.push({
+          pathname: "/worker/ReportDetails",
+          params: {
+            reportId: activeReport.id,
+          },
+        })
+
+        setActiveReport(null)
+        handleInprogressReport()
+      }
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  useEffect(() => {
+    handleFetchActiveReport()
+    handleFetchAllReport()
+    handleInprogressReport()
+  }, [])
+
   return (
     <View className="flex-1 bg-amber-50">
       {/* Header */}
@@ -164,161 +201,271 @@ export default function AssignedReports() {
       >
         <Text className="text-lg font-bold text-white font-jakarta">Tasks</Text>
         <Pressable
-          className="absolute right-4 top-4" // add top for correct positioning
+          className="absolute right-4 top-4"
           onPress={() => router.push("/worker/notification")}
         >
           <Bell size={20} color="white" />
         </Pressable>
       </Animated.View>
 
-      <ScrollView className="flex-1 p-4">
+      <ScrollView
+        className="flex-1 p-4 px-2"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={["#7d4f2b"]}
+            tintColor="#7d4f2b"
+          />
+        }
+      >
         {/* Active Report Card */}
-        <Animated.View
-          entering={FadeInDown.delay(100).duration(500)}
-          className="mb-6 overflow-hidden bg-white border border-gray-100 rounded-2xl shadow-lg"
-          style={{
-            shadowColor: "#7d4f2b",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.1,
-            shadowRadius: 10,
-            elevation: 8,
-            backgroundColor: "#fff9f5",
-          }}
-        >
-          {/* Severity Color Strip with decorative end */}
-          <View className="flex-row">
-            <View
-              className={`h-2 w-full ${
-                severityColors[activeReport.severity.toUpperCase()]
-              }`}
-            />
-            <View
-              className={`h-2 w-4 rounded-r-full ${
-                severityColors[activeReport.severity.toUpperCase()]
-              }`}
-            />
+        {isActiveReportLoading ? (
+          <View className="items-center justify-center h-64">
+            <ActivityIndicator size="large" color="#7d4f2b" />
+            <Text className="mt-3 text-[#7d4f2b] font-geist">
+              Checking for newly assigned reports...
+            </Text>
           </View>
-
-          <View className="p-4">
-            {/* Title with decorative icon */}
-            <View className="flex-row items-start mb-4">
-              <AlertCircle size={24} className="mr-3 text-[#b5863d] mt-1" />
-              <Text className="flex-1 text-2xl font-bold text-[#583727] font-jakarta">
-                {activeReport.title}
-              </Text>
+        ) : activeReport ? (
+          <Animated.View
+            entering={FadeInDown.delay(100).duration(500)}
+            className="mb-6 overflow-hidden bg-white border border-gray-100 shadow-lg rounded-2xl"
+            style={{
+              shadowColor: "#7d4f2b",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 10,
+              elevation: 8,
+              backgroundColor: "#fff9f5",
+            }}
+          >
+            {/* Severity Color Strip with decorative end */}
+            <View className="flex-row">
+              <View
+                className={`h-2 w-full ${
+                  severityColors[activeReport?.severity?.toLowerCase()] ||
+                  "bg-amber-400"
+                }`}
+              />
+              <View
+                className={`h-2 w-4 rounded-r-full ${
+                  severityColors[activeReport?.severity?.toLowerCase()] ||
+                  "bg-amber-400"
+                }`}
+              />
             </View>
 
-            {/* Location with more prominent styling */}
-            <View className="flex-row items-center mb-2 p-3 bg-[#fff0e5] rounded-lg">
-              <MapPin size={20} className="mr-3 text-[#d4a056]" />
-              <View>
-                <Text className="text-sm font-medium text-gray-500 font-geist">
-                  Location
-                </Text>
-                <Text className="text-gray-800 font-geist">
-                  {activeReport.location?.address ?? "No address"},{" "}
-                  {activeReport.location?.city ?? ""}
+            <View className="p-4">
+              {/* Title with decorative icon */}
+              <View className="flex-row items-start mb-4">
+                <AlertCircle size={24} className="mr-3 text-[#b5863d] mt-1" />
+                <Text className="flex-1 text-2xl font-bold text-[#583727] font-jakarta">
+                  {activeReport?.title}
                 </Text>
               </View>
-            </View>
 
-            {/* Reported Time with calendar icon */}
-            <View className="flex-row items-center mb-3 p-3 bg-[#fff0e5] rounded-lg">
-              <Calendar size={20} className="mr-3 text-[#d4a056]" />
-              <View>
-                <Text className="text-sm font-medium text-gray-500 font-geist">
-                  Reported
-                </Text>
-                <Text className="text-gray-800 font-geist">
-                  {timeAgo(activeReport.createdAt)}
-                </Text>
+              {/* Location with more prominent styling */}
+              <View className="flex-row items-center mb-2 p-3 bg-[#fff0e5] rounded-lg">
+                <MapPin size={20} className="mr-3 text-[#d4a056]" />
+                <View>
+                  <Text className="text-sm font-medium text-gray-500 font-geist">
+                    Location
+                  </Text>
+                  <Text className="text-gray-800 font-geist">
+                    {activeReport?.location?.address ?? "No address"},{" "}
+                    {activeReport?.location?.city ?? ""}
+                  </Text>
+                </View>
               </View>
-            </View>
 
-            {/* Description with notepad icon */}
-            <View className="mb-4 p-3 bg-[#fff0e5] rounded-lg">
-              <View className="flex-row items-center mb-2">
-                <NotepadText size={20} className="mr-3 text-[#d4a056]" />
-                <Text className="text-sm font-medium text-gray-500 font-geist">
-                  Description
-                </Text>
+              {/* Reported Time with calendar icon */}
+              <View className="flex-row items-center mb-3 p-3 bg-[#fff0e5] rounded-lg">
+                <Calendar size={20} className="mr-3 text-[#d4a056]" />
+                <View>
+                  <Text className="text-sm font-medium text-gray-500 font-geist">
+                    Reported
+                  </Text>
+                  <Text className="text-gray-800 font-geist">
+                    {timeAgo(activeReport?.createdAt)}
+                  </Text>
+                </View>
               </View>
-              <Text className="text-gray-600 font-geist">
-                {activeReport.description || "No description provided."}
-              </Text>
-            </View>
 
-            {/* Severity Level with gauge icon */}
-            <View className="mb-4 p-3 bg-[#fff0e5] rounded-lg">
-              <View className="flex-row items-center">
-                <Gauge size={20} className="mr-3 text-[#d4a056]" />
-                <Text className="text-sm font-medium text-gray-500 font-geist">
-                  Severity Level
+              {/* Description with notepad icon */}
+              <View className="mb-4 p-3 bg-[#fff0e5] rounded-lg">
+                <View className="flex-row items-center mb-2">
+                  <NotepadText size={20} className="mr-3 text-[#d4a056]" />
+                  <Text className="text-sm font-medium text-gray-500 font-geist">
+                    Description
+                  </Text>
+                </View>
+                <Text className="text-gray-600 font-geist">
+                  {activeReport?.description || "No description provided."}
                 </Text>
               </View>
-              <View className="mt-1 flex-row items-center">
-                <View
-                  className={`w-3 h-3 rounded-full mr-2 ${
-                    severityColors[activeReport.severity.toUpperCase()]
-                  }`}
-                />
-                <Text className={`font-bold font-geist text-[#583727]`}>
-                  {activeReport.severity.charAt(0).toUpperCase() +
-                    activeReport.severity.slice(1).toLowerCase()}
-                </Text>
-              </View>
-            </View>
 
-            {/* Action Button with animation and icon */}
-            <AnimatedTouchable
-              entering={FadeInDown.delay(200).duration(500)}
-              className="flex-row items-center justify-center py-3 rounded-md shadow-sm"
-              style={{
-                backgroundColor: "#7d4f2b",
-                shadowColor: "#583727",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 6,
-              }}
-              activeOpacity={0.8}
-              onPress={() => {
-                console.log("View Report pressed for", activeReport.id)
-              }}
+              {/* Severity Level with gauge icon */}
+              <View className="mb-4 p-3 bg-[#fff0e5] rounded-lg">
+                <View className="flex-row items-center">
+                  <Gauge size={20} className="mr-3 text-[#d4a056]" />
+                  <Text className="text-sm font-medium text-gray-500 font-geist">
+                    Severity Level
+                  </Text>
+                </View>
+                <View className="flex-row items-center mt-1">
+                  <View
+                    className={`w-3 h-3 rounded-full mr-2 ${
+                      severityColors[activeReport?.severity?.toLowerCase()] ||
+                      "bg-amber-400"
+                    }`}
+                  />
+                  <Text className={`font-bold font-geist text-[#583727]`}>
+                    {activeReport?.severity?.charAt(0)?.toUpperCase() +
+                      activeReport?.severity?.slice(1)?.toLowerCase()}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Action Button with animation and icon */}
+              <AnimatedTouchable
+                entering={FadeInDown.delay(200).duration(500)}
+                className="flex-row items-center justify-center py-3 rounded-md shadow-sm"
+                style={{
+                  backgroundColor: "#7d4f2b",
+                  shadowColor: "#583727",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 6,
+                }}
+                activeOpacity={0.8}
+                disabled={isUpdating} // prevent multiple presses while loading
+                onPress={handleReportUpdate}
+              >
+                {isUpdating ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <>
+                    <ClipboardEdit size={20} className="mr-2 text-white" />
+                    <Text className="font-medium text-white font-geist">
+                      Start Working
+                    </Text>
+                  </>
+                )}
+              </AnimatedTouchable>
+            </View>
+          </Animated.View>
+        ) : (
+          <View className="items-center justify-center p-6 mb-6 bg-white rounded-2xl">
+            <FileText size={48} color="#d4a056" />
+            <Text className="mt-3 text-lg font-bold text-[#583727] font-jakarta">
+              No Active Reports
+            </Text>
+            <Text className="mt-1 text-center text-gray-600 font-geist">
+              You don't have any active reports assigned at the moment.
+            </Text>
+            <TouchableOpacity
+              className="flex-row items-center px-4 py-2 mt-4 rounded-lg bg-amber-100"
+              onPress={handleRefresh}
             >
-              <ClipboardEdit size={20} className="mr-2 text-white" />
-              <Text className=" font-medium text-white font-geist">
-                Mark as In Progress
-              </Text>
-            </AnimatedTouchable>
+              <RefreshCw size={16} color="#7d4f2b" className="mr-2" />
+              <Text className="text-[#7d4f2b] font-geist">Refresh</Text>
+            </TouchableOpacity>
           </View>
-        </Animated.View>
+        )}
 
+        {/* Active reports */}
+        <View className="px-2 my-4 bg-white rounded-lg">
+          <Animated.Text
+            entering={FadeInRight.delay(300).duration(500)}
+            className="mt-4 mb-3 text-lg font-bold text-green-700 font-jakarta"
+          >
+            Active Reports
+          </Animated.Text>
+
+          <Animated.Text
+            entering={FadeInRight.delay(400).duration(500)}
+            className="mb-6 text-sm text-gray-600 font-jakarta"
+          >
+            Here are the reports that you are working right now.
+          </Animated.Text>
+
+          {isProgressLoading ? (
+            <View className="items-center justify-center h-40">
+              <ActivityIndicator size="large" color="#7d4f2b" />
+              <Text className="mt-3 text-[#7d4f2b] font-geist">
+                Loading resolved reports...
+              </Text>
+            </View>
+          ) : progressReport.length > 0 ? (
+            progressReport.map((report, index) => (
+              <Swipeable
+                key={report.id}
+                renderRightActions={renderRightActions}
+                renderLeftActions={renderLeftActions}
+                overshootRight={false}
+                overshootLeft={false}
+              >
+                <AnimatedReportCard report={report} index={index} />
+              </Swipeable>
+            ))
+          ) : (
+            <View className="items-center justify-center p-6 bg-white rounded-2xl">
+              <CalendarCheck size={48} color="green" />
+              <Text className="mt-3 text-lg font-bold text-green-600 font-jakarta">
+                No Active Reports
+              </Text>
+              <Text className="mt-1 text-center text-gray-600 font-geist">
+                You have no active report at the moment.
+              </Text>
+            </View>
+          )}
+        </View>
         {/* Resolved Reports Section */}
         <Animated.Text
           entering={FadeInRight.delay(300).duration(500)}
-          className="mt-4 mb-3 text-lg font-bold text-green-700 font-jakarta"
+          className="mt-4 mb-3 text-lg font-bold text-orange-700 font-jakarta"
         >
-          Resolved Reports
+          Reports
         </Animated.Text>
 
         <Animated.Text
           entering={FadeInRight.delay(400).duration(500)}
           className="mb-6 text-sm text-gray-600 font-jakarta"
         >
-          Here are the reports that have been successfully resolved recently.
+          Here are the reports that you have been worked on recently.
         </Animated.Text>
 
-        {resolvedReports.map((report, index) => (
-          <Swipeable
-            key={report.id}
-            renderRightActions={renderRightActions}
-            renderLeftActions={renderLeftActions}
-            overshootRight={false}
-            overshootLeft={false}
-          >
-            <AnimatedReportCard report={report} index={index} />
-          </Swipeable>
-        ))}
+        {isAssignedLoading ? (
+          <View className="items-center justify-center h-40">
+            <ActivityIndicator size="large" color="#7d4f2b" />
+            <Text className="mt-3 text-[#7d4f2b] font-geist">
+              Loading resolved reports...
+            </Text>
+          </View>
+        ) : assignedReportsWorker.length > 0 ? (
+          assignedReportsWorker.map((report, index) => (
+            <Swipeable
+              key={report.id}
+              renderRightActions={renderRightActions}
+              renderLeftActions={renderLeftActions}
+              overshootRight={false}
+              overshootLeft={false}
+            >
+              <AnimatedReportCard report={report} index={index} />
+            </Swipeable>
+          ))
+        ) : (
+          <View className="items-center justify-center p-6 bg-white rounded-2xl">
+            <CalendarCheck size={48} color="#d4a056" />
+            <Text className="mt-3 text-lg font-bold text-[#583727] font-jakarta">
+              No Reports
+            </Text>
+            <Text className="mt-1 text-center text-gray-600 font-geist">
+              You haven't work on any reports yet.
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </View>
   )
@@ -326,6 +473,7 @@ export default function AssignedReports() {
 
 const AnimatedReportCard = ({ report, index }) => {
   const scale = useSharedValue(1)
+  const router = useRouter()
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -373,15 +521,33 @@ const AnimatedReportCard = ({ report, index }) => {
             </Text>
           </View>
           <Text className="text-xs font-medium text-gray-700 font-jakarta">
-            {report.resolvedDate}
+            {timeAgo(report.createdAt)}
           </Text>
         </View>
+
+        <TouchableOpacity
+          className={
+            "w-24  py-2 px-2 bg-blue-500 rounded-md mt-2 text-white font-geist text-xs"
+          }
+          onPress={() =>
+            router.push({
+              pathname: "/worker/ReportDetails",
+              params: {
+                reportId: report.id,
+              },
+            })
+          }
+        >
+          See details
+        </TouchableOpacity>
       </View>
     </Animated.View>
   )
 }
 
 function timeAgo(date) {
+  if (!date) return "Unknown time"
+
   const now = new Date()
   const past = new Date(date)
   const secondsPast = Math.floor((now - past) / 1000)

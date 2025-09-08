@@ -1,4 +1,4 @@
-import CreateScreen from "../../screens/Create"
+import CreateScreen from "../../../screens/Create"
 
 const Create = () => {
   return <CreateScreen />
