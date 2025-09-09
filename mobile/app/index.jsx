@@ -16,10 +16,8 @@ import * as WebBrowser from "expo-web-browser"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import * as AuthSession from "expo-auth-session"
 import { useEffect, useState, useRef } from "react"
-import Constants from "expo-constants"
 import axios from "axios"
 import GoogleIcon from "@/utils/GoogleIcon"
-import jwtDecode from "jwt-decode"
 
 import { storage } from "../store/slices/auth"
 import { fetchNotifications } from "@/store/slices/notification"
@@ -27,22 +25,16 @@ import { useDispatch } from "react-redux"
 
 WebBrowser.maybeCompleteAuthSession()
 
-// Decode JWT safely without any library
-function decodeJWT(token) {
-  try {
-    const payload = token.split(".")[1] // Get the payload part
-    const decoded = JSON.parse(atob(payload)) // atob decodes base64
-    return decoded
-  } catch (err) {
-    console.error("JWT decode failed:", err)
-    return null
-  }
-}
+const EXPO_CLIENT_ID =
+  "102375282357-sf549fi9n6bfi9frt24mc0pa060qagt6.apps.googleusercontent.com"
+const ANDROID_CLIENT_ID =
+  "102375282357-o190u4joc7sa603j9nrcf4rdatu3rgd0.apps.googleusercontent.com"
+const WEB_CLIENT_ID =
+  "102375282357-a61iuof7sum68rf7ia86tq070q2pmtsv.apps.googleusercontent.com"
+const serverUrl = "https://negari.onrender.com"
 
 const Welcome = () => {
   const router = useRouter()
-  const { EXPO_CLIENT_ID, ANDROID_CLIENT_ID, WEB_CLIENT_ID, serverUrl } =
-    Constants.manifest.extra
 
   // Google login config
   const [request, response, promptAsync] = Google.useAuthRequest({
@@ -190,7 +182,11 @@ export default function AppWrapper() {
     )
   }
 
-  return <Welcome />
+  return (
+    <>
+      <Welcome />
+    </>
+  )
 }
 
 const styles = StyleSheet.create({

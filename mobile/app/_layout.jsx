@@ -8,6 +8,7 @@ import { View } from "react-native"
 import SafeScreen from "@/components/SafeScreen"
 import { store } from "@/store/index"
 import { MessageProvider } from "@/components/MessageContext"
+import { GestureHandlerRootView } from "react-native-gesture-handler"
 
 const user = {
   id: "1",
@@ -27,65 +28,67 @@ export default function RootLayout() {
   if (!loaded) return <View />
 
   return (
-    <SafeAreaProvider>
-      <Provider store={store}>
-        <MessageProvider user={user}>
-          <SafeScreen>
-            <Stack>
-              <Stack.Screen
-                name="index"
-                options={{
-                  headerShown: false,
-                }}
-              />
-              <Stack.Screen
-                name="(auth)"
-                options={{
-                  headerShown: false,
-                }}
-              />
-              <Stack.Screen
-                name="one/(tabs)"
-                options={{
-                  headerShown: false,
-                }}
-              />
-              <Stack.Screen
-                name="one/report"
-                options={{
-                  headerShown: false,
-                }}
-              />
-              <Stack.Screen
-                name="one/chat"
-                options={{
-                  headerShown: false,
-                }}
-              />
-              <Stack.Screen
-                name="worker/(tabs)"
-                options={{
-                  headerShown: false,
-                }}
-              />
-              <Stack.Screen
-                name="worker/ReportDetails"
-                options={{
-                  headerShown: false,
-                }}
-              />
-              <Stack.Screen
-                name="worker/chat"
-                options={{
-                  headerShown: false,
-                }}
-              />
-            </Stack>
-          </SafeScreen>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <Provider store={store}>
+          <MessageProvider user={user}>
+            <SafeScreen>
+              <Stack>
+                <Stack.Screen
+                  name="index"
+                  options={{
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen
+                  name="(auth)"
+                  options={{
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen
+                  name="one/(tabs)"
+                  options={{
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen
+                  name="one/report"
+                  options={{
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen
+                  name="one/chat"
+                  options={{
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen
+                  name="worker/(tabs)"
+                  options={{
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen
+                  name="worker/ReportDetails"
+                  options={{
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen
+                  name="worker/chat"
+                  options={{
+                    headerShown: false,
+                  }}
+                />
+              </Stack>
+            </SafeScreen>
 
-          <StatusBar style="dark" />
-        </MessageProvider>
-      </Provider>
-    </SafeAreaProvider>
+            <StatusBar style="dark" />
+          </MessageProvider>
+        </Provider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   )
 }

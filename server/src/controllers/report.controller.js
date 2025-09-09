@@ -47,185 +47,52 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)))
 }
 
-// export const createReport = async (req, res) => {
-//   try {
-//     const {
-//       title,
-//       description,
-//       category,
-//       reporterId,
-//       severity,
-//       isAnonymous,
-//       tags,
-//       location,
-//     } = req.body
-
-//     const parsedLocation = JSON.parse(location)
-//     const parsedTags = JSON.parse(tags)
-
-//     // Upload images
-//     let imageUrls = []
-//     if (req.files.images) {
-//       for (const file of req.files.images) {
-//         const uploadStream = await new Promise((resolve, reject) => {
-//           const stream = cloudinary.uploader.upload_stream(
-//             { resource_type: "image", folder: "negari/reports" },
-//             (error, result) => (error ? reject(error) : resolve(result))
-//           )
-//           stream.end(file.buffer)
-//         })
-//         imageUrls.push(uploadStream.secure_url)
-//       }
-//     }
-
-//     // Upload video
-//     let videoUrl = null
-//     if (req.files.video) {
-//       const uploadStream = await new Promise((resolve, reject) => {
-//         const stream = cloudinary.uploader.upload_stream(
-//           { resource_type: "video", folder: "negari/reports" },
-//           (error, result) => (error ? reject(error) : resolve(result))
-//         )
-//         stream.end(req.files.video[0].buffer)
-//       })
-//       videoUrl = uploadStream.secure_url
-//     }
-
-//     const { latitude, longitude, address, city, region } = parsedLocation
-
-//     const foundCategory = await prisma.reportCategory.findFirst({
-//       where: { name: category },
-//     })
-//     if (!foundCategory) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "Invalid category." })
-//     }
-
-//     const latDiff = metersToLatDegrees(DUPLICATE_RADIUS_M)
-//     const lonDiff = metersToLonDegrees(DUPLICATE_RADIUS_M, latitude)
-//     const duplicate = await prisma.report.findFirst({
-//       where: {
-//         categoryId: foundCategory.id,
-//         location: {
-//           latitude: { gte: latitude - latDiff, lte: latitude + latDiff },
-//           longitude: { gte: longitude - lonDiff, lte: longitude + lonDiff },
-//         },
-//       },
-//     })
-//     if (duplicate) {
-//       return res.status(409).json({
-//         success: false,
-//         message: "Duplicate report nearby",
-//         duplicateId: duplicate.id,
-//       })
-//     }
-
-//     const createdLocation = await prisma.location.create({
-//       data: { latitude, longitude, address, city, region },
-//     })
-
-//     const regions = await prisma.region.findMany()
-//     let reportRegion = null
-//     for (const r of regions) {
-//       if (r.polygon && isPointInPolygon([longitude, latitude], r.polygon)) {
-//         reportRegion = r
-//         break
-//       }
-//     }
-
-//     let assignedOfficial = null
-//     if (reportRegion) {
-//       assignedOfficial = await prisma.user.findFirst({
-//         where: { role: "OFFICER", regionId: reportRegion.id },
-//       })
-//     }
-
-//     if (!assignedOfficial) {
-//       const allOfficials = await prisma.user.findMany({
-//         where: { role: "OFFICER" },
-//         include: { region: true },
-//       })
-//       let minDistance = Infinity
-//       for (const official of allOfficials) {
-//         if (!official.region?.polygon) continue
-//         const poly = official.region.polygon
-//         const center = getPolygonCenter(poly)
-//         const dist = calculateDistance(
-//           latitude,
-//           longitude,
-//           center[1],
-//           center[0]
-//         )
-//         if (dist < minDistance) {
-//           minDistance = dist
-//           assignedOfficial = official
-//         }
-//       }
-//     }
-
-//     const newReport = await prisma.report.create({
-//       data: {
-//         title,
-//         description,
-//         categoryId: foundCategory.id,
-//         imageUrls,
-//         videoUrl,
-//         reporterId,
-//         severity,
-//         isAnonymous,
-//         tags: parsedTags,
-//         locationId: createdLocation.id,
-//         assignedToId: assignedOfficial?.id || null,
-//         regionId: reportRegion?.id || null,
-//       },
-//       include: {
-//         location: true,
-//         reporter: true,
-//         category: true,
-//         assignedTo: true,
-//         Region: true,
-//       },
-//     })
-
-//     return res.status(201).json({
-//       success: true,
-//       message: "Report created successfully",
-//       data: newReport,
-//     })
-//   } catch (err) {
-//     console.error(err)
-//     return res
-//       .status(500)
-//       .json({ success: false, message: "Server error", error: err.message })
-//   }
-// }
-
 export const createReport = async (req, res) => {
   try {
     const {
       title,
       description,
       category,
-      imageUrls = [],
-      videoUrl = null,
       reporterId,
       severity,
       isAnonymous,
-      tags = [],
+      tags,
       location,
     } = req.body
 
-    // Validate required fields
-    if (!title || !description || !category || !reporterId || !location) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing required fields." })
+    const parsedLocation = JSON.parse(location)
+    const parsedTags = JSON.parse(tags)
+
+    // Upload images
+    let imageUrls = []
+    if (req.files.images) {
+      for (const file of req.files.images) {
+        const uploadStream = await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { resource_type: "image", folder: "negari/reports" },
+            (error, result) => (error ? reject(error) : resolve(result))
+          )
+          stream.end(file.buffer)
+        })
+        imageUrls.push(uploadStream.secure_url)
+      }
     }
 
-    const { latitude, longitude, address, city, region } = location
+    // Upload video
+    let videoUrl = null
+    if (req.files.video) {
+      const uploadStream = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { resource_type: "video", folder: "negari/reports" },
+          (error, result) => (error ? reject(error) : resolve(result))
+        )
+        stream.end(req.files.video[0].buffer)
+      })
+      videoUrl = uploadStream.secure_url
+    }
 
-    // Validate category
+    const { latitude, longitude, address, city, region } = parsedLocation
+
     const foundCategory = await prisma.reportCategory.findFirst({
       where: { name: category },
     })
@@ -235,7 +102,6 @@ export const createReport = async (req, res) => {
         .json({ success: false, message: "Invalid category." })
     }
 
-    // Check for duplicate reports nearby
     const latDiff = metersToLatDegrees(DUPLICATE_RADIUS_M)
     const lonDiff = metersToLonDegrees(DUPLICATE_RADIUS_M, latitude)
     const duplicate = await prisma.report.findFirst({
@@ -255,12 +121,10 @@ export const createReport = async (req, res) => {
       })
     }
 
-    // Create location record
     const createdLocation = await prisma.location.create({
       data: { latitude, longitude, address, city, region },
     })
 
-    // Region assignment
     const regions = await prisma.region.findMany()
     let reportRegion = null
     for (const r of regions) {
@@ -277,7 +141,6 @@ export const createReport = async (req, res) => {
       })
     }
 
-    // Fallback: nearest officer
     if (!assignedOfficial) {
       const allOfficials = await prisma.user.findMany({
         where: { role: "OFFICER" },
@@ -301,7 +164,6 @@ export const createReport = async (req, res) => {
       }
     }
 
-    // Create report
     const newReport = await prisma.report.create({
       data: {
         title,
@@ -312,7 +174,7 @@ export const createReport = async (req, res) => {
         reporterId,
         severity,
         isAnonymous,
-        tags,
+        tags: parsedTags,
         locationId: createdLocation.id,
         assignedToId: assignedOfficial?.id || null,
         regionId: reportRegion?.id || null,
@@ -333,13 +195,151 @@ export const createReport = async (req, res) => {
     })
   } catch (err) {
     console.error(err)
-    return res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: err.message,
-    })
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error", error: err.message })
   }
 }
+
+// export const createReport = async (req, res) => {
+//   try {
+//     const {
+//       title,
+//       description,
+//       category,
+//       imageUrls = [],
+//       videoUrl = null,
+//       reporterId,
+//       severity,
+//       isAnonymous,
+//       tags = [],
+//       location,
+//     } = req.body
+
+//     // Validate required fields
+//     if (!title || !description || !category || !reporterId || !location) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Missing required fields." })
+//     }
+
+//     const { latitude, longitude, address, city, region } = location
+
+//     // Validate category
+//     const foundCategory = await prisma.reportCategory.findFirst({
+//       where: { name: category },
+//     })
+//     if (!foundCategory) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Invalid category." })
+//     }
+
+//     // Check for duplicate reports nearby
+//     const latDiff = metersToLatDegrees(DUPLICATE_RADIUS_M)
+//     const lonDiff = metersToLonDegrees(DUPLICATE_RADIUS_M, latitude)
+//     const duplicate = await prisma.report.findFirst({
+//       where: {
+//         categoryId: foundCategory.id,
+//         location: {
+//           latitude: { gte: latitude - latDiff, lte: latitude + latDiff },
+//           longitude: { gte: longitude - lonDiff, lte: longitude + lonDiff },
+//         },
+//       },
+//     })
+//     if (duplicate) {
+//       return res.status(409).json({
+//         success: false,
+//         message: "Duplicate report nearby",
+//         duplicateId: duplicate.id,
+//       })
+//     }
+
+//     // Create location record
+//     const createdLocation = await prisma.location.create({
+//       data: { latitude, longitude, address, city, region },
+//     })
+
+//     // Region assignment
+//     const regions = await prisma.region.findMany()
+//     let reportRegion = null
+//     for (const r of regions) {
+//       if (r.polygon && isPointInPolygon([longitude, latitude], r.polygon)) {
+//         reportRegion = r
+//         break
+//       }
+//     }
+
+//     let assignedOfficial = null
+//     if (reportRegion) {
+//       assignedOfficial = await prisma.user.findFirst({
+//         where: { role: "OFFICER", regionId: reportRegion.id },
+//       })
+//     }
+
+//     // Fallback: nearest officer
+//     if (!assignedOfficial) {
+//       const allOfficials = await prisma.user.findMany({
+//         where: { role: "OFFICER" },
+//         include: { region: true },
+//       })
+//       let minDistance = Infinity
+//       for (const official of allOfficials) {
+//         if (!official.region?.polygon) continue
+//         const poly = official.region.polygon
+//         const center = getPolygonCenter(poly)
+//         const dist = calculateDistance(
+//           latitude,
+//           longitude,
+//           center[1],
+//           center[0]
+//         )
+//         if (dist < minDistance) {
+//           minDistance = dist
+//           assignedOfficial = official
+//         }
+//       }
+//     }
+
+//     // Create report
+//     const newReport = await prisma.report.create({
+//       data: {
+//         title,
+//         description,
+//         categoryId: foundCategory.id,
+//         imageUrls,
+//         videoUrl,
+//         reporterId,
+//         severity,
+//         isAnonymous,
+//         tags,
+//         locationId: createdLocation.id,
+//         assignedToId: assignedOfficial?.id || null,
+//         regionId: reportRegion?.id || null,
+//       },
+//       include: {
+//         location: true,
+//         reporter: true,
+//         category: true,
+//         assignedTo: true,
+//         Region: true,
+//       },
+//     })
+
+//     return res.status(201).json({
+//       success: true,
+//       message: "Report created successfully",
+//       data: newReport,
+//     })
+//   } catch (err) {
+//     console.error(err)
+//     return res.status(500).json({
+//       success: false,
+//       message: "Server error",
+//       error: err.message,
+//     })
+//   }
+// }
 
 // Geo helpers
 const isPointInPolygon = (point, polygon) => {

@@ -8,7 +8,7 @@ import axios from "axios"
 //   "https://negari.onrender.com"
 
 //! for localhost
-const serverUrl = "http://localhost:5000"
+const serverUrl = "https://negari.onrender.com"
 
 export const axiosInstance = axios.create({
   baseURL: `${serverUrl}/api/`,

@@ -58,9 +58,9 @@ const VideoPickerComponent = ({ visible, onClose, onVideoSelected }) => {
       <Pressable className="absolute inset-0 bg-black/40" onPress={onClose} />
 
       {/* Picker Container */}
-      <View className="absolute bottom-0 w-full bg-white rounded-t-3xl p-6 shadow-lg">
+      <View className="absolute bottom-0 w-full p-6 bg-white shadow-lg rounded-t-3xl">
         {/* Header */}
-        <View className="flex-row justify-between items-center mb-4">
+        <View className="flex-row items-center justify-between mb-4">
           <Text className="text-xl font-bold text-gray-800 font-geist">
             Select Video
           </Text>
@@ -73,11 +73,11 @@ const VideoPickerComponent = ({ visible, onClose, onVideoSelected }) => {
         <View className="space-y-4">
           {/* Record Video Option */}
           <TouchableOpacity
-            className="flex-row items-center p-4 bg-green-50 rounded-lg border border-green-100"
+            className="flex-row items-center p-4 mb-4 border border-green-100 rounded-lg bg-green-50"
             onPress={() => handlePick(true)}
             activeOpacity={0.8}
           >
-            <View className="p-2 bg-green-100 rounded-xl mr-4">
+            <View className="p-2 mr-4 bg-green-100 rounded-xl">
               <Camera size={22} color="#16a34a" />
             </View>
             <View>
@@ -92,11 +92,11 @@ const VideoPickerComponent = ({ visible, onClose, onVideoSelected }) => {
 
           {/* Gallery Option */}
           <TouchableOpacity
-            className="flex-row items-center p-4 bg-purple-50 rounded-lg border border-purple-100"
+            className="flex-row items-center p-4 border border-purple-100 rounded-lg bg-purple-50"
             onPress={() => handlePick(false)}
             activeOpacity={0.8}
           >
-            <View className="p-2 bg-purple-100 rounded-xl mr-4">
+            <View className="p-2 mr-4 bg-purple-100 rounded-xl">
               <Video size={22} color="#8b5cf6" />
             </View>
             <View>

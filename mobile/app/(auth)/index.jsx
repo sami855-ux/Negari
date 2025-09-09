@@ -95,20 +95,20 @@ const LoginScreen = () => {
 
         {/* Login Form */}
         <View className="relative flex-1 px-6 pt-8 h-[65%] bg-white border border-gray-100 rounded-t-[34px] -top-8">
-          <Text className="mb-4 text-3xl font-semibold text-gray-800 font-geist">
+          <Text className="mb-4 text-3xl font-bold text-gray-800 font-geist">
             Let's Sign You In
           </Text>
-          <Text className="text-sm text-gray-600 mb-9 font-jakarta">
+          <Text className="text-base text-gray-600 mb-9 font-jakarta">
             Welcome back, you have been missed !
           </Text>
 
           {/* Email Input */}
           <View className="mb-6">
-            <Text className="mb-2 text-sm font-medium text-gray-600 font-jakarta">
+            <Text className="mb-2 text-base font-medium text-gray-600 font-jakarta">
               Email Address
             </Text>
             <View
-              className={`flex-row items-center border rounded-lg focus-within:border-[#a261b6] px-4 py-3 ${errors.email ? "border-red-300" : "border-purple-100"}`}
+              className={`flex-row items-center border rounded-lg px-4 py-3 ${errors.email ? "border-red-300" : "border-purple-100"}`}
             >
               <Mail size={18} className="mr-3 text-gray-500" />
               <Controller
@@ -122,7 +122,7 @@ const LoginScreen = () => {
                 }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
-                    className="flex-1 h-full text-gray-700 outline-none font-geist"
+                    className="flex-1 h-full mt-1 ml-2 text-gray-700 outline-none font-geist"
                     placeholder="Enter your email"
                     placeholderTextColor="#9CA3AF"
                     keyboardType="email-address"
@@ -144,11 +144,11 @@ const LoginScreen = () => {
 
           {/* Password Input */}
           <View className="mb-6">
-            <Text className="mb-2 text-sm font-medium text-gray-600 font-jakarta">
+            <Text className="mb-2 text-base font-medium text-gray-600 font-jakarta">
               Password
             </Text>
             <View
-              className={`flex-row items-center border rounded-lg focus-within:border-[#a261b6]  px-4 py-3 ${errors.password ? "border-red-300" : "border-purple-100"}`}
+              className={`flex-row items-center border rounded-lg   px-4 py-3 ${errors.password ? "border-red-300" : "border-purple-100"}`}
             >
               <Lock size={18} className="mr-3 text-gray-500" />
               <Controller
@@ -162,7 +162,7 @@ const LoginScreen = () => {
                 }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
-                    className="flex-1 text-gray-700 outline-none font-geist"
+                    className="flex-1 mt-1 ml-2 text-gray-700 outline-none font-geist"
                     placeholder="Enter your password"
                     placeholderTextColor="#9CA3AF"
                     secureTextEntry={!showPassword}

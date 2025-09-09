@@ -45,7 +45,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "serverUrl": "http://localhost:5000",
+      "serverUrl": "https://negari.onrender.com",
       "EXPO_CLIENT_ID": "102375282357-sf549fi9n6bfi9frt24mc0pa060qagt6.apps.googleusercontent.com",
       "ANDROID_CLIENT_ID": "102375282357-o190u4joc7sa603j9nrcf4rdatu3rgd0.apps.googleusercontent.com",
       "WEB_CLIENT_ID": "102375282357-a61iuof7sum68rf7ia86tq070q2pmtsv.apps.googleusercontent.com",

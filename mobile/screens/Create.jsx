@@ -130,7 +130,6 @@ const CreateScreen = () => {
       formValues.tags.filter((tag) => tag !== tagToRemove)
     )
   }
-
   const handleGetCategories = async () => {
     try {
       setIsCategoryLoading(true)
@@ -280,7 +279,7 @@ const CreateScreen = () => {
         name="title"
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
-            className="h-10 px-4 py-5 mb-2 text-gray-900 bg-white border border-gray-100 rounded-md font-geist"
+            className="px-4 mb-2 text-gray-900 bg-white border border-gray-100 rounded-md h-14 font-geist"
             placeholder="Brief summary of the issue"
             placeholderTextColor="#94A3B8"
             onBlur={onBlur}
@@ -419,12 +418,12 @@ const CreateScreen = () => {
         <Text className="mb-2 text-lg font-semibold text-gray-800 font-geist">
           Upload Media
         </Text>
-        <Text className="mb-4 text-sm text-gray-500 font-geist">
+        <Text className="mb-4 text-base text-gray-500 font-geist">
           Add visual evidence to help us understand the issue better
         </Text>
 
         <View className="flex-row items-center mb-6">
-          <View className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+          <View className="flex-1 h-2 overflow-hidden bg-gray-100 rounded-full">
             <LinearGradient
               colors={["#a855f7", "#3b82f6"]}
               start={{ x: 0, y: 0 }}
@@ -463,10 +462,10 @@ const CreateScreen = () => {
       )}
 
       {/* Upload Buttons */}
-      <View className="flex-row mb-8 space-x-4">
+      <View className="flex-row gap-4 mb-8">
         {/* Image Upload */}
         <TouchableOpacity
-          className={`flex-1 h-36 rounded-2xl border-2 border-dashed p-4 items-center justify-center bg-white ${
+          className={`flex-1 h-32 w-32 rounded-xl border-2 border-dashed p-4 items-center justify-center bg-white ${
             formValues.images.length >= 4
               ? "opacity-50 border-gray-200"
               : "border-purple-300 active:bg-purple-50"
@@ -476,19 +475,15 @@ const CreateScreen = () => {
           activeOpacity={0.75}
           style={{
             shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.05,
-            shadowRadius: 4,
-            elevation: 3,
           }}
         >
-          <View className="w-12 h-12 mb-2 rounded-full bg-purple-100 items-center justify-center">
+          <View className="items-center justify-center w-12 h-12 mb-2 bg-purple-100 rounded-full">
             <Camera size={24} color="#7C3AED" />
           </View>
-          <Text className="text-sm font-medium text-center text-purple-700 font-geist">
+          <Text className="text-base font-medium text-center text-purple-700 font-geist">
             {formValues.images.length > 0 ? "Add More" : "Add Photos"}
           </Text>
-          <Text className="text-xs text-center text-gray-500 font-geist mt-1">
+          <Text className="mt-1 text-sm text-center text-gray-500 font-geist">
             {formValues.images.length >= 4
               ? "Maximum reached"
               : `${4 - formValues.images.length} remaining`}
@@ -497,10 +492,10 @@ const CreateScreen = () => {
 
         {/* Video Upload */}
         <TouchableOpacity
-          className={`flex-1 h-36 rounded-2xl border-2 p-4 items-center justify-center bg-white ${
+          className={`flex-1 h-32 rounded-xl border-2 border-[#3B82F6] p-4 items-center justify-center bg-white ${
             formValues.video
-              ? "bg-green-50 border-green-200"
-              : "border-blue-200 active:bg-blue-50"
+              ? "bg-[#10B981] border-[#10B981]"
+              : "border-[#3B82F6] active:bg-blue-50"
           }`}
           onPress={() => setShowVideoPicker(true)}
           disabled={!!formValues.video}
@@ -524,13 +519,13 @@ const CreateScreen = () => {
             />
           </View>
           <Text
-            className={`text-sm font-medium text-center font-geist ${
+            className={`text-base font-medium text-center font-geist ${
               formValues.video ? "text-green-700" : "text-blue-700"
             }`}
           >
             {formValues.video ? "Video Added" : "Add Video"}
           </Text>
-          <Text className="text-xs text-center text-gray-500 font-geist mt-1">
+          <Text className="mt-1 text-xs text-center text-gray-500 font-geist">
             {formValues.video ? "Tap to replace" : "Optional"}
           </Text>
         </TouchableOpacity>
@@ -551,10 +546,10 @@ const CreateScreen = () => {
               <View key={index} className="relative mr-4">
                 <Image
                   source={{ uri }}
-                  className="w-32 h-32 rounded-xl shadow-sm"
+                  className="w-32 h-32 shadow-sm rounded-xl"
                 />
                 <TouchableOpacity
-                  className="absolute items-center justify-center w-7 h-7 bg-red-500 rounded-full shadow-md -top-2 -right-2"
+                  className="absolute items-center justify-center bg-red-500 rounded-full shadow-md w-7 h-7 -top-2 -right-2"
                   onPress={() => removeImage(index)}
                   activeOpacity={0.8}
                 >

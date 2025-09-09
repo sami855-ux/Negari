@@ -2,10 +2,9 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
 
 // Mock API calls (replace with actual API calls)
 const fetchNotificationsAPI = async () => {
-  // Simulate API delay
   await new Promise((resolve) => setTimeout(resolve, 1000))
 
-  // Return mock data
+  // Return mock data with Date objects (simulate backend)
   return [
     {
       id: "1",
@@ -25,7 +24,6 @@ const fetchNotificationsAPI = async () => {
       createdAt: new Date(Date.now() - 1000 * 60 * 120),
       createdBy: { id: "admin1", username: "Admin User" },
     },
-    // Add more mock data as needed
   ]
 }
 
@@ -50,7 +48,11 @@ export const fetchNotifications = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await fetchNotificationsAPI()
-      return response
+      // ✅ Convert all Date objects to ISO strings BEFORE returning to Redux
+      return response.map((n) => ({
+        ...n,
+        createdAt: n.createdAt.toISOString(),
+      }))
     } catch (error) {
       return rejectWithValue(error.message)
     }
@@ -93,7 +95,6 @@ export const deleteSelectedNotifications = createAsyncThunk(
   }
 )
 
-// Initial state
 const initialState = {
   notifications: [],
   unreadCount: 0,
@@ -101,14 +102,19 @@ const initialState = {
   error: null,
 }
 
-// Slice
 const notificationsSlice = createSlice({
   name: "notifications",
   initialState,
   reducers: {
-    // Synchronous actions
     addNotification: (state, action) => {
-      state.notifications.unshift(action.payload)
+      // ✅ Ensure createdAt is always a string when adding manually
+      state.notifications.unshift({
+        ...action.payload,
+        createdAt:
+          typeof action.payload.createdAt === "string"
+            ? action.payload.createdAt
+            : new Date(action.payload.createdAt).toISOString(),
+      })
       if (!action.payload.isRead) {
         state.unreadCount += 1
       }
@@ -128,7 +134,6 @@ const notificationsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Fetch notifications
       .addCase(fetchNotifications.pending, (state) => {
         state.isLoading = true
         state.error = null
@@ -142,23 +147,12 @@ const notificationsSlice = createSlice({
         state.isLoading = false
         state.error = action.payload
       })
-      // Mark all as read
-      .addCase(markAllAsRead.pending, (state) => {
-        state.error = null
-      })
       .addCase(markAllAsRead.fulfilled, (state) => {
-        state.notifications = state.notifications.map((notification) => ({
-          ...notification,
+        state.notifications = state.notifications.map((n) => ({
+          ...n,
           isRead: true,
         }))
         state.unreadCount = 0
-      })
-      .addCase(markAllAsRead.rejected, (state, action) => {
-        state.error = action.payload
-      })
-      // Delete single notification
-      .addCase(deleteNotification.pending, (state) => {
-        state.error = null
       })
       .addCase(deleteNotification.fulfilled, (state, action) => {
         const deletedNotification = state.notifications.find(
@@ -171,39 +165,24 @@ const notificationsSlice = createSlice({
           (n) => n.id !== action.payload.id
         )
       })
-      .addCase(deleteNotification.rejected, (state, action) => {
-        state.error = action.payload
-      })
-      // Delete multiple notifications
-      .addCase(deleteSelectedNotifications.pending, (state) => {
-        state.error = null
-      })
       .addCase(deleteSelectedNotifications.fulfilled, (state, action) => {
-        // Calculate how many unread notifications were deleted
         const deletedUnreadCount = state.notifications.filter(
           (n) => action.payload.ids.includes(n.id) && !n.isRead
         ).length
-
         state.unreadCount -= deletedUnreadCount
         state.notifications = state.notifications.filter(
           (n) => !action.payload.ids.includes(n.id)
         )
       })
-      .addCase(deleteSelectedNotifications.rejected, (state, action) => {
-        state.error = action.payload
-      })
   },
 })
 
-// Export actions
 export const { addNotification, markAsRead, clearError } =
   notificationsSlice.actions
 
-// Export selectors
 export const selectNotifications = (state) => state.notifications.notifications
 export const selectUnreadCount = (state) => state.notifications.unreadCount
 export const selectIsLoading = (state) => state.notifications.isLoading
 export const selectError = (state) => state.notifications.error
 
-// Export reducer
 export default notificationsSlice.reducer

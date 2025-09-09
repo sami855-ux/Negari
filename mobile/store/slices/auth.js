@@ -1,13 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import axios from "axios"
-import Constants from "expo-constants"
 import { Platform } from "react-native"
 
-const serverUrl =
-  Constants.expoConfig?.extra?.serverUrl ||
-  Constants.manifest?.extra?.serverUrl ||
-  "http://localhost:5000"
+const serverUrl = "https://negari.onrender.com"
 
 // Axios instance
 const axiosInstance = axios.create({
