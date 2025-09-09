@@ -26,14 +26,12 @@ const CategoryPieChart = dynamic(
   () => import("@/components/admin/CategoryPie"),
   { ssr: false }
 )
-const LineChartComponent = dynamic(
-  () => import("@/components/admin/LineChartComponent"),
-  { ssr: false }
-)
-const BarChartComponent = dynamic(
-  () => import("@/components/admin/BarChartComponent"),
-  { ssr: false }
-)
+// const LineChartComponent = dynamic(() => import("@/components/admin/"), {
+//   ssr: false,
+// })
+// const BarChartComponent = dynamic(() => import("@/components/admin/"), {
+//   ssr: false,
+// })
 
 export default function Dashboard() {
   const reportData = [
@@ -165,7 +163,7 @@ export default function Dashboard() {
           </CardTitle>
         </CardHeader>
         <CardContent className="h-56 md:h-64">
-          <LineChartComponent data={reportData} />
+          {/* <LineChartComponent data={reportData} /> */}
         </CardContent>
       </Card>
 
@@ -179,7 +177,7 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="h-56 md:h-64">
-            <BarChartComponent data={categoryData} />
+            {/* <BarChartComponent data={categoryData} /> */}
           </CardContent>
         </Card>
 
