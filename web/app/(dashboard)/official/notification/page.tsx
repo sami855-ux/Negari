@@ -18,25 +18,11 @@ import { Card, CardContent } from "@/components/ui/card"
 import { CheckCheck, Bell } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 
-interface NotificationCenterProps {
-  searchQuery: string
-}
-
-export default function NotificationCenter({
-  searchQuery,
-}: NotificationCenterProps) {
+export default function NotificationCenter() {
   const { notifications, unreadCount, markAllAsRead, isLoading } =
     useNotifications()
   const [activeTab, setActiveTab] = useState("all")
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "unread">("newest")
-  const [notificationTypes] = useState({
-    like: true,
-    comment: true,
-    follow: true,
-    achievement: true,
-    system: true,
-    promotion: true,
-  })
 
   // Filter notifications based on search, tab, and type filters
   const filteredNotifications = notifications.filter((notification) => {
@@ -207,12 +193,6 @@ export default function NotificationCenter({
                 <h3 className="mb-2 text-lg font-semibold">
                   No notifications found
                 </h3>
-                <p className="max-w-md text-sm text-muted-foreground">
-                  {searchQuery ||
-                  !Object.values(notificationTypes).includes(true)
-                    ? "Try adjusting your search terms or enabling more notification types"
-                    : "You're all caught up! New notifications will appear here."}
-                </p>
               </motion.div>
             )}
           </AnimatePresence>
