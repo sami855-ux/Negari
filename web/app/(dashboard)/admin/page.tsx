@@ -34,21 +34,21 @@ const CategoryPieChart = dynamic(
 // })
 
 export default function Dashboard() {
-  const reportData = [
-    { name: "Jan", reports: 400 },
-    { name: "Feb", reports: 300 },
-    { name: "Mar", reports: 600 },
-    { name: "Apr", reports: 800 },
-    { name: "May", reports: 500 },
-    { name: "Jun", reports: 900 },
-  ]
+  // const reportData = [
+  //   { name: "Jan", reports: 400 },
+  //   { name: "Feb", reports: 300 },
+  //   { name: "Mar", reports: 600 },
+  //   { name: "Apr", reports: 800 },
+  //   { name: "May", reports: 500 },
+  //   { name: "Jun", reports: 900 },
+  // ]
 
-  const categoryData = [
-    { name: "Road Damage", value: 400 },
-    { name: "Water Issues", value: 300 },
-    { name: "Electricity", value: 200 },
-    { name: "Sanitation", value: 100 },
-  ]
+  // const categoryData = [
+  //   { name: "Road Damage", value: 400 },
+  //   { name: "Water Issues", value: 300 },
+  //   { name: "Electricity", value: 200 },
+  //   { name: "Sanitation", value: 100 },
+  // ]
 
   return (
     <div className="w-full min-h-screen p-4 md:p-6 bg-gray-50">
