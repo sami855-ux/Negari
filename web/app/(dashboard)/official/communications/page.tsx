@@ -74,11 +74,16 @@ const formatDate = (dateString: string) => {
   }
 }
 
-const debounce = (func, delay: number) => {
+const debounce = <Args extends unknown[], R>(
+  func: (...args: Args) => R,
+  delay: number
+) => {
   let timer: NodeJS.Timeout
-  return (...args) => {
+  return (...args: Args) => {
     clearTimeout(timer)
-    timer = setTimeout(() => func(...args), delay)
+    timer = setTimeout(() => {
+      func(...args)
+    }, delay)
   }
 }
 
