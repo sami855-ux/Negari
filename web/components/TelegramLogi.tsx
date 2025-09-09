@@ -4,29 +4,32 @@ import { Button } from "./ui/button"
 
 export default function TelegramLoginWidget() {
   useEffect(() => {
-    const container = document.getElementById("telegram-login")
-    if (!container) return
+  if (typeof window === "undefined") return // ensure this runs only in the browser
 
+  const container = document.getElementById("telegram-login")
+  if (!container) return
+
+  container.innerHTML = ""
+
+  const script = document.createElement("script")
+  script.src = "https://telegram.org/js/telegram-widget.js?15"
+  script.setAttribute("data-telegram-login", "zenanetbot")
+  script.setAttribute("data-size", "large")
+  script.setAttribute("data-userpic", "false")
+  script.setAttribute(
+    "data-auth-url",
+    `${window.location.origin}/api/telegram`
+  )
+  script.setAttribute("data-request-access", "write")
+  script.async = true
+
+  container.appendChild(script)
+
+  return () => {
     container.innerHTML = ""
+  }
+}, [])
 
-    const script = document.createElement("script")
-    script.src = "https://telegram.org/js/telegram-widget.js?15"
-    script.setAttribute("data-telegram-login", "zenanetbot")
-    script.setAttribute("data-size", "large")
-    script.setAttribute("data-userpic", "false")
-    script.setAttribute(
-      "data-auth-url",
-      `${window.location.origin}/api/telegram`
-    )
-    script.setAttribute("data-request-access", "write")
-    script.async = true
-
-    container.appendChild(script)
-
-    return () => {
-      container.innerHTML = ""
-    }
-  }, [])
 
   return (
     <div id="telegram-login">

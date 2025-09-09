@@ -105,9 +105,12 @@ export default function RegionAssignmentDialog({
     })
 
   useEffect(() => {
+    if (typeof window === "undefined") return // safety for SSR
+
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
     checkMobile()
     window.addEventListener("resize", checkMobile)
+
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
