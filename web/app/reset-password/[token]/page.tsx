@@ -16,8 +16,6 @@ export default function ResetPasswordPage({
 }: {
   params: { token: string }
 }) {
-  const router = useRouter()
-
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -55,7 +53,7 @@ export default function ResetPasswordPage({
           text: "Password updated successfully!",
         })
       }
-    } catch (error: any) {
+    } catch (error) {
       // Axios error handling
       if (
         error.response &&

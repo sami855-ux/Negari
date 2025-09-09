@@ -64,8 +64,6 @@ import RegionAssignmentDialog from "@/components/official/RegionMap"
 import { axiosInstance } from "@/services/auth"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import { getSingleUser } from "@/services/getUsers"
-import { useSelector } from "react-redux"
-import { RootState } from "@/store"
 import toast from "react-hot-toast"
 import { useQueryClient } from "@tanstack/react-query"
 

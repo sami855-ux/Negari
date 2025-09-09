@@ -3,7 +3,7 @@
 import { EditableOfficerProfile } from "@/components/official/OfficerProfile"
 
 export default function OfficerPage() {
-  const handleSave = async (updatedData: any) => {
+  const handleSave = async (updatedData) => {
     // Create FormData to handle file upload
     const formData = new FormData()
     formData.append("username", updatedData.username)

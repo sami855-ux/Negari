@@ -244,6 +244,7 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
         toast.error("Failed to update report")
       }
     } catch (error) {
+      console.log(error)
       toast.error("Failed to update report")
     } finally {
       setIsUpdating(false)
@@ -1182,7 +1183,7 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                       </div>
                       <div>
                         <p className="text-sm font-medium font-jakarta">
-                          {report?.AssignedReports_worker}'s Team
+                          {report?.AssignedReports_worker}&apos;s Team
                         </p>
                       </div>
                     </div>
