@@ -19,6 +19,7 @@
   }
 }
 */
+import cloudinary from "../utils/cloudinary.js"
 import prisma from "../prisma/client.js"
 
 const DUPLICATE_RADIUS_M = 100
@@ -55,11 +56,11 @@ export const createReport = async (req, res) => {
       category,
       reporterId,
       severity,
-      isAnonymous,
       tags,
       location,
     } = req.body
 
+    const isAnonymous = req.body.isAnonymous === "true"
     const parsedLocation = JSON.parse(location)
     const parsedTags = JSON.parse(tags)
 
