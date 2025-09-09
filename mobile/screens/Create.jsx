@@ -36,26 +36,16 @@ import {
 import ImagePickerComp from "@/components/ImagePicker"
 import VideoPickerComponent from "../components/VideoPicker"
 import { createReport } from "@/services/report"
-import { useSelector } from "react-redux"
 import { getCategories } from "../services/category"
-import LocationPicker from "../components/LocationPicker"
+// import LocationPicker from "../components/LocationPicker"
 import DateTimePickerComponent from "../components/DateTimePicker"
-
-const mockCategories = [
-  "AI suggest",
-  "Roads",
-  "Water",
-  "Electricity",
-  "Crime",
-  "Waste Management",
-  "Public Transport",
-  "Other",
-]
+import InfoModal from "../utils/InfoModal"
+import { storage } from "../store/slices/auth"
 
 const CreateScreen = () => {
-  const { user } = useSelector((store) => store.auth)
+  const [user, setUser] = useState(null)
 
-  const [categories, setCategories] = useState(mockCategories)
+  const [categories, setCategories] = useState([])
   const [isCategoryLoading, setIsCategoryLoading] = useState(false)
 
   const [currentStep, setCurrentStep] = useState(1)
@@ -63,20 +53,28 @@ const CreateScreen = () => {
   const [showVideoPicker, setShowVideoPicker] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
 
+  const [modalVisible, setModalVisible] = useState(false)
+  const [modalType, setModalType] = useState("success") // "success" | "error" | "warning" | "info"
+  const [modalTitle, setModalTitle] = useState("")
+  const [modalMessage, setModalMessage] = useState("")
+
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
   const {
     control,
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm({
     defaultValues: {
       title: "",
       description: "",
-      category: "Roads",
+      category: "AI suggest",
       images: [],
       video: null,
-      location: "Addis Ababa, Ethiopia",
+      location: {},
       anonymous: false,
       date: new Date().toDateString(),
       time: new Date().toTimeString().slice(0, 5),
@@ -149,15 +147,15 @@ const CreateScreen = () => {
       const reportData = {
         title: data.title,
         description: data.description,
-        category: "INFRASTRUCTURE",
+        category: data.category,
         imageUrls: data.images,
         videoUrl: data.video,
         location: {
-          latitude: 9.0321,
-          longitude: 38.7547,
-          address: "Main Street, Addis Ababa",
+          latitude: 9.050502,
+          longitude: 38.737091,
+          address: "Main Street, Downtown",
           city: "Addis Ababa",
-          region: "Addis Ababa",
+          region: "Nifas Silk-Lafto",
         },
         severity: "HIGH",
         isAnonymous: data.anonymous,
@@ -193,20 +191,63 @@ const CreateScreen = () => {
       console.log(JSON.stringify(reportData))
 
       const res = await createReport(formData)
+
       if (res.success) {
-        Alert.alert("Success", "Report created successfully!")
+        setModalType("success")
+        setModalTitle("Success")
+        setModalMessage("Report created successfully!")
+        setModalVisible(true)
         setCurrentStep(1)
-        progress = 0
+
+        reset()
       } else {
-        Alert.alert("Error", res.message)
+        setModalType("error")
+        setModalTitle("Error1")
+        setModalMessage(res.message || "Something went wrong.")
+        setModalVisible(true)
       }
     } catch (error) {
-      Alert.alert("Error", error.message)
+      console.log(error)
+      setModalType("error")
+      setModalTitle("Error2")
+      setModalMessage(error.message || "Something went wrong.")
+      setModalVisible(true)
+    }
+  }
+
+  const handlePress = async () => {
+    if (currentStep === totalSteps) {
+      // Only for the final step
+      setIsSubmitting(true)
+      try {
+        await handleSubmit(onSubmit)()
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setIsSubmitting(false)
+      }
+    } else {
+      nextStep()
     }
   }
 
   useEffect(() => {
     handleGetCategories()
+  }, [])
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const storedUser = await storage.getItem("user")
+        if (storedUser) {
+          setUser(JSON.parse(storedUser))
+        }
+      } catch (error) {
+        console.error("Failed to load user:", error)
+      }
+    }
+
+    fetchUser()
   }, [])
 
   const ProgressBar = () => (
@@ -251,17 +292,29 @@ const CreateScreen = () => {
 
       {/* Next / Submit Button */}
       <TouchableOpacity
-        onPress={currentStep === totalSteps ? handleSubmit(onSubmit) : nextStep}
-        className="flex-row items-center py-2 space-x-2 rounded-lg px-9 "
+        onPress={handlePress}
+        className="flex-row items-center py-2 space-x-2 rounded-lg px-9"
         style={{
           backgroundColor: "#7C3AED",
         }}
+        disabled={isSubmitting}
       >
-        <Text className="text-white text-[15px] font-geist">
-          {currentStep === totalSteps ? "Submit Report" : "Next"}
-        </Text>
-        {currentStep !== totalSteps && (
-          <ArrowRight size={14} color="#FFFFFF" className="ml-2" />
+        {isSubmitting ? (
+          <>
+            <ActivityIndicator size="small" color="#ffffff" />
+            <Text className="text-white text-[15px] font-geist pl-2">
+              Submitting...
+            </Text>
+          </>
+        ) : (
+          <>
+            <Text className="text-white text-[15px] font-geist">
+              {currentStep === totalSteps ? "Submit report" : "Next"}
+            </Text>
+            {currentStep !== totalSteps && (
+              <ArrowRight size={14} color="#FFFFFF" className="ml-2" />
+            )}
+          </>
         )}
       </TouchableOpacity>
     </View>
@@ -274,6 +327,7 @@ const CreateScreen = () => {
         <Text className="text-red-600">*</Text>
       </Text>
       <Controller
+        key={`title-${1}`}
         control={control}
         rules={{ required: true }}
         name="title"
@@ -305,6 +359,7 @@ const CreateScreen = () => {
       </Text>
       <Controller
         control={control}
+        key={`description-${1}`}
         name="description"
         rules={{ required: true }}
         render={({ field: { onChange, onBlur, value } }) => (
@@ -578,7 +633,7 @@ const CreateScreen = () => {
 
   const renderStep4 = () => (
     <ScrollView className="px-5 pt-5">
-      <LocationPicker setValue={setValue} />
+      {/* <LocationPicker setValue={setValue} /> */}
 
       <View className="flex-row items-center justify-between py-4 mb-6 bg-white border border-gray-100 rounded-xl">
         <View className="flex-row items-center">
@@ -700,12 +755,6 @@ const CreateScreen = () => {
             {formValues.anonymous ? "Yes" : "No"}
           </Text>
         </View>
-        <View className="mb-3">
-          <Text className="text-sm text-gray-500 font-geist">Visibility</Text>
-          <Text className="text-gray-900 font-jakarta">
-            {formValues.visibility === "public" ? "Public" : "Private"}
-          </Text>
-        </View>
         <View>
           <Text className="text-sm text-gray-500 font-geist">Tags</Text>
           <Text className="text-gray-900 font-jakarta">
@@ -747,36 +796,47 @@ const CreateScreen = () => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+    <>
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-5 py-4 bg-white border-b border-gray-200">
-        <TouchableOpacity className="p-2 rounded-lg">
-          <ArrowLeft size={24} color="gray" />
-        </TouchableOpacity>
-        <Text className="text-[16px] text-gray-800 font-geist">
-          Create Report
-        </Text>
-        <View className="w-10" />
-      </View>
+        {/* Header */}
+        {/* <View className="flex-row items-center justify-between px-5 py-4 bg-white border-b border-gray-200">
+          <TouchableOpacity className="p-2 rounded-lg">
+            <ArrowLeft size={24} color="gray" />
+          </TouchableOpacity>
+          <Text className="text-[16px] text-gray-800 font-geist">
+            Create Report
+          </Text>
+          <View className="w-10" />
+        </View> */}
 
-      <ProgressBar />
-      <View className="flex-1">{renderCurrentStep()}</View>
-      <NavigationButtons />
+        <ProgressBar />
+        <View className="flex-1">{renderCurrentStep()}</View>
+        <NavigationButtons />
 
-      <ImagePickerComp
-        visible={showImagePicker}
-        onClose={() => setShowImagePicker(false)}
-        onImageSelected={handleImageSelect}
+        <ImagePickerComp
+          visible={showImagePicker}
+          onClose={() => setShowImagePicker(false)}
+          onImageSelected={handleImageSelect}
+        />
+
+        <VideoPickerComponent
+          visible={showVideoPicker}
+          onClose={() => setShowVideoPicker(false)}
+          onVideoSelected={handleVideoSelect}
+        />
+      </SafeAreaView>
+
+      <InfoModal
+        visible={modalVisible}
+        type={modalType}
+        title={modalTitle}
+        message={modalMessage}
+        onClose={() => setModalVisible(false)}
+        buttonText="OK"
       />
-
-      <VideoPickerComponent
-        visible={showVideoPicker}
-        onClose={() => setShowVideoPicker(false)}
-        onVideoSelected={handleVideoSelect}
-      />
-    </SafeAreaView>
+    </>
   )
 }
 
