@@ -8,6 +8,7 @@ import axios from "axios"
 //   "https://negari.onrender.com"
 
 //! for localhost
+// const serverUrl = "http://localhost:5000"
 const serverUrl = "https://negari.onrender.com"
 
 export const axiosInstance = axios.create({
@@ -30,10 +31,11 @@ export const createReport = async (data) => {
   try {
     const res = await axiosInstance.post("report", data)
 
-    if (res.success) {
+    console.log(res.data)
+    if (res.data.success) {
       return {
         success: true,
-        data: res.data,
+        message: res.data.message,
       }
     } else {
       return {
