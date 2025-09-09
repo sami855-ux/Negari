@@ -271,9 +271,10 @@ const ProfileScreen = () => {
                 </View>
                 <View className="flex-row items-center mt-2">
                   <View className="flex-row items-center px-2 py-1 bg-purple-100 rounded-full">
-                    <Award size={12} color="#774287" />
-                    <Text className="ml-1 text-xs font-medium text-purple-700 font-jakarta">
-                      {user?.role}
+                    <Award size={15} color="#774287" />
+                    <Text className="ml-1 text-xs font-semibold text-purple-700 font-jakarta">
+                      {`${user?.role}`.charAt(0).toUpperCase() +
+                        user?.role.slice(1).toLowerCase()}
                     </Text>
                   </View>
                 </View>
@@ -290,15 +291,15 @@ const ProfileScreen = () => {
 
           <ActionButton
             icon={<Edit3 size={20} color="#774287" />}
-            label="Edit Profile"
-            onPress={() => console.log("Edit profile")}
-          />
-
-          <ActionButton
-            icon={<Shield size={20} color="#10b981" />}
-            label="Privacy & Security"
-            onPress={() => console.log("Privacy settings")}
-            color="bg-green-100"
+            label="Profile Details"
+            onPress={() => {
+              router.push({
+                pathname: "/one/ProfileDetail",
+                params: {
+                  userId: user.id,
+                },
+              })
+            }}
           />
 
           <ActionButton
@@ -306,13 +307,6 @@ const ProfileScreen = () => {
             label="Notifications"
             onPress={() => setShowSettings(true)}
             color="bg-amber-100"
-          />
-
-          <ActionButton
-            icon={<Globe size={20} color="#4549e6" />}
-            label="Language"
-            onPress={() => setShowSettings(true)}
-            color="bg-blue-100"
           />
 
           <ActionButton
