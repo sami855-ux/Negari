@@ -22,41 +22,19 @@ import {
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { getTimeElapsed } from "@/lib/utils"
+import useOfficialData from "@/hooks/useOfficialData"
+import { Skeleton } from "@/components/ui/skeleton"
+import InteractiveMapCard from "@/components/official/InteractiveMap"
 
 export default function Page() {
   const router = useRouter()
 
-  const assignedReports = [
-    {
-      id: "RPT-2024-001",
-      title: "Traffic Violation - Main Street",
-      urgency: "High",
-      status: "In Progress",
-      location: "Main St & 5th Ave",
-      reportedOn: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-    },
-    {
-      id: "RPT-2024-002",
-      title: "Noise Complaint - Residential",
-      urgency: "Medium",
-      status: "Pending",
-      location: "Oak Street 123",
-      reportedOn: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4 hours ago
-    },
-    {
-      id: "RPT-2024-003",
-      title: "Suspicious Activity",
-      urgency: "High",
-      status: "Urgent",
-      location: "Park Avenue",
-      reportedOn: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
-    },
-  ]
+  const { data, isLoading } = useOfficialData()
 
   const stats = [
     {
       title: "Reports Resolved",
-      value: "47",
+      value: data?.totalAssigned || 0,
       change: "+12%",
       icon: CheckCircle,
       color: "text-green-600",
@@ -64,15 +42,15 @@ export default function Page() {
     },
     {
       title: "In Progress Reports",
-      value: "8",
+      value: data?.inProgressCount || 0,
       change: "-3",
       icon: FileText,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
     },
     {
-      title: "Rejected Reports ",
-      value: "12m",
+      title: "Resolved Reports ",
+      value: data?.resolvedCount || 0,
       change: "-2m",
       icon: Clock,
       color: "text-red-600",
@@ -80,7 +58,7 @@ export default function Page() {
     },
     {
       title: "Citizen Feedback",
-      value: "4.8",
+      value: data?.avgRating || 0,
       change: "+0.2",
       icon: Users,
       color: "text-purple-600",
@@ -92,29 +70,38 @@ export default function Page() {
     <div className="p-2 space-y-6 sm:p-2">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 min-h-fit">
-        {stats.map((stat) => (
-          <Card
-            key={stat.title}
-            className="transition-colors border-green-100 hover:bg-green-50 hover:border-green-200"
-          >
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-sm font-medium text-gray-700 sm:text-base">
-                {stat.title}
-              </CardTitle>
-              <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-900 sm:text-3xl">
-                {stat.value}
-              </div>
-              <p className="text-xs font-medium text-green-600 sm:text-sm">
-                {stat.change} from last week
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+        {isLoading
+          ? Array.from({ length: 4 }).map((_, idx) => (
+              <Card key={idx} className="p-4 space-y-3">
+                <Skeleton className="w-24 h-4" />
+                <Skeleton className="w-12 h-12 rounded-md" />
+                <Skeleton className="w-32 h-6" />
+                <Skeleton className="w-20 h-3" />
+              </Card>
+            ))
+          : stats.map((stat) => (
+              <Card
+                key={stat.title}
+                className="transition-colors border-green-100 hover:bg-green-50 hover:border-green-200"
+              >
+                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                  <CardTitle className="text-sm font-medium text-gray-700 sm:text-base">
+                    {stat.title}
+                  </CardTitle>
+                  <div className={`p-2 rounded-lg ${stat.bgColor}`}>
+                    <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-900 sm:text-3xl">
+                    {stat.value}
+                  </div>
+                  <p className="text-xs font-medium text-green-600 sm:text-sm">
+                    {stat.change} from last week
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
       </div>
 
       {/* Reports + Map */}
@@ -131,87 +118,79 @@ export default function Page() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {assignedReports.map((report) => (
-              <div
-                key={report.id}
-                className="flex flex-col gap-3 p-4 transition-colors border border-green-100 rounded-lg sm:flex-row sm:items-center sm:justify-between hover:bg-blue-50"
-              >
-                <div className="flex-1 space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h4 className="font-medium text-gray-800">
-                      {report.title}
-                    </h4>
-                    <Badge
-                      variant={
-                        report.urgency === "CRITICAL"
-                          ? "destructive"
-                          : report.urgency === "HIGH"
-                          ? "default"
-                          : "secondary"
-                      }
-                      className={
-                        report.urgency === "CRITICAL"
-                          ? "bg-red-100 text-red-700 hover:bg-red-200"
-                          : report.urgency === "HIGH"
-                          ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                          : ""
-                      }
+            {isLoading
+              ? // 🔹 Skeleton placeholder while loading
+                Array.from({ length: 3 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className="flex flex-col gap-3 p-4 border border-green-100 rounded-lg sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="w-32 h-4 rounded" />
+                        <Skeleton className="w-16 h-5 rounded" />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="w-40 h-3 rounded" />
+                        <Skeleton className="w-20 h-3 rounded" />
+                      </div>
+                    </div>
+                    <Skeleton className="w-20 h-8 rounded" />
+                  </div>
+                ))
+              : // 🔹 Real content when data is ready
+                data?.recentReports?.map((report) => (
+                  <div
+                    key={report.id}
+                    className="flex flex-col gap-3 p-4 transition-colors border border-green-100 rounded-lg sm:flex-row sm:items-center sm:justify-between hover:bg-blue-50"
+                  >
+                    <div className="flex-1 space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h4 className="font-medium text-gray-800">
+                          {report.title}
+                        </h4>
+                        <Badge
+                          variant={
+                            report.severity === "CRITICAL"
+                              ? "destructive"
+                              : report.severity === "HIGH"
+                              ? "default"
+                              : "secondary"
+                          }
+                          className={
+                            report.severity === "CRITICAL"
+                              ? "bg-red-100 text-red-700 hover:bg-red-200"
+                              : report.severity === "HIGH"
+                              ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                              : ""
+                          }
+                        >
+                          {report.severity}
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 sm:text-sm">
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-green-600" />
+                          {report.location.address} {report.location.city},{" "}
+                        </span>
+                        <span className="font-semibold text-orange-500">
+                          {getTimeElapsed(report.createdAt)}
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="px-4 text-white bg-gradient-to-r from-green-500 to-green-600"
                     >
-                      {report.urgency}
-                    </Badge>
+                      View
+                    </Button>
                   </div>
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 sm:text-sm">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-green-600" />
-                      {report.location}
-                    </span>
-                    <span className="font-semibold text-orange-500">
-                      {getTimeElapsed(report.reportedOn)}
-                    </span>
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  className="px-4 text-white bg-gradient-to-r from-green-500 to-green-600"
-                >
-                  View
-                </Button>
-              </div>
-            ))}
+                ))}
           </CardContent>
         </Card>
 
         {/* Interactive Map Preview */}
-        <Card className="border-green-100">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base text-gray-700 sm:text-lg">
-              <MapPin className="w-5 h-5" />
-              Interactive Map
-            </CardTitle>
-            <CardDescription className="text-sm">
-              Your patrol area and active incidents
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-center border border-blue-200 rounded-lg aspect-video bg-gradient-to-br from-blue-100 to-green-100">
-              <div className="p-2 space-y-2 text-center">
-                <MapPin className="w-10 h-10 mx-auto text-blue-600 sm:h-12 sm:w-12" />
-                <p className="text-sm font-medium text-gray-700 sm:text-base">
-                  Interactive Map View
-                </p>
-                <p className="text-xs text-gray-600 sm:text-sm">
-                  3 active incidents in your area
-                </p>
-                <Button
-                  onClick={() => router.push("/official/map")}
-                  className="text-sm text-gray-800 bg-gradient-to-r from-green-200 to-green-400 hover:from-green-300 hover:to-green-500"
-                >
-                  Open Full Map
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <InteractiveMapCard />
       </div>
 
       {/* Bottom Section */}

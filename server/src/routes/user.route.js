@@ -8,6 +8,7 @@ import {
   getWorkers,
   searchUser,
   searchUsers,
+  getOfficerDashboard,
   updateUser,
 } from "../controllers/user.controller.js"
 import { protect } from "../middleware/protect.js"
@@ -19,6 +20,9 @@ router.get("/", getAllUsers)
 
 //Get all the workers
 router.get("/workers", getWorkers)
+
+//Officer Details
+router.get("/officer", protect, getOfficerDashboard)
 
 //Get users that can be searched from the officer
 router.get("/search", protect, searchUser)

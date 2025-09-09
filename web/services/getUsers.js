@@ -109,3 +109,18 @@ export const searchAllUsersAPI = async (username) => {
     return []
   }
 }
+
+export const getOfficerDashboardData = async () => {
+  try {
+    const res = await axiosInstance.get("/user/officer")
+    if (res.data.success) {
+      console.log(res.data.data)
+      return res.data.data
+    } else {
+      return {}
+    }
+  } catch (err) {
+    console.error("Failed to fetch officer dashboard data:", err)
+    return {}
+  }
+}
