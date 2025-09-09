@@ -4,7 +4,6 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { Lock, Eye, EyeOff } from "lucide-react"
 import { axiosInstance } from "@/services/auth"
-import { useRouter } from "next/navigation"
 
 interface ResetPasswordForm {
   password: string
