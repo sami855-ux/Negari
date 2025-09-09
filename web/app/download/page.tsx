@@ -15,10 +15,12 @@ import {
 } from "lucide-react"
 import Image from "next/image"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 export default function HomePage() {
   const [showWarning, setShowWarning] = useState(true)
   const [imageModalOpen, setImageModalOpen] = useState(false)
+  const router = useRouter()
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col">
@@ -49,7 +51,7 @@ export default function HomePage() {
           <Button
             variant="ghost"
             className="mb-6 flex items-center text-gray-600 hover:text-gray-900"
-            onClick={() => window.history.back()}
+            onClick={() => router.push("/")}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Go Back
