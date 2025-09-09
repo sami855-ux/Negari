@@ -172,7 +172,7 @@ export default function AppWrapper() {
 
   if (isLoading) {
     return (
-      <View className="items-center justify-center flex-1 bg-black">
+      <View className="items-center justify-center flex-1 bg-white">
         <Animated.Image
           source={require("@/assets/images/react-logo.png")} // your logo
           style={{ width: 120, height: 120, transform: [{ scale: scaleAnim }] }}
