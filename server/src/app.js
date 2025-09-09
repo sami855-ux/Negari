@@ -43,6 +43,7 @@ app.use(
       "http://localhost:3000",
       "https://nj8wkxm-samiux855-8081.exp.direct",
       "http://localhost:8081",
+      "https://negari-ten.vercel.app",
     ],
     credentials: true,
   })
