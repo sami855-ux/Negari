@@ -285,3 +285,74 @@ export const searchUsers = async (req, res) => {
   }
 }
 
+export const getOfficerDashboard = async (req, res) => {
+  try {
+    const { officerId } = req.user?.id
+
+    // 1. Count reports assigned to this officer
+    const totalAssigned = await prisma.report.count({
+      where: { assignedToId: officerId },
+    })
+
+    // 2. Get 3 most recent assigned reports
+    const recentReports = await prisma.report.findMany({
+      where: { assignedToId: officerId },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        createdAt: true,
+        severity: true,
+        location: {
+          select: {
+            latitude: true,
+            longitude: true,
+            address: true,
+            city: true,
+            region: true,
+          },
+        },
+      },
+    })
+
+    // 3. Count reports by status
+    const inProgressCount = await prisma.report.count({
+      where: {
+        assignedToId: officerId,
+        status: "IN_PROGRESS",
+      },
+    })
+
+    const resolvedCount = await prisma.report.count({
+      where: {
+        assignedToId: officerId,
+        status: "RESOLVED",
+      },
+    })
+
+    // 4. Citizen feedback rating (average, default 5 if none)
+    const feedback = await prisma.rating.aggregate({
+      where: { officialId: officerId },
+      _avg: { score: true },
+    })
+
+    const avgRating = feedback._avg.score || 5
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        officerId,
+        totalAssigned,
+        inProgressCount,
+        resolvedCount,
+        recentReports,
+        avgRating,
+      },
+    })
+  } catch (error) {
+    console.error("Error fetching officer dashboard:", error)
+    res.status(500).json({ error: "Failed to fetch officer dashboard" })
+  }
+}
