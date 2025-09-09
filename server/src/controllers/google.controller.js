@@ -22,6 +22,9 @@ export const googleCallback = (req, res) => {
   if (user.role === "OFFICER") {
     res.redirect(`${process.env.FRONTEND_URL}/official`)
   }
+  if (user.role === "WORKER" || user.role === "CITIZEN") {
+    res.redirect(`${process.env.FRONTEND_URL}/download`)
+  }
 }
 
 export const googleCallbackApp = (req, res) => {
