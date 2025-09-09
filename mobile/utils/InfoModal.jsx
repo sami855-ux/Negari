@@ -22,75 +22,63 @@ const InfoModal = ({
 
   // Get icon based on type
   const getIcon = () => {
-    const iconSize = 28
+    const iconSize = 32
     switch (type) {
       case "success":
-        return <Check size={iconSize} className="text-white" />
+        return <Check size={iconSize} color="green" strokeWidth={3} />
       case "error":
-        return <X size={iconSize} className="text-white" />
+        return <X size={iconSize} color="#ffffff" strokeWidth={3} />
       case "warning":
-        return <AlertTriangle size={iconSize} className="text-white" />
+        return <AlertTriangle size={iconSize} color="#ffffff" strokeWidth={3} />
       case "info":
-        return <Info size={iconSize} className="text-white" />
+        return <Info size={iconSize} color="#ffffff" strokeWidth={3} />
       default:
-        return <Check size={iconSize} className="text-white" />
-    }
-  }
-
-  // Get background color based on type
-  const getBgColor = () => {
-    switch (type) {
-      case "success":
-        return "bg-green-500"
-      case "error":
-        return "bg-red-500"
-      case "warning":
-        return "bg-yellow-500"
-      case "info":
-        return "bg-blue-500"
-      default:
-        return "bg-green-500"
+        return <Check size={iconSize} color="#ffffff" strokeWidth={3} />
     }
   }
 
   return (
     <Animated.View
-      className="absolute inset-0 bg-black bg-opacity-50 justify-end"
-      entering={FadeIn.duration(200)}
+      className="absolute inset-0 bg-black/60 justify-center items-center"
+      entering={FadeIn.duration(250)}
       exiting={FadeOut.duration(200)}
     >
       <Animated.View
-        className={`w-full rounded-t-3xl ${getBgColor()} pt-6 px-6 pb-8`}
-        entering={SlideInUp.duration(300).easing(Easing.out(Easing.exp))}
+        className={`w-[75%] rounded-md bg-slate-100 py-5 px-4 pb-10`}
+        entering={SlideInUp.duration(400).easing(Easing.out(Easing.exp))}
         exiting={SlideOutDown.duration(300)}
       >
-        {showCloseButton && (
-          <TouchableOpacity
-            onPress={onClose}
-            className="absolute top-4 right-4 p-2"
-          >
-            <X size={24} className="text-white" />
-          </TouchableOpacity>
-        )}
-
-        {/* Icon circle */}
-        <View className="w-16 h-16 rounded-full bg-black bg-opacity-20 items-center justify-center self-center mb-4">
-          {getIcon()}
+        <View className="w-full h-14 items-center  justify-center self-center mb-6">
+          <View className="w-14 h-14  flex-row items-center rounded-full bg-white  justify-center">
+            {getIcon()}
+          </View>
         </View>
-
-        <Text className="text-white text-2xl font-bold text-center mb-2">
+        <Text className="text-gray-800 text-lg font-bold px-2 mb-3 tracking-tight font-geist">
           {title}
         </Text>
-        <Text className="text-white text-center mb-6 opacity-90">
+        <Text className="text-white/90 text-base text-center mb-8 leading-6 px-2 font-jakarta">
           {message}
         </Text>
 
-        <TouchableOpacity
-          onPress={onButtonPress || onClose}
-          className="bg-white py-3 px-6 rounded-full items-center"
-        >
-          <Text className="text-black font-bold">{buttonText}</Text>
-        </TouchableOpacity>
+        <View className="flex-row gap-4 mx-4">
+          <TouchableOpacity
+            onPress={onClose}
+            className="flex-1 bg-transparent h-10 items-center "
+          >
+            <Text className="text-gray-800 font-semibold text-lg tracking-wide font-geist">
+              Cancel
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={onButtonPress || onClose}
+            className="flex-1 bg-transparent h-10  items-center"
+          >
+            <Text className="text-gray-800 font-bold text-base tracking-wide font-geist">
+              {buttonText}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </Animated.View>
     </Animated.View>
   )
