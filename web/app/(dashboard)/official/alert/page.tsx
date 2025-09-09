@@ -884,7 +884,7 @@ export default function UrgentAlerts() {
                 variant="secondary"
                 size="sm"
                 className="gap-2 text-red-600 bg-white hover:bg-red-50"
-                onClick={() => window.location.reload()}
+                // onClick={() => window.location.reload()}
               >
                 <RefreshCw className="w-4 h-4" />
                 Refresh

@@ -49,7 +49,9 @@ export default function LoginPage() {
   } = useForm<LoginFormData>()
 
   const handleClickGoogle = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/google`
+    if (typeof window !== "undefined") {
+      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/google`
+    }
   }
 
   const handleSignIn: SubmitHandler<LoginFormData> = async (data) => {
