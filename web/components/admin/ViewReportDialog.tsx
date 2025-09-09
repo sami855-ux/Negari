@@ -213,6 +213,7 @@ export function ViewReportsDialog({
 }
 
 function getLocationName(locationId: string) {
+  console.log(locationId)
   // Lookup or return fallback
   return "Unknown location"
 }

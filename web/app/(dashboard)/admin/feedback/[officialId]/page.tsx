@@ -41,7 +41,6 @@ import {
 import { useEffect, useState } from "react"
 import { getRatingsByUser } from "@/services/rating"
 import { RatingResponse } from "@/lib/types"
-import { Separator } from "@/components/ui/separator"
 
 export default function UserRatingPage({
   params,
@@ -144,9 +143,9 @@ export default function UserRatingPage({
             <div className="flex items-start gap-2 p-3 border rounded-lg bg-white/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50">
               <Info className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-muted-foreground">
-                This dashboard helps administrators understand the official's
-                feedback profile, including rating distribution and detailed
-                reviews.
+                This dashboard helps administrators understand the
+                official&apos;s feedback profile, including rating distribution
+                and detailed reviews.
               </p>
             </div>
           </CardHeader>

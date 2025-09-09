@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState } from "react"
+import { useState } from "react"
 import {
   type ColumnDef,
   flexRender,
@@ -12,15 +12,12 @@ import {
 import {
   PlusCircle,
   Search,
-  Filter,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
   Loader2,
-  Eye,
   Trash,
-  PencilIcon,
   Pencil,
 } from "lucide-react"
 
@@ -68,9 +65,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip"
-import { QueryClient, useQueryClient } from "@tanstack/react-query"
-import { original } from "@reduxjs/toolkit"
 import { DeleteModal } from "./Modal"
+import { useQueryClient } from "@tanstack/react-query"
 
 interface Category {
   id: string
@@ -80,40 +76,6 @@ interface Category {
   color: string | null
   createdAt: string
 }
-const mockCategories: Category[] = [
-  {
-    id: "99dd8b52-2c0f-4116-9ec3-f83aef1e074d",
-    name: "NOISE",
-    description: "Pollution, deforestation, illegal dumping, green areas.",
-    icon: null,
-    color: null,
-    createdAt: "2025-07-24T17:16:43.753Z",
-  },
-  {
-    id: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-    name: "WATER QUALITY",
-    description: "Monitoring water purity in rivers and lakes.",
-    icon: null,
-    color: null,
-    createdAt: "2025-07-23T10:30:00.000Z",
-  },
-  {
-    id: "f0e9d8c7-b6a5-4321-fedc-ba9876543210",
-    name: "AIR POLLUTION",
-    description: "Tracking airborne particles and gases.",
-    icon: null,
-    color: null,
-    createdAt: "2025-07-22T08:00:00.000Z",
-  },
-  {
-    id: "1a2b3c4d-5e6f-7890-abcd-ef1234567890",
-    name: "BIODIVERSITY",
-    description: "Protecting endangered species and habitats.",
-    icon: null,
-    color: null,
-    createdAt: "2025-07-21T14:45:00.000Z",
-  },
-]
 
 export default function CategoriesTable(
   { data, isLoading } = { data: [], isLoading: false }
@@ -403,7 +365,7 @@ export default function CategoriesTable(
                 <SheetTitle>Add New Category</SheetTitle>
                 <SheetDescription>
                   Fill in the details for the new category. Click save when
-                  you're done.
+                  you&apos;re done.
                 </SheetDescription>
               </SheetHeader>
               <div className="grid gap-4 py-8">
@@ -452,8 +414,8 @@ export default function CategoriesTable(
               <SheetHeader>
                 <SheetTitle>Edit Category</SheetTitle>
                 <SheetDescription>
-                  Update the details for the category. Click save when you're
-                  done.
+                  Update the details for the category. Click save when
+                  you&apos;re done.
                 </SheetDescription>
               </SheetHeader>
 

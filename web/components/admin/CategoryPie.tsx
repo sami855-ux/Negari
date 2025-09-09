@@ -53,7 +53,7 @@ export function CategoryPieChart() {
               outerRadius={80}
               paddingAngle={2}
               dataKey="value"
-              label={({ name, percent }) => (
+              label={({ percent }) => (
                 <text
                   x={0}
                   y={0}
@@ -102,7 +102,7 @@ export function CategoryPieChart() {
               wrapperStyle={{
                 paddingTop: "16px",
               }}
-              formatter={(value, entry, index) => (
+              formatter={(value) => (
                 <span className="text-xs text-gray-600">{value}</span>
               )}
             />

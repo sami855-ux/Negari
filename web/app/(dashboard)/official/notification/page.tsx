@@ -14,24 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  CheckCheck,
-  Bell,
-  Heart,
-  MessageSquare,
-  UserPlus,
-  Settings,
-  Search,
-  Filter,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react"
-import { Separator } from "@/components/ui/separator"
+import { Card, CardContent } from "@/components/ui/card"
+import { CheckCheck, Bell } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Input } from "@/components/ui/input"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
 
 interface NotificationCenterProps {
   searchQuery: string
@@ -44,8 +29,7 @@ export default function NotificationCenter({
     useNotifications()
   const [activeTab, setActiveTab] = useState("all")
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "unread">("newest")
-  const [showFilters, setShowFilters] = useState(false)
-  const [notificationTypes, setNotificationTypes] = useState({
+  const [notificationTypes] = useState({
     like: true,
     comment: true,
     follow: true,
@@ -87,13 +71,6 @@ export default function NotificationCenter({
     all: notifications.length,
     unread: unreadCount,
     read: notifications.length - unreadCount,
-  }
-
-  const toggleNotificationType = (type: keyof typeof notificationTypes) => {
-    setNotificationTypes((prev) => ({
-      ...prev,
-      [type]: !prev[type],
-    }))
   }
 
   return (
@@ -160,10 +137,7 @@ export default function NotificationCenter({
               </TabsList>
 
               <div className="flex items-center gap-3">
-                <Select
-                  value={sortBy}
-                  onValueChange={(val) => setSortBy(val as any)}
-                >
+                <Select value={sortBy} onValueChange={(val) => setSortBy(val)}>
                   <SelectTrigger className="w-[140px]">
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>

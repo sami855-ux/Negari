@@ -46,7 +46,6 @@ import {
   Filter,
   ArrowUpDown,
   Trash,
-  User,
   Loader2,
 } from "lucide-react"
 import { cn, formatDate } from "@/lib/utils"
@@ -60,10 +59,6 @@ import {
 } from "../ui/tooltip"
 import { useRouter } from "next/navigation"
 import { DeleteConfirmationModal } from "../DeleteModal"
-import { deleteReport } from "@/services/report"
-import { resolve } from "node:url"
-import toast from "react-hot-toast"
-import useDeleteReport from "@/hooks/useDeleteReport"
 
 interface ReportsTableProps {
   reports: Report[]

@@ -64,13 +64,13 @@ export default function LoginPage() {
         if (res.user.role === "ADMIN") router.push("/admin")
         if (res.user.role === "OFFICER") router.push("/official")
 
-        // reset()
+        reset()
       } else {
         console.error("Sign in failed:", res.message)
         toast.error(res.message || "Failed to log in")
         return
       }
-    } catch (error: any) {
+    } catch (error) {
       console.log("Error signing in:", error)
       toast.error(error.message || "Failed to log in")
     } finally {
@@ -241,7 +241,7 @@ export default function LoginPage() {
               </form>
 
               <p className="text-sm text-center text-gray-600">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link
                   href="/signup"
                   className="font-semibold text-green-600 transition-colors hover:text-green-500 hover:underline"

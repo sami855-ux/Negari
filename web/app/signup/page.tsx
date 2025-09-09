@@ -54,7 +54,7 @@ export default function RegisterPage() {
       } else {
         toast.error(res.message || "Sign up failed")
       }
-    } catch (error: any) {
+    } catch (error) {
       toast.error(error.message || "Failed to create account")
     } finally {
       setIsLoading(false)

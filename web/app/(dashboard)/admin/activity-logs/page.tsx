@@ -20,7 +20,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   FileWarning,
@@ -31,12 +30,10 @@ import {
   Clock,
   MoreHorizontal,
   Search,
-  Filter,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  Info,
   RefreshCw,
 } from "lucide-react"
 import { ActivityLog } from "@/lib/types"
@@ -144,17 +141,9 @@ const actionLabels = {
   BACKUP_CREATED: "Backup Created",
 }
 
-const roleColors = {
-  ADMIN: "bg-indigo-100 text-indigo-800 hover:bg-indigo-200",
-  USER: "bg-gray-100 text-gray-800 hover:bg-gray-200",
-  OFFICIAL: "bg-green-100 text-green-800 hover:bg-green-200",
-  SYSTEM: "bg-purple-100 text-purple-800 hover:bg-purple-200",
-}
-
 export default function ActivityLogPage() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [selectedLog, setSelectedLog] = useState<ActivityLog | null>(null)
-  const [statusFilter, setStatusFilter] = useState("all")
   const [globalFilter, setGlobalFilter] = useState("")
 
   const columns: ColumnDef<ActivityLog>[] = [

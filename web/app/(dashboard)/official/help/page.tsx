@@ -21,7 +21,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   BookOpen,
-  ChevronRight,
   HelpCircle,
   LifeBuoy,
   Mail,
@@ -36,8 +35,6 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react"
 
 export default function HelpGuidePage() {
@@ -108,7 +105,8 @@ export default function HelpGuidePage() {
                     <div className="space-y-3 text-gray-700 dark:text-gray-300">
                       <p>
                         <strong>1. Access your dashboard</strong> - Upon logging
-                        in, you'll see your assigned reports in the main table.
+                        in, you&apos;ll see your assigned reports in the main
+                        table.
                       </p>
                       <p>
                         <strong>2. Filter reports</strong> - Use the status
@@ -139,7 +137,7 @@ export default function HelpGuidePage() {
                   <AccordionContent>
                     <div className="space-y-4">
                       <p className="text-gray-700 dark:text-gray-300">
-                        To update a report's status:
+                        To update a report&apos;s status:
                       </p>
                       <ol className="pl-5 space-y-2 text-gray-700 list-decimal dark:text-gray-300">
                         <li>
@@ -149,7 +147,7 @@ export default function HelpGuidePage() {
                         <li>Click the status dropdown in the action bar</li>
                         <li>Select the appropriate new status</li>
                         <li>Add any required notes about the status change</li>
-                        <li>Click "Confirm" to save changes</li>
+                        <li>Click &quot;Confirm&quot; to save changes</li>
                       </ol>
                       <div className="p-4 border border-blue-200 rounded-lg bg-blue-50 dark:bg-blue-900/30 dark:border-blue-800">
                         <p className="text-sm text-blue-700 dark:text-blue-300">
@@ -206,7 +204,9 @@ export default function HelpGuidePage() {
                             <li>Always maintain professional tone</li>
                             <li>Avoid sharing personal opinions</li>
                             <li>Stick to facts about the report status</li>
-                            <li>Don't make promises you can't keep</li>
+                            <li>
+                              Don&apos;t make promises you can&apos;t keep
+                            </li>
                           </ul>
                         </div>
                       </TabsContent>
@@ -221,8 +221,8 @@ export default function HelpGuidePage() {
                           </p>
                           <ul className="pl-5 space-y-1 list-disc">
                             <li>
-                              When providing general updates that don't require
-                              anonymity
+                              When providing general updates that don&apos;t
+                              require anonymity
                             </li>
                             <li>
                               When multiple officials need to coordinate on a

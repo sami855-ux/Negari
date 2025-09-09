@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import {
-  Check,
   Save,
   Lock,
   User,
@@ -31,7 +30,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import useGetAllPolicy from "@/hooks/useGetAllPolicy"
-import { permission } from "process"
 import { updatePolicy } from "@/services/policy"
 import toast from "react-hot-toast"
 import { LoadingModal } from "@/components/LoadingModal"

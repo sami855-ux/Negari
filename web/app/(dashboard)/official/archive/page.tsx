@@ -21,7 +21,6 @@ import {
   Search,
   Archive,
   MapPin,
-  Calendar,
   Tag,
   AlertTriangle,
   RotateCcw,
@@ -29,9 +28,7 @@ import {
   Download,
   Clock,
   User,
-  Building,
   MoreVertical,
-  ArrowLeft,
   RefreshCw,
   Loader2,
 } from "lucide-react"
@@ -69,25 +66,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import useGetOfficerReports from "@/hooks/useOfficerReports"
 import { useRouter } from "next/navigation"
@@ -350,7 +328,10 @@ export default function ReportArchive() {
               size="sm"
               className="w-8 h-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-800"
               onClick={() => {
-                if (row.original.status === "PENDING" || row.original.status === "NEEDS_MORE_INFO") {
+                if (
+                  row.original.status === "PENDING" ||
+                  row.original.status === "NEEDS_MORE_INFO"
+                ) {
                   router.push(`/official/archive/${report.id}`)
                 }
                 if (row.original.status !== "PENDING") {

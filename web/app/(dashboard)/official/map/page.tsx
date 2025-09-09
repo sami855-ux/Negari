@@ -6,14 +6,12 @@ import {
   Search,
   Calendar,
   Filter,
-  Users,
   MapPin,
   AlertTriangle,
   CheckCircle,
   Clock,
   RotateCcw,
   AlertCircle,
-  X,
   Loader2,
   ChevronDown,
   ChevronUp,
@@ -257,9 +255,6 @@ export default function ReportDashboard() {
     ...new Set(reports.map((report) => report.category?.name)),
   ]
 
-  const assignedOfficials = [
-    ...new Set(reports.map((report) => report.assignedTo)),
-  ]
   const statuses = [...new Set(reports.map((report) => report.status))]
   const severityLevels = [...new Set(reports.map((report) => report.severity))]
 
@@ -304,8 +299,8 @@ export default function ReportDashboard() {
               {/* Message */}
               <p className="mb-6 text-base leading-relaxed text-center text-muted-foreground font-jakarta">
                 Your account is currently being processed for region assignment.
-                You'll gain full access to the dashboard once an administrator
-                completes this setup.
+                You&apos;ll gain full access to the dashboard once an
+                administrator completes this setup.
               </p>
 
               {/* Status Indicator */}
@@ -544,7 +539,7 @@ export default function ReportDashboard() {
           {searchQuery && (
             <>
               {" "}
-              for "<span className="font-medium">{searchQuery}</span>"
+              for &quot;<span className="font-medium">{searchQuery}</span>&quot;
             </>
           )}
         </p>

@@ -199,7 +199,7 @@ const MobileAppPreview: React.FC = () => {
             variants={itemVariants}
             className="flex flex-wrap justify-center gap-8 mt-12"
           >
-            {stats.map((stat, index) => (
+            {stats.map((stat) => (
               <motion.div
                 key={stat.label}
                 className="flex flex-col items-center"

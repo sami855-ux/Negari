@@ -78,6 +78,7 @@ export const ContactModal = ({
   })
 
   const onSubmit = async (values: FormValues) => {
+    console.log(values)
     setIsLoading(true)
     setSuccessMessage("")
     setErrorMessage("")
@@ -100,6 +101,7 @@ export const ContactModal = ({
         setSuccessMessage("")
       }, 2000)
     } catch (error) {
+      console.log(error)
       setErrorMessage("Failed to send message. Please try again.")
     } finally {
       setIsLoading(false)
@@ -220,7 +222,6 @@ export const ContactModal = ({
                     </FormItem>
                   )}
                 />
-
 
                 <FormField
                   control={form.control}

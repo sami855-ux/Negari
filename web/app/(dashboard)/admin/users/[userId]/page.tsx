@@ -2,35 +2,23 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import dynamic from "next/dynamic"
 import { format } from "date-fns"
 import {
-  User,
   MapPin,
   Trash2,
   Edit3,
   Shield,
-  Mail,
-  Calendar,
   AlertCircle,
   CheckCircle2,
   Clock,
-  Star,
   ArrowLeft,
-  Loader2,
   Map,
   Building2,
   UserCog,
-  Send,
   Eye,
-  EyeOff,
-  ChevronDown,
   MoreVertical,
   BadgeCheck,
   MailWarning,
-  Landmark,
-  Phone,
-  Globe,
   MapPinned,
 } from "lucide-react"
 
@@ -48,12 +36,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import {
   Select,
   SelectContent,
@@ -85,8 +67,7 @@ import { getSingleUser } from "@/services/getUsers"
 import { useSelector } from "react-redux"
 import { RootState } from "@/store"
 import toast from "react-hot-toast"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { getAllRegion } from "@/services/region"
+import { useQueryClient } from "@tanstack/react-query"
 
 // Define TypeScript interfaces
 interface Region {
@@ -107,9 +88,9 @@ interface UserData {
   createdAt: string
   regionId: string | null
   region: Region | null
-  reportsSubmitted: any[]
-  reportsAssignedToMe: any[]
-  reportsAssignedToWorker: any[]
+  reportsSubmitted: []
+  reportsAssignedToMe: []
+  reportsAssignedToWorker: []
 }
 
 // Mock reports data
@@ -138,7 +119,7 @@ const mockReports = [
   },
 ]
 
-function featureToPolygon(feature: any) {
+function featureToPolygon(feature) {
   if (
     feature.type === "Feature" &&
     feature.geometry &&
@@ -156,14 +137,12 @@ function featureToPolygon(feature: any) {
 export default function UserProfilePage({ params }) {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { user } = useSelector((store: RootState) => store.user)
 
   const [userData, setUserData] = useState<UserData | null>(null)
 
   const [isAssignRegionDialogOpen, setIsAssignRegionDialogOpen] =
     useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
   const [editedUser, setEditedUser] = useState<Partial<UserData>>({})
   const [activeTab, setActiveTab] = useState("overview")
   const [isLoading, setIsLoading] = useState(false)
@@ -188,11 +167,6 @@ export default function UserProfilePage({ params }) {
 
     fetchUser()
   }, [params.userId])
-
-  const handleSaveEdit = () => {
-    // setUserData((prev) => ({ ...prev, ...editedUser }))
-    // setIsEditing(false)
-  }
 
   const handleDeleteUser = () => {
     console.log("Deleting user:")
@@ -227,7 +201,7 @@ export default function UserProfilePage({ params }) {
   }
 
   // Handle region assignment
-  const handleRegionAssign = async (customGeojson: any) => {
+  const handleRegionAssign = async (customGeojson) => {
     setIsLoading(true)
     try {
       const payload = {
@@ -246,7 +220,7 @@ export default function UserProfilePage({ params }) {
 
         queryClient.invalidateQueries({ queryKey: ["Region"] })
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error(
         "Error assigning region:",
         error.response?.data || error.message
@@ -718,7 +692,7 @@ export default function UserProfilePage({ params }) {
                 <CardHeader>
                   <CardTitle>Recent Activity</CardTitle>
                   <CardDescription>
-                    User's recent actions and events
+                    User&apos;s recent actions and events
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -783,8 +757,8 @@ export default function UserProfilePage({ params }) {
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete {userData.username}'s account?
-              This action cannot be undone.
+              Are you sure you want to delete {userData.username}&apos;s
+              account? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

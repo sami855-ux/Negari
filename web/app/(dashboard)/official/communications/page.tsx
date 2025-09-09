@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/card"
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -45,7 +44,7 @@ import {
   Loader2,
   UserPlus,
 } from "lucide-react"
-import { useChat, User, Message } from "@/components/ChatProvider"
+import { useChat, User } from "@/components/ChatProvider"
 import { useSelector } from "react-redux"
 import { RootState } from "@/store"
 import { searchUsersAPI } from "@/services/getUsers"
@@ -75,9 +74,9 @@ const formatDate = (dateString: string) => {
   }
 }
 
-const debounce = (func: Function, delay: number) => {
+const debounce = (func, delay: number) => {
   let timer: NodeJS.Timeout
-  return (...args: any) => {
+  return (...args) => {
     clearTimeout(timer)
     timer = setTimeout(() => func(...args), delay)
   }

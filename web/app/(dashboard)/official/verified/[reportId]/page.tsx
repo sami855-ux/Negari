@@ -1,14 +1,12 @@
 "use client"
 
 import {
-  MapPin,
   AlertTriangle,
   User,
   HardHat,
   ShieldAlert,
   Flag,
   CheckCircle,
-  Clock,
   ChevronLeft,
   ImageIcon,
   VideoIcon,
@@ -69,11 +67,8 @@ import {
 import { updateReportDynamic } from "@/services/report"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import toast from "react-hot-toast"
-import { Progress } from "@/components/ui/progress"
 import { getAllWorkers } from "@/services/getUsers"
 import { format } from "date-fns"
-import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
 import axios from "axios"
 interface Report {
@@ -448,7 +443,7 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                         </div>
                         <div>
                           <h4 className="text-sm font-semibold">
-                            {report.AssignedReports_worker}'s Team
+                            {report.AssignedReports_worker}&apos;s Team
                           </h4>
                           <p className="text-xs text-muted-foreground">
                             Actively working on this task
@@ -512,7 +507,7 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                           <div>
                             <p className="font-medium">
                               Task assigned to {report?.AssignedReports_worker}
-                              's team
+                              &apos;s team
                             </p>
                             <p className="text-muted-foreground">2 days ago</p>
                           </div>
@@ -559,7 +554,7 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
                         </div>
                         <div>
                           <h4 className="text-sm font-semibold">
-                            {report?.AssignedReports_worker}'s Team
+                            {report?.AssignedReports_worker}&apos;s Team
                           </h4>
                           <p className="text-xs text-muted-foreground">
                             Task completed successfully
@@ -1337,7 +1332,7 @@ const ReportDetailPage = ({ params }: ReportDetailPageProps) => {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent position="right" size="sm" className="flex flex-col">
           <SheetHeader>
-            <SheetTitle>Connect with the worker's Team</SheetTitle>
+            <SheetTitle>Connect with the worker&apos;s Team</SheetTitle>
           </SheetHeader>
 
           <div className="flex items-end gap-2 mt-2 flex-col">

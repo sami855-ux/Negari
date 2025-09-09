@@ -9,7 +9,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ActivityLog } from "@/types"
-import { Code } from "lucide-react"
 
 interface LogDetailModalProps {
   log: ActivityLog | null

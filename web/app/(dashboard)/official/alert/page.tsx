@@ -204,9 +204,7 @@ export default function UrgentAlerts() {
   const [rowSelection, setRowSelection] = React.useState({})
   const [globalFilter, setGlobalFilter] = React.useState("")
   const [alerts, setAlerts] = React.useState<UrgentAlert[]>([])
-  const [selectedAlert, setSelectedAlert] = React.useState<UrgentAlert | null>(
-    null
-  )
+  const [, setSelectedAlert] = React.useState<UrgentAlert | null>(null)
   const [activeTab, setActiveTab] = React.useState("all")
   const [isLoading, setIsLoading] = React.useState(false)
 
@@ -232,7 +230,7 @@ export default function UrgentAlerts() {
         )
 
         // Map the API response to our table format
-        const mappedAlerts = res.map((alert: any) => ({
+        const mappedAlerts = res.map((alert) => ({
           ...alert,
           // Calculate priority based on severity
           priority:
@@ -265,7 +263,7 @@ export default function UrgentAlerts() {
   const columns: ColumnDef<UrgentAlert>[] = [
     {
       accessorKey: "priority",
-      header: ({ column }) => {
+      header: () => {
         return <AlarmClock className="w-4 h-4 ml-2" size={25} />
       },
       cell: ({ row }) => {

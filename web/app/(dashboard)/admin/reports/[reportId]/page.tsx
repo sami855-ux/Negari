@@ -9,7 +9,6 @@ import {
   ShieldAlert,
   AlertTriangle,
   MailWarning,
-  Worm,
   VideoIcon,
   ImageIcon,
   UserCog,
@@ -24,7 +23,6 @@ import { useEffect, useState } from "react"
 import { format } from "date-fns"
 import {
   User,
-  MapPin,
   Trash2,
   CheckCircle2,
   AlertCircle,
@@ -612,7 +610,7 @@ export default function ReportPage({ params }: ReportDetailPageProps) {
                           </div>
                           <div>
                             <h4 className="text-sm font-semibold">
-                              {report.AssignedReports_worker}'s Team
+                              {report.AssignedReports_worker}&apos;s Team
                             </h4>
                             <p className="text-xs text-muted-foreground">
                               Actively working on this task
@@ -679,7 +677,7 @@ export default function ReportPage({ params }: ReportDetailPageProps) {
                               <p className="font-medium">
                                 Task assigned to{" "}
                                 {report?.AssignedReports_worker}
-                                's team
+                                &apos;s team
                               </p>
                               <p className="text-muted-foreground">
                                 2 days ago
@@ -729,7 +727,7 @@ export default function ReportPage({ params }: ReportDetailPageProps) {
                           </div>
                           <div>
                             <h4 className="text-sm font-semibold">
-                              {report?.AssignedReports_worker}'s Team
+                              {report?.AssignedReports_worker}&apos;s Team
                             </h4>
                             <p className="text-xs text-muted-foreground">
                               Task completed successfully
@@ -1250,7 +1248,7 @@ export default function ReportPage({ params }: ReportDetailPageProps) {
                           </div>
                           <div>
                             <p className="text-sm font-medium font-jakarta">
-                              {report?.AssignedReports_worker}'s Team
+                              {report?.AssignedReports_worker}&apos;s Team
                             </p>
                           </div>
                         </div>

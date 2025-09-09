@@ -1,7 +1,7 @@
 "use client"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Settings, Bell, BrainCircuit, Cpu, Sparkles } from "lucide-react"
+import { Settings, Bell, BrainCircuit } from "lucide-react"
 import { GeneralSettings } from "./General"
 import { NotificationSettings } from "./NotficationSetting"
 import { AiIntegrationSettings } from "./AiIntegration"

@@ -47,6 +47,7 @@ export function UploadRestoreCard() {
       await new Promise((resolve) => setTimeout(resolve, 4000))
       setSelectedFile(null) // Clear selected file after successful upload/restore
     } catch (error) {
+      console.log(error)
     } finally {
       setIsUploading(false)
     }

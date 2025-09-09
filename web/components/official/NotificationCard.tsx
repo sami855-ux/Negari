@@ -3,21 +3,17 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useNotifications, type Notification } from "./NotificationProiveder"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
-  Heart,
   MessageCircle,
   UserPlus,
   Star,
   Info,
   Gift,
-  AlertTriangle,
   Zap,
   Trash2,
   MoreHorizontal,
   Eye,
   EyeOff,
-  X,
   ChevronDown,
   ChevronUp,
   Cog,
@@ -67,25 +63,6 @@ export function NotificationCard({ notification }: NotificationCardProps) {
         )
       default:
         return <Zap className={`${iconClass} text-gray-500 fill-gray-100`} />
-    }
-  }
-
-  const getTypeColor = () => {
-    switch (notification.type) {
-      case "NEW_REPORT":
-        return "bg-red-50 border-l-red-400"
-      case "STATUS_UPDATED":
-        return "bg-blue-50 border-l-blue-400"
-      case "ASSIGNED_TO_YOU":
-        return "bg-green-50 border-l-green-400"
-      case "SYSTEM_ALERT":
-        return "bg-yellow-50 border-l-yellow-400"
-      case "SYSTEM_CHECK":
-        return "bg-gray-50 border-l-gray-400"
-      case "ROLE_PERMISSION_UPDATE":
-        return "bg-purple-50 border-l-purple-400"
-      default:
-        return "bg-gray-50 border-l-gray-400"
     }
   }
 

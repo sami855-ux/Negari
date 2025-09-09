@@ -57,7 +57,7 @@ export default function ForgotPasswordPage() {
           text: res.error || "Failed to send reset link. Please try again.",
         })
       }
-    } catch (error: any) {
+    } catch (error) {
       setMessage({
         type: "error",
         text: error.error || "Failed to send reset link. Please try again1.",

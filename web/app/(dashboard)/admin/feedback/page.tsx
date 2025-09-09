@@ -8,40 +8,6 @@ import { RefreshCw } from "lucide-react"
 import { useState } from "react"
 import toast from "react-hot-toast"
 
-const getRatingBadge = (rating: number) => {
-  if (rating >= 4.5) {
-    return (
-      <Badge className="text-white bg-gradient-to-r from-emerald-500 to-teal-600">
-        Excellent
-      </Badge>
-    )
-  } else if (rating >= 4.0) {
-    return (
-      <Badge className="text-white bg-gradient-to-r from-blue-500 to-cyan-500">
-        Great
-      </Badge>
-    )
-  } else if (rating >= 3.0) {
-    return (
-      <Badge className="text-white bg-gradient-to-r from-purple-500 to-indigo-500">
-        Good
-      </Badge>
-    )
-  } else if (rating >= 2.0) {
-    return (
-      <Badge className="text-white bg-gradient-to-r from-amber-500 to-orange-500">
-        Fair
-      </Badge>
-    )
-  } else {
-    return (
-      <Badge className="text-white bg-gradient-to-r from-rose-500 to-pink-500">
-        Poor
-      </Badge>
-    )
-  }
-}
-
 export default function HomePage() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const { isLoading, ratings, refetch } = useGetAllRatings()

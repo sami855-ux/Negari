@@ -19,7 +19,6 @@ import {
   XCircle,
 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
 
 export function ManualBackupCard() {
   const [isLoading, setIsLoading] = useState(false)
@@ -65,6 +64,7 @@ export function ManualBackupCard() {
 
       showNotification("success", `Backup completed at ${newTimestamp}`)
     } catch (error) {
+      console.log(error)
       showNotification("error", "Failed to create backup")
     } finally {
       setIsLoading(false)

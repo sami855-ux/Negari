@@ -23,7 +23,7 @@ export const FileUploader = ({
   const [error, setError] = useState<string | null>(null)
 
   const onDrop = useCallback(
-    (acceptedFiles: File[], fileRejections: any[]) => {
+    (acceptedFiles: File[], fileRejections: []) => {
       setError(null)
 
       if (fileRejections.length > 0) {

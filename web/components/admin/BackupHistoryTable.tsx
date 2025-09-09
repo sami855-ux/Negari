@@ -69,6 +69,7 @@ export function BackupHistoryTable() {
   const [selectedBackupId, setSelectedBackupId] = useState<string | null>(null)
 
   const handleDownload = async (id: string) => {
+    console.log(id)
     // Simulate download
     await new Promise((resolve) => setTimeout(resolve, 1000))
   }
@@ -86,6 +87,7 @@ export function BackupHistoryTable() {
       // Simulate restore operation
       await new Promise((resolve) => setTimeout(resolve, 3000))
     } catch (error) {
+      console.log(error)
     } finally {
       setSelectedBackupId(null)
     }
@@ -96,7 +98,9 @@ export function BackupHistoryTable() {
       // Simulate delete operation
       await new Promise((resolve) => setTimeout(resolve, 1000))
       setData((prevData) => prevData.filter((backup) => backup.id !== id))
-    } catch (error) {}
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   const columns: ColumnDef<BackupEntry>[] = [

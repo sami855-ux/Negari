@@ -39,6 +39,7 @@ export function EditUserSheet({
   onOpenChange,
   onUserUpdated,
 }: EditUserSheetProps) {
+  console.log(onUserUpdated)
   const [loading, setLoading] = React.useState(false)
   const [selectedRole, setSelectedRole] = React.useState<Role>(
     user?.role || Role.CITIZEN
@@ -95,8 +96,8 @@ export function EditUserSheet({
         <SheetHeader className="mb-4">
           <SheetTitle className="text-text-primary">Edit User</SheetTitle>
           <SheetDescription className="text-text-secondary">
-            Make changes to the user's profile and role here. Click save when
-            you're done.
+            Make changes to the user&apos;s profile and role here. Click save
+            when you&apos;re done.
           </SheetDescription>
         </SheetHeader>
         {user ? (

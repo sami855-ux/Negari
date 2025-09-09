@@ -18,13 +18,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { CheckCheck, Bell } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 
-interface NotificationCenterProps {
-  searchQuery: string
-}
-
-export default function NotificationCenter({
-  searchQuery,
-}: NotificationCenterProps) {
+export default function NotificationCenter() {
   const { notifications, unreadCount, markAllAsRead, isLoading } =
     useNotifications()
   const [activeTab, setActiveTab] = useState("all")
@@ -129,10 +123,7 @@ export default function NotificationCenter({
               </TabsList>
 
               <div className="flex items-center gap-3">
-                <Select
-                  value={sortBy}
-                  onValueChange={(val) => setSortBy(val as any)}
-                >
+                <Select value={sortBy} onValueChange={(val) => setSortBy(val)}>
                   <SelectTrigger className="w-[140px]">
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
@@ -203,7 +194,7 @@ export default function NotificationCenter({
                   No notifications found
                 </h3>
                 <p className="max-w-md text-sm text-muted-foreground">
-                  You're all caught up! New notifications will appear here.
+                  You&apos;re all caught up! New notifications will appear here.
                 </p>
               </motion.div>
             )}

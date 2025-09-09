@@ -50,7 +50,6 @@ export function GeneralSettings() {
     })
 
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
-  const logoFile = watch("logoFile")
 
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -80,7 +79,7 @@ export function GeneralSettings() {
               General Settings
             </CardTitle>
             <CardDescription className="text-gray-500">
-              Manage your platform's basic information and global settings
+              Manage your platform&apos;s basic information and global settings
             </CardDescription>
           </div>
         </div>

@@ -41,7 +41,7 @@ interface OfficerProfileProps {
   profilePicture?: string
   telegramId?: string
   googleId?: string
-  onSave: (data: any) => Promise<void> | void
+  onSave: (data) => Promise<void> | void
 }
 
 export function EditableOfficerProfile({
@@ -94,7 +94,7 @@ export function EditableOfficerProfile({
     fileInputRef.current?.click()
   }
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data) => {
     setIsSaving(true)
     try {
       await onSave({

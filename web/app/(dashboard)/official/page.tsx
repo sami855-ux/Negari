@@ -20,14 +20,13 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react"
-import { useRouter } from "next/navigation"
 import { getTimeElapsed } from "@/lib/utils"
 import useOfficialData from "@/hooks/useOfficialData"
 import { Skeleton } from "@/components/ui/skeleton"
 import InteractiveMapCard from "@/components/official/InteractiveMap"
 
 export default function Page() {
-  const router = useRouter()
+  // const router = useRouter()
 
   const { data, isLoading } = useOfficialData()
 

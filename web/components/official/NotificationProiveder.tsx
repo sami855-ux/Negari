@@ -47,7 +47,10 @@ export interface Notification {
   recipientId: string
   type: NotificationType
   message: string
-  metadata?: any
+  metadata?: {
+    reportId?: string
+    reportTitle?: string
+  }
   isRead: boolean
   createdById?: string
   createdBy?: {

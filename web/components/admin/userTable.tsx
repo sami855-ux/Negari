@@ -300,7 +300,6 @@ export function UserTable({
       ),
       cell: ({ row }) => {
         const user = row.original
-        const isCitizen = user.role === Role.CITIZEN
         return (
           <div className="flex justify-end gap-2">
             <Button

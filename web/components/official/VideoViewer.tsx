@@ -199,15 +199,6 @@ export function VideoViewer({
     showControlsNow()
   }
 
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTime = parseFloat(e.target.value)
-    setCurrentTime(newTime)
-    if (videoRef.current) {
-      videoRef.current.currentTime = newTime
-    }
-    showControlsNow()
-  }
-
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(e.target.value)
     setVolume(newVolume)

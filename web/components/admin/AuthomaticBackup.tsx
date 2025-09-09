@@ -28,7 +28,6 @@ import {
   XCircle,
   Settings2,
 } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 
 type Frequency = "daily" | "weekly" | "monthly"
 
@@ -57,6 +56,7 @@ export function AutomaticBackupSettings() {
       await new Promise((resolve) => setTimeout(resolve, 1500))
       showNotification("success", "Backup schedule updated successfully")
     } catch (error) {
+      console.log(error)
       showNotification("error", "Failed to update backup settings")
     } finally {
       setIsLoading(false)

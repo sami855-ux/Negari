@@ -14,12 +14,6 @@ import { Button } from "@/components/ui/button"
 import { motion, type Variants } from "framer-motion"
 import { useRouter } from "next/navigation"
 
-interface Partner {
-  name: string
-  initials: string
-  color: string
-}
-
 interface Feature {
   id: number
   icon: React.ReactNode
@@ -33,28 +27,6 @@ const Hero: React.FC = () => {
   const router = useRouter()
 
   // Partner logos data with enhanced styling
-  const partners: Partner[] = [
-    {
-      name: "Ethio Telecom",
-      initials: "ET",
-      color: "from-green-500 to-emerald-600",
-    },
-    {
-      name: "Commercial Bank",
-      initials: "CBE",
-      color: "from-blue-500 to-cyan-600",
-    },
-    {
-      name: "Ministry of Innovation",
-      initials: "MoT",
-      color: "from-purple-500 to-violet-600",
-    },
-    {
-      name: "Ministry of Technology",
-      initials: "MoT",
-      color: "from-orange-500 to-red-600",
-    },
-  ]
 
   // Enhanced feature cards data
   const features: Feature[] = [
@@ -141,17 +113,6 @@ const Hero: React.FC = () => {
         duration: 6,
         repeat: Number.POSITIVE_INFINITY,
         ease: "easeInOut",
-      },
-    },
-  }
-
-  const partnerVariants: Variants = {
-    hover: {
-      scale: 1.1,
-      y: -5,
-      transition: {
-        duration: 0.3,
-        ease: "easeOut",
       },
     },
   }

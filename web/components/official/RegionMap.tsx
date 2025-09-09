@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { MapPin, Trash2, User, Mail, Shield, Calendar, X } from "lucide-react"
+import { MapPin, Trash2, Mail, Shield, Calendar } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useQuery } from "@tanstack/react-query"
 import { getAllRegion } from "@/services/region"
@@ -51,9 +51,9 @@ interface UserData {
   isVerified: boolean
   createdAt: string
   regionId: string | null
-  reportsSubmitted: any[]
-  reportsAssignedToMe: any[]
-  reportsAssignedToWorker: any[]
+  reportsSubmitted: []
+  reportsAssignedToMe: []
+  reportsAssignedToWorker: []
 }
 
 interface RegionData {
@@ -92,11 +92,11 @@ export default function RegionAssignmentDialog({
   isOpen: boolean
   setIsOpen: (open: boolean) => void
   userData: UserData
-  onRegionAssign: (customGeojson: any) => void
+  onRegionAssign: (customGeojson) => void
   isLoading: boolean
 }) {
-  const [drawnPolygons, setDrawnPolygons] = useState<any[]>([])
-  const [isMobile, setIsMobile] = useState(false)
+  const [drawnPolygons, setDrawnPolygons] = useState<[]>([])
+  const [, setIsMobile] = useState(false)
 
   const { data: regionsData, isLoading: isLoadingRegions } =
     useQuery<ApiResponse>({
@@ -111,7 +111,7 @@ export default function RegionAssignmentDialog({
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
-  const handleCreated = (e: any) => {
+  const handleCreated = (e) => {
     const layer = e.layer
     const geojson = layer.toGeoJSON()
     setDrawnPolygons([{ id: Date.now(), geojson, layer }])
@@ -156,9 +156,9 @@ export default function RegionAssignmentDialog({
   // Function to add popup to each region - FIXED VERSION
   const onEachRegion = (region: RegionData, layer: L.Layer) => {
     // Check if the layer has the bindPopup method (it should be a Leaflet layer)
-    if (layer && typeof (layer as any).bindPopup === "function") {
+    if (layer && typeof layer.bindPopup === "function") {
       const assignedUsers = region.users.map((user) => user.username).join(", ")
-      ;(layer as any).bindPopup(`
+      layer.bindPopup(`
         <div class="p-2">
           <h3 class="font-bold">${region.name}</h3>
           <p class="text-sm mt-1">Assigned to: ${assignedUsers || "None"}</p>
@@ -201,7 +201,7 @@ export default function RegionAssignmentDialog({
 
   // Alternative approach using event handlers
   const handleRegionClick = (region: RegionData) => {
-    return (e: any) => {
+    return (e) => {
       const popupContent = ReactDOMServer.renderToString(
         <RegionPopup region={region} />
       )
@@ -446,7 +446,7 @@ export default function RegionAssignmentDialog({
                   {regions.map((region) => (
                     <GeoJSON
                       key={region.id}
-                      data={region.polygon as any}
+                      data={region.polygon}
                       style={() => regionStyle(region)}
                       onEachFeature={(feature, layer) =>
                         onEachRegion(region, layer)

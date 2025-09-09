@@ -14,11 +14,8 @@ import {
 } from "@tanstack/react-table"
 import {
   ArrowUpDown,
-  ChevronDown,
   Eye,
-  Filter,
   Search,
-  Archive,
   MapPin,
   Calendar,
   Tag,

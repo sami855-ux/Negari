@@ -78,7 +78,7 @@ export type ActivityLog = {
   targetId?: string
   targetLabel?: string
   description: string
-  meta?: Record<string, any>
+  meta?: Record<string, string>
   createdAt: string
 }
 export interface Location {
