@@ -1,6 +1,15 @@
 "use client"
 
-import { StaticLocationMap } from "@/components/StaticLocationMap"
+import dynamic from "next/dynamic"
+
+const StaticLocationMap = dynamic(
+  () =>
+    import("@/components/StaticLocationMap").then(
+      (mod) => mod.StaticLocationMap
+    ),
+  { ssr: false }
+)
+
 import {
   Compass,
   Landmark,

@@ -35,7 +35,16 @@ import {
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { StaticLocationMap } from "@/components/StaticLocationMap"
+import dynamic from "next/dynamic"
+
+const StaticLocationMap = dynamic(
+  () =>
+    import("@/components/StaticLocationMap").then(
+      (mod) => mod.StaticLocationMap
+    ),
+  { ssr: false }
+)
+
 import { useEffect, useState } from "react"
 import MediaViewer from "@/components/official/MediaViewer"
 import { VideoViewer } from "@/components/official/VideoViewer"

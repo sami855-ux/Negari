@@ -23,7 +23,13 @@ import {
 import { getTimeElapsed } from "@/lib/utils"
 import useOfficialData from "@/hooks/useOfficialData"
 import { Skeleton } from "@/components/ui/skeleton"
-import InteractiveMapCard from "@/components/official/InteractiveMap"
+import dynamic from "next/dynamic"
+
+const InteractiveMapCard = dynamic(
+  () =>
+    import("@/components/official/InteractiveMap").then((mod) => mod.default),
+  { ssr: false }
+)
 
 export default function Page() {
   // const router = useRouter()

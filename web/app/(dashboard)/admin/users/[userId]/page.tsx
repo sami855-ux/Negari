@@ -60,7 +60,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import RegionAssignmentDialog from "@/components/official/RegionMap"
+import dynamic from "next/dynamic"
+
+const RegionAssignmentDialog = dynamic(
+  () => import("@/components/official/RegionMap").then((mod) => mod.default),
+  { ssr: false }
+)
+
 import { axiosInstance } from "@/services/auth"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import { getSingleUser } from "@/services/getUsers"

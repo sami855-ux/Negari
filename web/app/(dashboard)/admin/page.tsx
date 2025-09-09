@@ -16,20 +16,24 @@ import {
   Plus,
   UserCog,
 } from "lucide-react"
-import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-} from "recharts"
-import { ReportsMap } from "@/components/admin/ReportMap"
-import { CategoryPieChart } from "@/components/admin/CategoryPie"
+import dynamic from "next/dynamic"
+
+// Dynamic imports for window-dependent components
+const ReportsMap = dynamic(() => import("@/components/admin/ReportMap"), {
+  ssr: false,
+})
+const CategoryPieChart = dynamic(
+  () => import("@/components/admin/CategoryPie"),
+  { ssr: false }
+)
+const LineChartComponent = dynamic(
+  () => import("@/components/admin/LineChartComponent"),
+  { ssr: false }
+)
+const BarChartComponent = dynamic(
+  () => import("@/components/admin/BarChartComponent"),
+  { ssr: false }
+)
 
 export default function Dashboard() {
   const reportData = [
@@ -161,22 +165,7 @@ export default function Dashboard() {
           </CardTitle>
         </CardHeader>
         <CardContent className="h-56 md:h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={reportData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="name" stroke="#6B7280" />
-              <YAxis stroke="#6B7280" />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="reports"
-                stroke="#3B82F6"
-                strokeWidth={2}
-                activeDot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <LineChartComponent data={reportData} />
         </CardContent>
       </Card>
 
@@ -190,16 +179,7 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="h-56 md:h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={categoryData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                <XAxis dataKey="name" stroke="#6B7280" />
-                <YAxis stroke="#6B7280" />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="value" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <BarChartComponent data={categoryData} />
           </CardContent>
         </Card>
 
