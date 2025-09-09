@@ -34,13 +34,17 @@ const statusIcons = {
   VERIFIED: CheckCircle,
   RESOLVED: CheckCircle,
   REJECTED: XCircle,
+  NEEDS_MORE_INFO: AlertCircle,
+  IN_PROGRESS: Clock,
 }
 
 const statusColors = {
-  PENDING: "bg-amber-400 text-amber-800",
-  VERIFIED: "bg-blue-400 text-blue-800",
-  RESOLVED: "bg-emerald-400 text-emerald-800",
-  REJECTED: "bg-rose-400 text-rose-800",
+  PENDING: { bg: "bg-amber-200", text: "text-amber-800" },
+  VERIFIED: { bg: "bg-blue-200", text: "text-blue-800" },
+  RESOLVED: { bg: "bg-emerald-200", text: "text-emerald-800" },
+  REJECTED: { bg: "bg-rose-200", text: "text-rose-800" },
+  NEEDS_MORE_INFO: { bg: "bg-gray-200", text: "text-gray-800" },
+  IN_PROGRESS: { bg: "bg-green-200", text: "text-green-800" },
 }
 
 const ActivityScreen = () => {
@@ -237,19 +241,30 @@ const ActivityScreen = () => {
                     {item?.title}
                   </Text>
                 </View>
-                <Text className="mt-1 text-sm text-gray-500 font-geist">
-                  {item?.category}
+                <Text className="text-xs mt-2 font-jakarta font-medium text-gray-600 ">
+                  {item?.description?.length > 50
+                    ? item.description.substring(0, 50) + "..."
+                    : item.description}
+                </Text>
+                <Text className="mt-1 text-sm text-blue-500 font-geist">
+                  {`${item?.category}`.charAt(0).toUpperCase() +
+                    item?.category.slice(1).toLowerCase()}
                 </Text>
               </View>
 
               <View
-                className={`px-3 py-1 rounded-full ${
-                  statusColors[item?.status] || "bg-gray-400"
-                } flex-row items-center`}
+                className={`px-3 py-1 rounded-full flex-row items-center ${
+                  statusColors[item.status]?.bg || "bg-gray-400"
+                }`}
               >
-                <StatusIcon size={14} color="white" className="mr-1" />
-                <Text className="text-xs text-white font-jakarta">
-                  {item?.status}
+                <StatusIcon size={14} color="black" className="mr-1" />
+                <Text
+                  className={`text-xs font-jakarta ${
+                    statusColors[item.status]?.text || "text-white"
+                  }`}
+                >
+                  {`${item.status}`.charAt(0).toUpperCase() +
+                    item.status.slice(1).toLowerCase().replace("_", " ")}
                 </Text>
               </View>
             </View>
@@ -258,22 +273,21 @@ const ActivityScreen = () => {
               <View className="flex-row items-center">
                 <Clock size={14} className="mr-1 text-gray-400" />
                 <Text className="text-[13px] text-gray-500 font-jakarta">
-                  {item?.createdAt
-                    ? new Date(item.createdAt).toLocaleDateString()
-                    : "Unknown date"}
+                  {timeAgo(item?.createdAt)}
                 </Text>
               </View>
 
-              {item?.status === "PENDING" && (
-                <View className="w-24">
-                  <LinearGradient
-                    colors={["#7C3AED", "#A78BFA"]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    className="h-1.5 rounded-full"
-                  />
-                </View>
-              )}
+              {item?.status === "PENDING" ||
+                (item?.status === "IN_PROGRESS" && (
+                  <View className="w-24">
+                    <LinearGradient
+                      colors={["#7C3AED", "#A78BFA"]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      className="h-1.5 rounded-full"
+                    />
+                  </View>
+                ))}
             </View>
           </TouchableOpacity>
         </View>
@@ -470,7 +484,7 @@ const ActivityScreen = () => {
       <View className="items-center justify-center flex-1 p-5 bg-black/50">
         <View className="w-full max-w-md p-6 bg-white rounded-2xl">
           <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-xl font-bold text-gray-800">
+            <Text className="text-xl font-bold text-gray-800 font-geist">
               Delete Report
             </Text>
             <TouchableOpacity onPress={() => setIsDeleteModalOpen(false)}>
@@ -482,7 +496,7 @@ const ActivityScreen = () => {
             <View className="p-2 mr-3 bg-red-100 rounded-full">
               <Trash2 size={24} color="#ef4444" />
             </View>
-            <Text className="flex-1 text-base text-gray-600">
+            <Text className="flex-1 text-base text-gray-600 font-jakarta">
               Are you sure you want to delete this report? This action cannot be
               undone.
             </Text>
@@ -493,13 +507,15 @@ const ActivityScreen = () => {
               onPress={() => setIsDeleteModalOpen(false)}
               className="px-5 py-3 bg-gray-100 rounded-xl"
             >
-              <Text className="font-medium text-gray-800">Cancel</Text>
+              <Text className="font-medium text-gray-800 font-geist">
+                Cancel
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={confirmDelete}
               className="px-5 py-3 bg-red-500 rounded-xl"
             >
-              <Text className="font-medium text-white">Delete</Text>
+              <Text className="font-medium text-white font-geist">Delete</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -591,6 +607,44 @@ const ActivityScreen = () => {
       <DeleteConfirmationModal />
     </View>
   )
+}
+
+export function timeAgo(timestamp) {
+  const now = new Date()
+  const past = new Date(timestamp)
+  const diff = Math.floor((now - past) / 1000) // difference in seconds
+
+  if (diff < 60) {
+    return `${diff} second${diff !== 1 ? "s" : ""} ago`
+  }
+
+  const minutes = Math.floor(diff / 60)
+  if (minutes < 60) {
+    return `${minutes} minute${minutes !== 1 ? "s" : ""} ago`
+  }
+
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) {
+    return `${hours} hour${hours !== 1 ? "s" : ""} ago`
+  }
+
+  const days = Math.floor(hours / 24)
+  if (days < 7) {
+    return `${days} day${days !== 1 ? "s" : ""} ago`
+  }
+
+  const weeks = Math.floor(days / 7)
+  if (weeks < 4) {
+    return `${weeks} week${weeks !== 1 ? "s" : ""} ago`
+  }
+
+  const months = Math.floor(days / 30)
+  if (months < 12) {
+    return `${months} month${months !== 1 ? "s" : ""} ago`
+  }
+
+  const years = Math.floor(days / 365)
+  return `${years} year${years !== 1 ? "s" : ""} ago`
 }
 
 export default ActivityScreen
