@@ -50,7 +50,7 @@ export default function LoginPage() {
 
   const handleClickGoogle = () => {
     if (typeof window !== "undefined") {
-      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/google`
+      window.location.href = `https://negari.onrender.com/api/google`
     }
   }
 
