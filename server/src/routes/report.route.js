@@ -14,6 +14,7 @@ import {
   getReportsByStatus,
   getReportsByUser,
   getReportsOfficial,
+  resolveReport,
   submitFeedback,
   updateReportDynamic,
 } from "../controllers/report.controller.js"
@@ -31,6 +32,8 @@ router.post(
   ]),
   createReport
 )
+
+router.put("/:id/resolve", upload.array("resolutionImages", 4), resolveReport)
 
 //get all reports for the admin
 router.get("/admin", getAllReports)

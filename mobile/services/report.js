@@ -8,8 +8,8 @@ import axios from "axios"
 //   "https://negari.onrender.com"
 
 //! for localhost
-// const serverUrl = "http://localhost:5000"
-const serverUrl = "https://negari.onrender.com"
+const serverUrl = "http://localhost:5000"
+// const serverUrl = "https://negari.onrender.com"
 
 export const axiosInstance = axios.create({
   baseURL: `${serverUrl}/api/`,
@@ -206,6 +206,30 @@ export const makeReportInprogress = async (reportId) => {
     })
 
     console.log(res.data)
+    if (res.data.success) {
+      return {
+        success: true,
+        message: res.data.message,
+      }
+    } else {
+      return {
+        success: false,
+        message: res.data.message,
+      }
+    }
+  } catch (error) {
+    console.log(error)
+    return {
+      success: false,
+      message: error,
+    }
+  }
+}
+
+export const makeReportCompleted = async (reportId, data) => {
+  try {
+    const res = await axiosInstance.put(`/report/${reportId}/resolve`, data)
+
     if (res.data.success) {
       return {
         success: true,

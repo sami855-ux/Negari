@@ -25,6 +25,7 @@ import conversationRoutes from "./routes/conversation.route.js"
 import "./utils/passport.js"
 import job from "./utils/cron.js"
 import { setupSocketIO } from "./socket/socket.js"
+import "./utils/spamChecker.js"
 
 dotenv.config()
 

@@ -26,20 +26,20 @@ const MobileAppPreview: React.FC = () => {
 
   const screenshots: Screenshot[] = [
     {
-      src: "/placeholder.svg?height=600&width=300",
+      src: "../../public/assests/mobile3.png",
       alt: "Dashboard view",
       title: "Smart Dashboard",
       description: "Get real-time insights at a glance",
     },
     {
-      src: "/placeholder.svg?height=600&width=300",
+      src: "../../public/assests/mobile3.png",
       alt: "Reports interface",
       title: "Instant Reports",
       description: "Report issues with one tap",
     },
     {
-      src: "/placeholder.svg?height=600&width=300",
-      alt: "Notifications screen",
+      src: "../../public/assests/mobil4.png",
+      alt: "Worker screen",
       title: "Stay Connected",
       description: "Never miss important updates",
     },

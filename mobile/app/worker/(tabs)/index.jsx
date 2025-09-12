@@ -406,7 +406,11 @@ export default function AssignedReports() {
                 overshootRight={false}
                 overshootLeft={false}
               >
-                <AnimatedReportCard report={report} index={index} />
+                <AnimatedReportCard
+                  report={report}
+                  index={index}
+                  isActive={true}
+                />
               </Swipeable>
             ))
           ) : (
@@ -471,7 +475,7 @@ export default function AssignedReports() {
   )
 }
 
-const AnimatedReportCard = ({ report, index }) => {
+const AnimatedReportCard = ({ report, index, isActive = false }) => {
   const scale = useSharedValue(1)
   const router = useRouter()
 
@@ -525,21 +529,40 @@ const AnimatedReportCard = ({ report, index }) => {
           </Text>
         </View>
 
-        <TouchableOpacity
-          className={
-            "w-24  py-2 px-2 bg-blue-500 rounded-md mt-2 text-white font-geist text-xs"
-          }
-          onPress={() =>
-            router.push({
-              pathname: "/worker/ReportDetails",
-              params: {
-                reportId: report.id,
-              },
-            })
-          }
-        >
-          See details
-        </TouchableOpacity>
+        <View className="flex-row items-center justify-start space-x-3">
+          <TouchableOpacity
+            className={
+              "w-24  py-2 px-2 bg-blue-500 rounded-md mt-2 text-white font-geist text-xs"
+            }
+            onPress={() =>
+              router.push({
+                pathname: "/worker/ReportDetails",
+                params: {
+                  reportId: report.id,
+                },
+              })
+            }
+          >
+            See details
+          </TouchableOpacity>
+          {isActive && (
+            <TouchableOpacity
+              className={
+                "w-28  py-2 px-2 bg-orange-500 rounded-md mt-2 text-white font-geist text-xs"
+              }
+              onPress={() =>
+                router.push({
+                  pathname: "/worker/Resolve",
+                  params: {
+                    reportId: report.id,
+                  },
+                })
+              }
+            >
+              Done Working
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     </Animated.View>
   )

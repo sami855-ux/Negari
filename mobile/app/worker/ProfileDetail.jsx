@@ -23,63 +23,6 @@ import {
 } from "lucide-react-native"
 import { getUserDetails } from "../../services/user"
 
-// // Mock API service (replace with your actual API call)
-// const fetchUserData = async (userId) => {
-//   // Simulate API delay
-//   await new Promise((resolve) => setTimeout(resolve, 1500))
-
-//   // Return mock data matching your structure
-//   return {
-//     user: {
-//       id: userId,
-//       username: "johndoe",
-//       email: "john@example.com",
-//       profilePicture:
-//         "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-//       role: "FIELD_WORKER",
-//       isVerified: true,
-//       isOnline: true,
-//       lastSeen: "2025-09-08T07:45:00.000Z",
-//       createdAt: "2025-08-01T10:00:00.000Z",
-//       reportsAssignedToWorker: [
-//         {
-//           id: "report-uuid-1",
-//           title: "Broken streetlight",
-//           description:
-//             "The streetlight has been out for weeks, making this area unsafe at night.",
-//           status: "PENDING",
-//           severity: "MEDIUM",
-//           createdAt: "2025-09-07T12:00:00.000Z",
-//         },
-//         {
-//           id: "report-uuid-2",
-//           title: "Pothole on Main Street",
-//           description: "Large pothole causing damage to vehicles",
-//           status: "IN_PROGRESS",
-//           severity: "HIGH",
-//           createdAt: "2025-09-05T09:30:00.000Z",
-//         },
-//         {
-//           id: "report-uuid-3",
-//           title: "Graffiti on public wall",
-//           description: "Vandalism on the community center wall",
-//           status: "RESOLVED",
-//           severity: "LOW",
-//           createdAt: "2025-09-01T14:15:00.000Z",
-//         },
-//         {
-//           id: "report-uuid-4",
-//           title: "Overflowing trash bin",
-//           description: "Public trash bin has been overflowing for days",
-//           status: "PENDING",
-//           severity: "MEDIUM",
-//           createdAt: "2025-08-29T16:45:00.000Z",
-//         },
-//       ],
-//     },
-//   }
-// }
-
 // Format date function
 const formatDate = (dateString) => {
   const date = new Date(dateString)
@@ -354,13 +297,13 @@ const UserDetailPage = () => {
           </TouchableOpacity>
           <Text className="text-lg text-white font-geist">User Profile</Text>
         </View>
-        <View className="p-4">
+        <View className="p-4 px-0  pt-0">
           {/* Profile Header */}
           <ImageBackground
             source={{
               uri: "https://images.unsplash.com/photo-1503264116251-35a269479413?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.0.3",
             }}
-            className="mb-6 overflow-hidden rounded-lg"
+            className="mb-6 overflow-hidden  w-full"
             resizeMode="cover"
           >
             {/* Overlay for better text readability */}

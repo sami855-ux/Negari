@@ -71,6 +71,18 @@ export default function RootLayout() {
                   }}
                 />
                 <Stack.Screen
+                  name="worker/ProfileDetail"
+                  options={{
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen
+                  name="worker/Resolve"
+                  options={{
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen
                   name="worker/ReportDetails"
                   options={{
                     headerShown: false,

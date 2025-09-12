@@ -50,7 +50,7 @@ export default function LoginPage() {
 
   const handleClickGoogle = () => {
     if (typeof window !== "undefined") {
-      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/google`
+      window.location.href = `https://negari.onrender.com/api/google`
     }
   }
 
@@ -64,7 +64,8 @@ export default function LoginPage() {
 
         console.log(res.user)
         if (res.user.role === "ADMIN") router.push("/admin")
-        if (res.user.role === "OFFICER") router.push("/official")
+        else if (res.user.role === "OFFICER") router.push("/official")
+        else router.push("/download")
 
         reset()
       } else {

@@ -135,6 +135,7 @@ const CreateScreen = () => {
       const res = await getCategories()
 
       setCategories(res)
+      // setCategories((prv) => [...prv, "AI suggest"])
     } catch (error) {
       console.error("Error fetching categories:", error)
     } finally {
@@ -161,6 +162,7 @@ const CreateScreen = () => {
         isAnonymous: data.anonymous,
         tags: data.tags,
         reporterId: user?.id,
+        useAiCategory: data.category === "AI suggest",
       }
 
       const formData = new FormData()
@@ -170,6 +172,7 @@ const CreateScreen = () => {
       formData.append("category", reportData.category)
       formData.append("severity", reportData.severity)
       formData.append("isAnonymous", reportData.isAnonymous)
+      formData.append("useAiCategory", reportData.useAiCategory)
       formData.append("reporterId", reportData.reporterId)
 
       // JSON objects/arrays must be stringified

@@ -21,6 +21,8 @@
 */
 import cloudinary from "../utils/cloudinary.js"
 import prisma from "../prisma/client.js"
+import { checkSpam, checkToxicityHF } from "../utils/spamChecker.js"
+import { analyzeImageSeverity } from "../utils/AnalyzeImage.js"
 
 const DUPLICATE_RADIUS_M = 100
 const VALID_STATUSES = [
@@ -48,12 +50,25 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)))
 }
 
+const uploadToCloudinary = (fileBuffer, folder = "negari/reports") => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder, resource_type: "image" },
+      (error, result) => {
+        if (error) return reject(error)
+        resolve(result.secure_url)
+      }
+    )
+    uploadStream.end(fileBuffer)
+  })
+}
+
 export const createReport = async (req, res) => {
   try {
     const {
       title,
       description,
-      category,
+      category, // Can be null if AI is used
       reporterId,
       severity,
       tags,
@@ -61,6 +76,7 @@ export const createReport = async (req, res) => {
     } = req.body
 
     const isAnonymous = req.body.isAnonymous === "true"
+    const useAICategory = req.body.useAiCategory === "true"
     const parsedLocation = JSON.parse(location)
     const parsedTags = JSON.parse(tags)
 
@@ -94,38 +110,26 @@ export const createReport = async (req, res) => {
 
     const { latitude, longitude, address, city, region } = parsedLocation
 
-    const foundCategory = await prisma.reportCategory.findFirst({
-      where: { name: category },
-    })
-    if (!foundCategory) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid category." })
-    }
-
-    const latDiff = metersToLatDegrees(DUPLICATE_RADIUS_M)
-    const lonDiff = metersToLonDegrees(DUPLICATE_RADIUS_M, latitude)
-    const duplicate = await prisma.report.findFirst({
-      where: {
-        categoryId: foundCategory.id,
-        location: {
-          latitude: { gte: latitude - latDiff, lte: latitude + latDiff },
-          longitude: { gte: longitude - lonDiff, lte: longitude + lonDiff },
-        },
-      },
-    })
-    if (duplicate) {
-      return res.status(409).json({
-        success: false,
-        message: "Duplicate report nearby",
-        duplicateId: duplicate.id,
+    // Determine categoryId safely
+    let foundCategoryId = null
+    if (category && !useAICategory) {
+      const foundCategory = await prisma.reportCategory.findFirst({
+        where: { name: category },
       })
+      if (!foundCategory) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid category." })
+      }
+      foundCategoryId = foundCategory.id
     }
 
+    // Create location
     const createdLocation = await prisma.location.create({
       data: { latitude, longitude, address, city, region },
     })
 
+    // Assign region and official logic
     const regions = await prisma.region.findMany()
     let reportRegion = null
     for (const r of regions) {
@@ -165,11 +169,12 @@ export const createReport = async (req, res) => {
       }
     }
 
+    // Create report immediately
     const newReport = await prisma.report.create({
       data: {
         title,
         description,
-        categoryId: foundCategory.id,
+        categoryId: foundCategoryId || null,
         imageUrls,
         videoUrl,
         reporterId,
@@ -178,7 +183,7 @@ export const createReport = async (req, res) => {
         tags: parsedTags,
         locationId: createdLocation.id,
         assignedToId: assignedOfficial?.id || null,
-        regionId: reportRegion?.id || null,
+        regionId: reportRegion?.id,
       },
       include: {
         location: true,
@@ -189,11 +194,88 @@ export const createReport = async (req, res) => {
       },
     })
 
-    return res.status(201).json({
+    // Send immediate response
+    // 1️⃣ Send response immediately
+    res.status(201).json({
       success: true,
       message: "Report created successfully",
       data: newReport,
     })
+
+    // 2️⃣ Fire-and-forget AI processing
+    ;(async () => {
+      try {
+        let bestResult = await analyzeImageSeverity(imageUrls) // imageUrls is an array
+
+        // Map category to DB
+        let mappedCategoryId
+
+        if (bestResult.category === "UNKNOWN") {
+          // If AI could not detect category, default to INFRASTRUCTURE
+          const infrastructureCategory = await prisma.reportCategory.findFirst({
+            where: { name: "INFRASTRUCTURE" },
+          })
+          if (infrastructureCategory) {
+            mappedCategoryId = infrastructureCategory.id
+            bestResult.category = "INFRASTRUCTURE"
+          }
+        } else if (useAICategory) {
+          const category = await prisma.reportCategory.findFirst({
+            where: { name: bestResult.category },
+          })
+          if (category) mappedCategoryId = category.id
+        }
+
+        // Update report with AI results
+        await prisma.report.update({
+          where: { id: newReport.id },
+          data: {
+            severity: bestResult.severity,
+            confidenceScore: bestResult.confidence,
+            categoryId: mappedCategoryId,
+          },
+        })
+
+        // Optional: Spam/Toxicity processing here (same pattern)
+        if (newReport.title || newReport.description) {
+          try {
+            const spamResult = await checkSpam(
+              `${newReport.title} ${newReport.description}`
+            )
+
+            if (spamResult) {
+              await prisma.report.update({
+                where: { id: newReport.id },
+                data: { spamScore: spamResult.spamScore },
+              })
+            }
+          } catch (spamError) {
+            console.error("Spam check failed:", spamError)
+          }
+        }
+
+        // Process toxicity check
+        if (newReport.title || newReport.description) {
+          try {
+            const toxicityResult = await checkToxicityHF(
+              `${newReport.title} ${newReport.description}`
+            )
+            if (toxicityResult) {
+              await prisma.report.update({
+                where: { id: newReport.id },
+                data: { toxicityScore: toxicityResult },
+              })
+            }
+          } catch (toxicityError) {
+            console.error("Toxicity check failed:", toxicityError)
+          }
+        }
+
+        console.log("AI processing completed successfully")
+      } catch (err) {
+        console.error("Background AI processing failed:", err)
+      }
+    })()
   } catch (err) {
     console.error(err)
     return res
@@ -1056,5 +1138,42 @@ export const getCriticalReports = async (req, res) => {
   } catch (error) {
     console.error("Error fetching CRITICAL reports:", error)
     res.status(500).json({ message: "Something went wrong", success: false })
+  }
+}
+
+export const resolveReport = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { resolutionNote } = req.body
+
+    // Upload resolution images (if provided)
+    let uploadedImages = []
+    if (req.files && req.files.length > 0) {
+      uploadedImages = await Promise.all(
+        req.files.map((file) => uploadToCloudinary(file.buffer))
+      )
+    }
+
+    // Update report in Prisma
+    const updatedReport = await prisma.report.update({
+      where: { id },
+      data: {
+        status: "RESOLVED",
+        resolutionNote: resolutionNote || null,
+        resolvedAt: new Date(),
+        resolutionImages: {
+          push: uploadedImages, // Prisma push for String[]
+        },
+      },
+    })
+
+    res.status(200).json({
+      message: "Report resolved successfully",
+      report: updatedReport,
+      success: true,
+    })
+  } catch (error) {
+    console.error("Resolve report error:", error)
+    res.status(500).json({ error: "Failed to resolve report", success: false })
   }
 }

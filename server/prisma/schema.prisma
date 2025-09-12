@@ -104,8 +104,8 @@ model Report {
   inProgressAt       DateTime?
 
   // New category relation
-  categoryId String
-  category   ReportCategory @relation(fields: [categoryId], references: [id])
+  categoryId String?
+  category   ReportCategory? @relation(fields: [categoryId], references: [id])
 
   location               Location  @relation(fields: [locationId], references: [id])
   reporter               User      @relation("Report_reporterId", fields: [reporterId], references: [id])

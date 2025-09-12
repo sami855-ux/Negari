@@ -11,7 +11,11 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^6.10.1",
+    "@tensorflow-models/mobilenet": "^2.1.1",
+    "@tensorflow/tfjs": "^4.22.0",
+    "axios": "^1.11.0",
     "bcrypt": "^6.0.0",
+    "canvas": "^3.2.0",
     "cloudinary": "^2.7.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
