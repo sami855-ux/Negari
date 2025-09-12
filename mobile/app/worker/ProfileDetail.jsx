@@ -303,7 +303,7 @@ const UserDetailPage = () => {
             source={{
               uri: "https://images.unsplash.com/photo-1503264116251-35a269479413?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.0.3",
             }}
-            className="mb-6 overflow-hidden  w-full"
+            className="mb-6 overflow-hidden  w-full h-72"
             resizeMode="cover"
           >
             {/* Overlay for better text readability */}

@@ -13,7 +13,7 @@ import axios from "axios"
 import { messagedUsersAPI, fetchMessagesAPI } from "../services/message"
 import { axiosInstance } from "@/services/report"
 
-const SOCKET_URL = process.env.EXPO_PUBLIC_SOCKET_URL || "http://localhost:5000"
+const SOCKET_URL = "https://negari.onrender.com"
 
 // Context Setup
 const MessageContext = createContext(null)

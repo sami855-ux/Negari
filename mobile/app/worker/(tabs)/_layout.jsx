@@ -3,7 +3,15 @@
 import { useEffect, useRef, useState } from "react"
 import { Animated, View, Dimensions } from "react-native"
 import { Tabs } from "expo-router"
-import { Home, Map, User, MessageSquare, Zap } from "lucide-react-native"
+import {
+  Home,
+  Map,
+  User,
+  MessageSquare,
+  Zap,
+  UserSquare2,
+  UserCheck,
+} from "lucide-react-native"
 
 const activeColor = "#FF6B35"
 const inactiveColor = "#9CA3AF"
@@ -109,6 +117,7 @@ const TabBarWave = ({ activeIndex }) => {
         Animated.timing(scaleX, {
           toValue: 1,
           duration: 150,
+          useNativeDriver: true,
         }),
       ]),
     ]).start()
@@ -152,8 +161,8 @@ export default function Layout() {
             tabBarStyle: {
               height: 70,
               backgroundColor: "#F8F9FA",
-              borderTopWidth: 1,
-              borderTopColor: "#E5E7EB",
+              // borderTopWidth: 1,
+              // borderTopColor: "#E5E7EB",
               elevation: 10,
               shadowColor: "#000",
               shadowOffset: { width: 0, height: -2 },
@@ -207,7 +216,7 @@ export default function Layout() {
             name="Profile"
             options={{
               tabBarIcon: ({ focused }) => (
-                <TabBarIcon focused={focused} IconComponent={User} />
+                <TabBarIcon focused={focused} IconComponent={UserCheck} />
               ),
             }}
             listeners={{

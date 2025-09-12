@@ -29,7 +29,7 @@ import "./utils/spamChecker.js"
 
 dotenv.config()
 
-job.start()
+// job.start()
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -45,7 +45,7 @@ app.use(
       "https://nj8wkxm-samiux855-8081.exp.direct",
       "http://localhost:8081",
       "https://negari-ten.vercel.app",
-      "exp://127.0.0.1:8081"
+      "exp://127.0.0.1:8081",
     ],
     credentials: true,
   })

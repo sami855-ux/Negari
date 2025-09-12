@@ -63,7 +63,7 @@ router.get("/worker/exist", protect, getAllReportsAssignedToWorker)
 router.get("/officer/:officerId", getOfficerReports)
 
 //Submit a feedback to the report => passed
-router.post("/feedback/:id", submitFeedback)
+router.post("/feedback/:id", protect, submitFeedback)
 
 //Get all critical reports
 router.get("/critical/:officialId", getCriticalReports)

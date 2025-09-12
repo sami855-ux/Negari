@@ -12,17 +12,16 @@ import {
   Easing,
 } from "react-native"
 import { useMessage } from "../../../components/MessageContext"
-import { useNavigation } from "@react-navigation/native"
 import {
   ChevronRight,
   MessageCircle,
   MoreVertical,
   Search,
-  UserPlus,
   Shield,
 } from "lucide-react-native"
 import { TextInput } from "react-native"
 import { useRouter } from "expo-router"
+import { storage } from "../../../store/slices/auth"
 
 // Beautiful color palette
 const COLORS = {
@@ -39,15 +38,8 @@ const COLORS = {
   border: "#E2E8F0", // Light border
 }
 
-const user = {
-  id: "1",
-  username: "samuel tale",
-  role: "CITIZEN",
-  profilePicture:
-    "https://images.unsplash.com/photo-1499714608240-22fc6ad53fb2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=880&q=80",
-}
-
 export default function ConversationListScreen() {
+  const [user, setUser] = useState({})
   const { messagedUsers, fetchMessagedUsers, messages, onlineUsers } =
     useMessage()
   const router = useRouter()
@@ -143,6 +135,23 @@ export default function ConversationListScreen() {
       (msg) => msg.senderId !== user.id && !msg.isRead
     ).length
   }
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const token = await storage.getItem("user")
+        if (token) {
+          const parseToken = JSON.parse(token)
+          setUser(parseToken)
+          console.log(parseToken)
+        }
+      } catch (err) {
+        console.error("Auth check failed:", err)
+      }
+    }
+
+    checkAuth()
+  }, [])
 
   const filteredUsers = messagedUsers.filter(
     (user) =>

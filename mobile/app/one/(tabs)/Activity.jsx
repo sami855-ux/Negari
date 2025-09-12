@@ -9,6 +9,7 @@ import {
   TextInput,
   ActivityIndicator,
   Modal,
+  Animated,
 } from "react-native"
 import { Stack, useRouter } from "expo-router"
 import {
@@ -208,18 +209,17 @@ const ActivityScreen = () => {
 
     return (
       <View className="flex-row items-center justify-end my-2 bg-red-500 rounded-lg">
-        <View style={{ transform: [{ scale }] }}>
+        <Animated.View style={{ transform: [{ scale }] }}>
           <TouchableOpacity
             className="justify-center h-full px-4"
             onPress={() => handleDeletePress(reportId)}
           >
             <Trash2 size={24} color="white" />
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       </View>
     )
   }
-
   const renderReportItem = ({ item }) => {
     const StatusIcon = statusIcons[item?.status] || AlertCircle
 
@@ -237,16 +237,16 @@ const ActivityScreen = () => {
             <View className="flex-row items-start justify-between">
               <View className="flex-1">
                 <View className="flex-row items-center">
-                  <Text className="text-base font-medium text-gray-800 font-jakarta">
+                  <Text className="text-lg font-medium text-gray-800 font-jakarta">
                     {item?.title}
                   </Text>
                 </View>
-                <Text className="text-xs mt-2 font-jakarta font-medium text-gray-600 ">
+                <Text className="text-base mt-2 font-jakarta font-medium text-gray-600 ">
                   {item?.description?.length > 50
                     ? item.description.substring(0, 50) + "..."
                     : item.description}
                 </Text>
-                <Text className="mt-1 text-sm text-blue-500 font-geist">
+                <Text className="mt-1 text-base text-blue-500 font-geist">
                   {`${item?.category}`.charAt(0).toUpperCase() +
                     item?.category.slice(1).toLowerCase()}
                 </Text>
@@ -259,7 +259,7 @@ const ActivityScreen = () => {
               >
                 <StatusIcon size={14} color="black" className="mr-1" />
                 <Text
-                  className={`text-xs font-jakarta ${
+                  className={`text-sm font-jakarta ml-2 ${
                     statusColors[item.status]?.text || "text-white"
                   }`}
                 >
@@ -272,7 +272,7 @@ const ActivityScreen = () => {
             <View className="flex-row items-center justify-between mt-3">
               <View className="flex-row items-center">
                 <Clock size={14} className="mr-1 text-gray-400" />
-                <Text className="text-[13px] text-gray-500 font-jakarta">
+                <Text className="text-[13px] text-gray-500 font-jakarta ml-2">
                   {timeAgo(item?.createdAt)}
                 </Text>
               </View>

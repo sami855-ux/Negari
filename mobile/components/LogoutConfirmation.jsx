@@ -46,10 +46,10 @@ export default function LogoutConfirmationModal({
           </View>
 
           {/* Actions */}
-          <View className="flex-row justify-end space-x-3">
+          <View className="flex-row justify-end space-x-5">
             <TouchableOpacity
               onPress={onCancel}
-              className="px-5 py-3 bg-gray-100 rounded-lg"
+              className="px-5 py-3 bg-gray-100 rounded-lg mr-4"
               activeOpacity={0.7}
             >
               <Text className="font-medium text-gray-800 font-geist">

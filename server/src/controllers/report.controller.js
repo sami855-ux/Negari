@@ -877,8 +877,7 @@ export const deleteReport = async (req, res) => {
 
 export const submitFeedback = async (req, res) => {
   try {
-    console.log(req.params)
-    const id = req.params.id // reportId
+    const id = req.params.id 
     let { rating, comment } = req.body
 
     // Validate rating is between 1 and 5
@@ -905,20 +904,6 @@ export const submitFeedback = async (req, res) => {
       })
     }
 
-    // Prevent duplicate feedback on same report by same user
-    // const alreadyGiven = await prisma.feedback.findFirst({
-    //   where: {
-    //     reportId: id,
-    //     reporterId: req.user.id,
-    //   },
-    // })
-
-    // if (alreadyGiven) {
-    //   return res.status(409).json({
-    //     success: false,
-    //     message: "Feedback already submitted for this report",
-    //   })
-    // }
 
     const feedback = await prisma.feedback.create({
       data: {

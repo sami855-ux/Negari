@@ -297,13 +297,13 @@ const UserDetailPage = () => {
           </TouchableOpacity>
           <Text className="text-lg text-white font-geist">User Profile</Text>
         </View>
-        <View className="p-4">
+        <View className="p-4 px-0 pt-0">
           {/* Profile Header */}
           <ImageBackground
             source={{
               uri: "https://images.unsplash.com/photo-1503264116251-35a269479413?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.0.3",
             }}
-            className="mb-6 overflow-hidden rounded-lg"
+            className="mb-6 overflow-hidden h-72"
             resizeMode="cover"
           >
             {/* Overlay for better text readability */}

@@ -8,6 +8,8 @@ import {
   Switch,
   SafeAreaView,
   StatusBar,
+  ToastAndroid,
+  Platform,
 } from "react-native"
 import {
   Settings,
@@ -57,6 +59,13 @@ const ProfileScreen = () => {
 
       dispatch(logout())
       setLogoutModalVisible(false)
+
+      if (Platform.OS === "android") {
+        ToastAndroid.show("Logout successful!", ToastAndroid.SHORT)
+      } else {
+        // fallback for iOS, or you can just leave it
+        console.log("Logout successful!")
+      }
       router.replace("/")
     } catch (error) {
       console.error("Error removing from storage:", error)
@@ -251,7 +260,7 @@ const ProfileScreen = () => {
             <View className="flex-row items-center p-5 space-x-3 border border-gray-100 bg-slate-100 rounded-xl">
               <View className="relative mr-8">
                 <Image
-                  source={{ uri: user?.profilePicture || defaultUser }}
+                  source={{ uri: user?.profilePicture }}
                   className="w-20 h-20 border-2 border-white rounded-2xl"
                 />
                 <TouchableOpacity className="absolute p-1 bg-purple-600 rounded-full -bottom-1 -right-1">
@@ -259,7 +268,7 @@ const ProfileScreen = () => {
                 </TouchableOpacity>
               </View>
 
-              <View className="flex-1">
+              <View className="flex-1 ml-4">
                 <Text className="text-xl font-bold text-gray-800 capitalize font-geist">
                   {user?.username}
                 </Text>

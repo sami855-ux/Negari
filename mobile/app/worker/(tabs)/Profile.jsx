@@ -57,19 +57,11 @@ const Profile = () => {
           Profile
         </Text>
       </View>
-      <View
-        className="px-3 py-6 bg-white"
-        style={{
-          elevation: 10,
-          borderWidth: 1,
-          borderColor: "#f3e8ff",
-        }}
-      >
+      <View className="px-3 py-6 bg-white">
         {/* Header Section */}
         <View className="flex-row items-start">
-          {/* Avatar with decorative border */}
+          {/* Avatar */}
           <View className="relative">
-            <View className="absolute rounded-full -inset-1 bg-gradient-to-r from-violet-400 to-purple-500 blur-sm opacity-20" />
             <Image
               source={{ uri: worker?.profilePicture }}
               className="object-cover w-24 h-24 border-2 border-white rounded-full"
@@ -78,20 +70,18 @@ const Profile = () => {
 
           {/* Personal Info */}
           <View className="flex-1 ml-5">
-            <View className="flex-row items-center">
-              <Text className="text-2xl font-bold text-gray-800 capitalize font-geist">
-                {worker?.username}
-              </Text>
-            </View>
+            <Text className="text-2xl font-bold text-gray-800 capitalize font-geist">
+              {worker?.username}
+            </Text>
 
-            <Text className="text-gray-500  font-jakarta mt-0.5 text-xs font-semibold ">
+            <Text className="text-gray-500 font-jakarta mt-0.5 text-xs font-semibold">
               {worker?.role}
             </Text>
 
             {/* Stats Row */}
             <View className="flex-row mt-3 space-x-3">
               <View className="flex-row items-center px-2 py-1 rounded-full bg-[#f4b93b]">
-                <Shield size={14} className="mr-1 text-white" />
+                <Shield size={14} color="white" style={{ marginRight: 4 }} />
                 <Text className="text-xs text-white font-geist">{4} yrs</Text>
               </View>
               <View className="flex-row items-center px-2 py-1 rounded-full bg-green-50">
@@ -107,7 +97,7 @@ const Profile = () => {
         {/* Contact Info */}
         <View className="mt-6 space-y-3">
           <View className="flex-row items-center p-3 bg-amber-50 rounded-xl">
-            <Mail size={20} className="mr-3 text-amber-500" />
+            <Mail size={20} color="#f59e0b" style={{ marginRight: 12 }} />
             <View>
               <Text className="text-xs font-medium text-gray-400">Email</Text>
               <Text className="text-gray-800 font-geist">{worker?.email}</Text>
@@ -121,46 +111,46 @@ const Profile = () => {
             Settings
           </Text>
 
-          <View className="space-y-2">
-            <TouchableOpacity
-              className="flex-row items-center p-4 bg-white border border-gray-100 rounded-xl"
-              //! onPress={() => router.push("/worker/notification")}
-            >
-              <Bell size={22} className="mr-3 text-gray-500" />
+          <View className="space-y-4">
+            <TouchableOpacity className="flex-row items-center p-4 bg-white border border-gray-100 rounded-xl mb-4">
+              <Bell size={22} color="#6b7280" style={{ marginRight: 12 }} />
               <Text className="flex-1 text-[15px] font-medium text-gray-700 font-geist">
                 Notifications
               </Text>
               <View className="w-2 h-2 rounded-full bg-violet-400" />
             </TouchableOpacity>
 
-            <TouchableOpacity className="flex-row items-center p-4 bg-white border border-gray-100 rounded-xl">
-              <Languages size={22} className="mr-3 text-gray-500" />
+            <TouchableOpacity className="flex-row items-center p-4 bg-white border border-gray-100 rounded-xl mb-4">
+              <Languages
+                size={22}
+                color="#6b7280"
+                style={{ marginRight: 12 }}
+              />
               <Text className="flex-1 text-[15px] font-medium text-gray-700 font-geist">
                 Language
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              className="flex-row items-center p-4 bg-white border border-gray-100 rounded-xl"
-              onPress={() => {
+              className="flex-row items-center p-4 bg-white border border-gray-100 rounded-xl  mb-4"
+              onPress={() =>
                 router.push({
                   pathname: "/worker/ProfileDetail",
-                  params: {
-                    userId: worker.id,
-                  },
+                  params: { userId: worker.id },
                 })
-              }}
+              }
             >
-              <User size={22} className="mr-3 text-gray-500" />
+              <User size={22} color="#6b7280" style={{ marginRight: 12 }} />
               <Text className="flex-1 text-[15px] font-medium text-gray-700 font-geist">
                 Profile Details
               </Text>
             </TouchableOpacity>
+
             <TouchableOpacity
               className="flex-row items-center p-4 bg-white border border-gray-100 rounded-xl"
               onPress={() => setLogoutModalVisible(true)}
             >
-              <LogOut size={20} className="mr-3 text-rose-500" />
+              <LogOut size={20} color="#ef4444" style={{ marginRight: 12 }} />
               <Text className="flex-1 text-[15px] font-medium text-gray-700 font-geist">
                 Logout
               </Text>

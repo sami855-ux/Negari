@@ -152,8 +152,8 @@ export default function Layout() {
           tabBarStyle: {
             height: 70,
             backgroundColor: "#F8F9FA",
-            borderTopWidth: 1,
-            borderTopColor: "#E5E7EB",
+            // borderTopWidth: 1,
+            // borderTopColor: "#E5E7EB",
             elevation: 10,
             shadowColor: "#000",
             shadowOffset: { width: 0, height: -2 },
@@ -172,7 +172,7 @@ export default function Layout() {
             ),
           }}
           listeners={{
-            focus: () => setActiveIndex(0),
+            focus: () => setActiveIndex(0.1),
           }}
         />
 
@@ -185,7 +185,7 @@ export default function Layout() {
             ),
           }}
           listeners={{
-            focus: () => setActiveIndex(1),
+            focus: () => setActiveIndex(1.4),
           }}
         />
 
@@ -198,20 +198,7 @@ export default function Layout() {
             ),
           }}
           listeners={{
-            focus: () => setActiveIndex(2),
-          }}
-        />
-
-        {/* Map */}
-        <Tabs.Screen
-          name="Map"
-          options={{
-            tabBarIcon: ({ focused }) => (
-              <TabBarIcon focused={focused} IconComponent={Map} />
-            ),
-          }}
-          listeners={{
-            focus: () => setActiveIndex(3),
+            focus: () => setActiveIndex(2.6),
           }}
         />
 
@@ -224,7 +211,7 @@ export default function Layout() {
             ),
           }}
           listeners={{
-            focus: () => setActiveIndex(4),
+            focus: () => setActiveIndex(3.9),
           }}
         />
       </Tabs>

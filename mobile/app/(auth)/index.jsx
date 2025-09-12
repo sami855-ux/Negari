@@ -9,6 +9,7 @@ import {
   Platform,
   TextInput,
   ActivityIndicator,
+  ToastAndroid,
 } from "react-native"
 import { useForm, Controller } from "react-hook-form"
 import {
@@ -51,7 +52,12 @@ const LoginScreen = () => {
       const res = await dispatch(loginUser(data)).unwrap()
       console.log(res)
       if (res.success) {
-        Alert.alert("Success", "You have successfully logged in!")
+        if (Platform.OS === "android") {
+          ToastAndroid.show("Login successful!", ToastAndroid.SHORT)
+        } else {
+          // fallback for iOS, or you can just leave it
+          console.log("Login successful!")
+        }
 
         if (res.user.role === "WORKER") {
           router.push("/worker/(tabs)")
@@ -122,7 +128,7 @@ const LoginScreen = () => {
                 }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
-                    className="flex-1 h-full mt-1 ml-2 text-gray-700 outline-none font-geist"
+                    className="flex-1 h-full mt-1 ml-2 text-gray-700 outline-none font-geist text-lg"
                     placeholder="Enter your email"
                     placeholderTextColor="#9CA3AF"
                     keyboardType="email-address"

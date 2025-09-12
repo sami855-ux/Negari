@@ -78,6 +78,7 @@ export const loginUser = createAsyncThunk(
         password,
       })
 
+      console.log(res.data)
       // Save token to AsyncStorage
       if (res.data.success) {
         console.log("Login data", res)
