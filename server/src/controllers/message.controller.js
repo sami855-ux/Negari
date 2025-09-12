@@ -222,9 +222,9 @@ export const getMessagesForConversation = async (req, res) => {
 
 export const getMessagedUsers = async (req, res) => {
   try {
-    console.log("req.user:", req.user)
-    const userId = req.user.id
+    const userId = req.user.id // Ensure your auth middleware sets req.user
 
+    // Fetch all conversations where the current user is a participant
     const conversations = await prisma.conversation.findMany({
       where: {
         OR: [{ participantAId: userId }, { participantBId: userId }],
@@ -234,37 +234,44 @@ export const getMessagedUsers = async (req, res) => {
         participantB: true,
         messages: {
           orderBy: { createdAt: "desc" },
-          take: 1,
+          take: 1, // only fetch the last message for preview
         },
       },
       orderBy: { updatedAt: "desc" },
     })
 
-    console.log("conversations:", conversations)
+    // Map each conversation to the “other participant” and last message
+    const users = conversations
+      .map((conv) => {
+        const otherUser =
+          conv.participantAId === userId ? conv.participantB : conv.participantA
 
-    const users = conversations.map((conv) => {
-      const otherUser =
-        conv.participantAId === userId ? conv.participantB : conv.participantA
-      if (!otherUser) {
-        console.warn("Conversation has missing participant", conv.id)
-      }
-      const lastMessage = conv.messages[0] || null
+        if (!otherUser) {
+          console.warn("Conversation has missing participant:", conv.id)
+          return null
+        }
 
-      return {
-        ...otherUser, // may throw if otherUser is null
-        lastMessage: lastMessage
-          ? {
-              id: lastMessage.id,
-              content: lastMessage.content,
-              attachmentUrl: lastMessage.attachmentUrl,
-              type: lastMessage.type,
-              isRead: lastMessage.isRead,
-              createdAt: lastMessage.createdAt,
-            }
-          : null,
-        conversationId: conv.id,
-      }
-    })
+        const lastMessage = conv.messages[0] || null
+
+        return {
+          id: otherUser.id,
+          name: otherUser.name || "", // replace with your actual User fields
+          email: otherUser.email || "",
+          avatarUrl: otherUser.avatarUrl || null,
+          lastMessage: lastMessage
+            ? {
+                id: lastMessage.id,
+                content: lastMessage.content,
+                attachmentUrl: lastMessage.attachmentUrl,
+                type: lastMessage.type,
+                isRead: lastMessage.isRead,
+                createdAt: lastMessage.createdAt,
+              }
+            : null,
+          conversationId: conv.id,
+        }
+      })
+      .filter(Boolean) // remove any null entries if participant was missing
 
     res.status(200).json({ success: true, users })
   } catch (err) {
