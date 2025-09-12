@@ -222,34 +222,36 @@ export const getMessagesForConversation = async (req, res) => {
 
 export const getMessagedUsers = async (req, res) => {
   try {
-    const userId = req.user.id // Auth middleware should set this
+    console.log("req.user:", req.user)
+    const userId = req.user.id
 
-    // Fetch all conversations where the current user is a participant
     const conversations = await prisma.conversation.findMany({
       where: {
         OR: [{ participantAId: userId }, { participantBId: userId }],
       },
       include: {
-        participantA: true, // includes all fields of User
+        participantA: true,
         participantB: true,
         messages: {
           orderBy: { createdAt: "desc" },
-          take: 1, // only the last message for preview
+          take: 1,
         },
       },
-      orderBy: {
-        updatedAt: "desc",
-      },
+      orderBy: { updatedAt: "desc" },
     })
 
-    // Map to get the “other user” and last message
+    console.log("conversations:", conversations)
+
     const users = conversations.map((conv) => {
       const otherUser =
         conv.participantAId === userId ? conv.participantB : conv.participantA
+      if (!otherUser) {
+        console.warn("Conversation has missing participant", conv.id)
+      }
       const lastMessage = conv.messages[0] || null
 
       return {
-        ...otherUser, // all user fields
+        ...otherUser, // may throw if otherUser is null
         lastMessage: lastMessage
           ? {
               id: lastMessage.id,
