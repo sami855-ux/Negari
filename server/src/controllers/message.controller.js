@@ -223,7 +223,7 @@ export const getMessagesForConversation = async (req, res) => {
 export const getMessagedUsers = async (req, res) => {
   try {
     console.log("req.user:", req.user)
-    const userId = "59844465-5609-4857-95fc-723ac0c15f4c"
+    const userId = req.user.id
 
     const conversations = await prisma.conversation.findMany({
       where: {

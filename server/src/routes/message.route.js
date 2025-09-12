@@ -11,7 +11,7 @@ import upload from "../middleware/multer.js"
 
 const router = express.Router()
 
-router.get("/", getMessagedUsers)
+router.get("/", protect, getMessagedUsers)
 
 router.post("/:receiverId", protect, upload.single("image"), sendMessage)
 
