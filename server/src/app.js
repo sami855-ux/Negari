@@ -45,6 +45,7 @@ app.use(
       "https://nj8wkxm-samiux855-8081.exp.direct",
       "http://localhost:8081",
       "https://negari-ten.vercel.app",
+      "exp://127.0.0.1:8081"
     ],
     credentials: true,
   })
