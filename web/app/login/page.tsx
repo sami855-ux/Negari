@@ -64,8 +64,10 @@ export default function LoginPage() {
 
         console.log(res.user)
         if (res.user.role === "ADMIN") router.push("/admin")
-        else if (res.user.role === "OFFICER") router.push("/official")
-        else router.push("/download")
+        else if (res.user.role === "OFFICER") {
+          console.log("User role:", res.user.role)
+          router.push("/official")
+        } else router.push("/download")
 
         reset()
       } else {

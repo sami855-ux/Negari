@@ -152,8 +152,8 @@ const CreateScreen = () => {
         imageUrls: data.images,
         videoUrl: data.video,
         location: {
-          latitude: 9.050502,
-          longitude: 38.737091,
+          latitude: 9.03,
+          longitude: 38.74,
           address: "Main Street, Downtown",
           city: "Addis Ababa",
           region: "Nifas Silk-Lafto",
