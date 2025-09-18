@@ -1,0 +1,32 @@
+# Node modules
+node_modules/
+**/node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build outputs
+web/.next/
+web/out/
+mobile/build/
+mobile/.expo/
+backend/dist/
+backend/build/
+
+# Cypress test artifacts
+tests/cypress/screenshots/
+tests/cypress/videos/
+

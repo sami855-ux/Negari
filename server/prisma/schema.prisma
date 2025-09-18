@@ -150,11 +150,12 @@ model Feedback {
 }
 
 model Conversation {
-  id             String @id @default(uuid())
+  id             String  @id @default(uuid())
   participantAId String
   participantBId String
-  participantA   User   @relation("ParticipantA", fields: [participantAId], references: [id])
-  participantB   User   @relation("ParticipantB", fields: [participantBId], references: [id])
+  participantA   User    @relation("ParticipantA", fields: [participantAId], references: [id])
+  participantB   User    @relation("ParticipantB", fields: [participantBId], references: [id])
+  userId         String? // optional field, can be null
 
   messages  Message[] @relation("ConversationMessages")
   createdAt DateTime  @default(now())

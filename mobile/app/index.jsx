@@ -177,7 +177,9 @@ export default function AppWrapper() {
           source={require("@/assets/images/react-logo.png")} // your logo
           style={{ width: 120, height: 120, transform: [{ scale: scaleAnim }] }}
         />
-        <Text className="mt-4 text-lg text-white font-geist">Loading...</Text>
+        <Text className="mt-4 text-lg text-gray-700 font-geist">
+          Loading...
+        </Text>
       </View>
     )
   }

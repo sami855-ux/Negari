@@ -1,0 +1,17 @@
+{
+  "users": {
+    "admin": { "email": "admin@negari.com", "password": "admin123" },
+    "worker": { "email": "worker@negari.com", "password": "worker123" },
+    "citizen": { "email": "citizen@negari.com", "password": "citizen123" }
+  },
+  "reports": {
+    "pothole": {
+      "title": "Pothole on Main St",
+      "description": "Big pothole causing traffic"
+    },
+    "garbage": {
+      "title": "Uncollected garbage",
+      "description": "Smell in the neighborhood"
+    }
+  }
+}
