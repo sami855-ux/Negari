@@ -31,7 +31,7 @@ const categoryData = [
   { name: "Other", value: 8 },
 ]
 
-export function CategoryPieChart() {
+export default function CategoryPieChart() {
   return (
     <Card className="border border-gray-200">
       <CardHeader className="pb-3">

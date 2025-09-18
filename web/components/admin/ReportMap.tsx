@@ -28,7 +28,7 @@ interface ReportLocation {
   status: "OPEN" | "IN_PROGRESS" | "RESOLVED"
 }
 
-export function ReportsMap() {
+export default function ReportsMap() {
   const [locations, setLocations] = useState<ReportLocation[]>([])
   const [isClient, setIsClient] = useState(false)
 
