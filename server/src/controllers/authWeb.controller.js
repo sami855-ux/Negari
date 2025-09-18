@@ -39,7 +39,7 @@ export const registerUserWeb = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
 
@@ -71,7 +71,7 @@ export const loginUserWeb = async (req, res) => {
       return res.status(404).json({ message: "User not found", success: false })
     }
 
-    const isMatch = await bcrypt.compare(password, user.password)
+    const isMatch = bcrypt.compare(password, user.password)
     if (!isMatch) {
       return res
         .status(401)
@@ -84,7 +84,7 @@ export const loginUserWeb = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     })
 
